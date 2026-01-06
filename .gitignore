@@ -1,0 +1,30 @@
+.codex
+# Go build artifacts
+*.exe
+*.test
+*.out
+*.cover
+*.coverprofile
+*.prof
+*.pprof
+*.tmp
+*.swp
+
+# Binaries and build outputs
+bin/
+build/
+dist/
+vendor/
+coverage/
+coverage.txt
+
+# Environment and editor
+.env
+.env.*
+.idea/
+.vscode/
+*.iml
+
+# System
+.DS_Store
+Thumbs.db
