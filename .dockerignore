@@ -1,0 +1,77 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test files
+*_test.go
+test/
+tests/
+
+# Coverage
+coverage/
+*.coverprofile
+
+# Build artifacts (will be built in container)
+dist/
+build/
+bin/
+*.exe
+*.test
+*.out
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Kubernetes
+deployments/
+*.yaml
+*.yml
+!go.mod
+!go.sum
+
+# Scripts (unless needed in container)
+scripts/
+
+# Specs
+specs/
+
+# Vendor (will be downloaded in container)
+vendor/
+
