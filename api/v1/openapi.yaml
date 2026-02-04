@@ -1,0 +1,602 @@
+openapi: 3.0.3
+info:
+  title: UMOS IoT Platform API
+  description: |
+    UMOS IoT Platform API for device management, messaging, and real-time communication.
+
+    ## Architecture
+    - **iot-api**: REST API for device management and command dispatch
+    - **iot-ws**: WebSocket server for real-time client communication
+    - **iot-gateway**: MQTT ↔ RabbitMQ bridge for device communication
+    - **iot-uplink**: Uplink message processor (device → cloud)
+    - **iot-downlink**: Downlink message processor (cloud → device)
+
+    ## Authentication
+    All API endpoints require Bearer token authentication.
+  version: 1.0.0
+  contact:
+    name: UMOS Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.umos.io/v1
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Devices
+    description: Device management operations
+  - name: Commands
+    description: Device command operations
+  - name: ThingModels
+    description: Thing model management
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns the health status of the service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ready:
+    get:
+      tags:
+        - Health
+      summary: Readiness check
+      description: Returns whether the service is ready to accept traffic
+      operationId: readinessCheck
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+
+  /devices:
+    get:
+      tags:
+        - Devices
+      summary: List devices
+      description: Returns a paginated list of devices
+      operationId: listDevices
+      parameters:
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: vendor
+          in: query
+          schema:
+            type: string
+            enum: [dji, generic, tuya]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [online, offline, unknown]
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Devices
+      summary: Register a new device
+      description: Registers a new device in the system
+      operationId: createDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceRequest'
+      responses:
+        '201':
+          description: Device created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Device already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /devices/{deviceSN}:
+    get:
+      tags:
+        - Devices
+      summary: Get device by SN
+      description: Returns a device by its serial number
+      operationId: getDevice
+      parameters:
+        - $ref: '#/components/parameters/DeviceSN'
+      responses:
+        '200':
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Devices
+      summary: Update device
+      description: Updates a device's information
+      operationId: updateDevice
+      parameters:
+        - $ref: '#/components/parameters/DeviceSN'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceRequest'
+      responses:
+        '200':
+          description: Device updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Devices
+      summary: Delete device
+      description: Deletes a device from the system
+      operationId: deleteDevice
+      parameters:
+        - $ref: '#/components/parameters/DeviceSN'
+      responses:
+        '204':
+          description: Device deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /devices/{deviceSN}/commands:
+    post:
+      tags:
+        - Commands
+      summary: Send command to device
+      description: Sends a command to a device via the downlink channel
+      operationId: sendCommand
+      parameters:
+        - $ref: '#/components/parameters/DeviceSN'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandRequest'
+      responses:
+        '202':
+          description: Command accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /devices/{deviceSN}/properties:
+    get:
+      tags:
+        - Devices
+      summary: Get device properties
+      description: Returns the current properties of a device
+      operationId: getDeviceProperties
+      parameters:
+        - $ref: '#/components/parameters/DeviceSN'
+      responses:
+        '200':
+          description: Device properties
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevicePropertiesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /thing-models:
+    get:
+      tags:
+        - ThingModels
+      summary: List thing models
+      description: Returns a list of thing models
+      operationId: listThingModels
+      parameters:
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of thing models
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThingModelListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - ThingModels
+      summary: Create thing model
+      description: Creates a new thing model definition
+      operationId: createThingModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateThingModelRequest'
+      responses:
+        '201':
+          description: Thing model created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThingModel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    DeviceSN:
+      name: deviceSN
+      in: path
+      required: true
+      description: Device serial number
+      schema:
+        type: string
+        example: "DJI-001-ABC123"
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "healthy"
+
+    ReadyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ready, not ready]
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          description: Error code
+          example: 1001
+        message:
+          type: string
+          description: Error message
+          example: "Device not found"
+        details:
+          type: object
+          additionalProperties: true
+
+    Device:
+      type: object
+      required:
+        - device_sn
+        - device_name
+        - device_type
+        - vendor
+        - status
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        device_sn:
+          type: string
+          example: "DJI-001-ABC123"
+        device_name:
+          type: string
+          example: "Factory Floor Drone"
+        device_type:
+          type: string
+          example: "drone"
+        vendor:
+          type: string
+          enum: [dji, generic, tuya]
+        gateway_sn:
+          type: string
+          nullable: true
+        thing_model_id:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [online, offline, unknown]
+        last_online_time:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    CreateDeviceRequest:
+      type: object
+      required:
+        - device_sn
+        - device_name
+        - device_type
+        - vendor
+      properties:
+        device_sn:
+          type: string
+        device_name:
+          type: string
+        device_type:
+          type: string
+        vendor:
+          type: string
+          enum: [dji, generic, tuya]
+        gateway_sn:
+          type: string
+        thing_model_id:
+          type: integer
+
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        device_name:
+          type: string
+        device_type:
+          type: string
+        gateway_sn:
+          type: string
+        thing_model_id:
+          type: integer
+
+    DeviceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+    DevicePropertiesResponse:
+      type: object
+      properties:
+        device_sn:
+          type: string
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceProperty'
+
+    DeviceProperty:
+      type: object
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        value:
+          type: object
+        updated_at:
+          type: string
+          format: date-time
+
+    CommandRequest:
+      type: object
+      required:
+        - service
+        - action
+      properties:
+        service:
+          type: string
+          description: Service name
+          example: "camera"
+        action:
+          type: string
+          description: Action to perform
+          example: "take_photo"
+        params:
+          type: object
+          additionalProperties: true
+          description: Command parameters
+
+    CommandResponse:
+      type: object
+      properties:
+        tid:
+          type: string
+          description: Transaction ID
+        bid:
+          type: string
+          description: Batch ID
+        status:
+          type: string
+          enum: [accepted, pending]
+        message:
+          type: string
+
+    ThingModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        properties:
+          type: array
+          items:
+            type: object
+        services:
+          type: array
+          items:
+            type: object
+        events:
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateThingModelRequest:
+      type: object
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        properties:
+          type: array
+          items:
+            type: object
+        services:
+          type: array
+          items:
+            type: object
+        events:
+          type: array
+          items:
+            type: object
+
+    ThingModelListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThingModel'
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+
+security:
+  - BearerAuth: []
