@@ -77,10 +77,14 @@
 
 ### Edge Cases
 
-- 消息丢失时如何通过 trace_id 追踪？
+- 消息丢失时如何通过 trace_id 追踪？（通过数据库中的 sn + vendor 映射区分）
+  - **处理策略**: 通过 MessageLog 表记录所有消息状态，配合 Grafana 告警监控 `status=failed` 的消息
 - 多个厂商使用相同的设备标识时如何区分？（通过数据库中的 sn + vendor 映射区分）
+  - **处理策略**: Device 表包含 vendor 字段，device_sn + vendor 组合唯一标识设备
 - trace_id 在消息重试时如何保持一致性？
+  - **处理策略**: 重试时保持原始 trace_id 不变，通过 MessageLog 记录重试次数
 - routing key 不匹配时如何处理？
+  - **处理策略**: 消息进入死信队列（DLQ），记录到 MessageLog 表，通过 Grafana 告警监控
 
 ## Requirements
 
@@ -141,4 +145,12 @@
 - Q: 日志库的技术选型是什么？ → A: 使用 logrus（`github.com/sirupsen/logrus`）作为结构化日志库，所有服务通过统一的 logger 包使用 logrus
 - Q: 数据库迁移的实现方式是什么？ → A: 使用 GORM 的 AutoMigrate 功能进行数据库迁移，不得使用手动 SQL 脚本，所有数据模型变更通过 GORM 迁移实现
 - Q: Go 模块包名是什么？ → A: 使用 `github.com/utmos/utmos` 作为 Go 模块包名
+
+### Session 2025-02-04
+
+- Q: TracerProvider 配置方式是什么？ → A: YAML配置文件内嵌，在 config.yaml 中定义 `tracer.endpoint`, `tracer.sampling_rate`, `tracer.service_name` 等字段
+- Q: RabbitMQ 连接失败重试策略是什么？ → A: 指数退避重试 (1s→2s→4s→8s...最大30s，最多10次)，避免惊群效应
+- Q: RabbitMQ 消息确认模式是什么？ → A: 手动确认 (Manual Ack)，处理成功后确认，失败时 Nack 并重新入队或进入死信队列，确保消息不丢失
+- Q: Tracer 采样率默认值是什么？ → A: 开发环境100%采样便于调试，生产环境10%采样以减少性能开销，通过config.yaml按环境配置
+- Q: 服务启动时 RabbitMQ Exchange/Queue 初始化策略是什么？ → A: 每个服务启动时声明自己需要的Exchange/Queue（幂等操作），使用`passive=false`确保资源存在，支持服务独立部署
 

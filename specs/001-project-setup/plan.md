@@ -320,6 +320,11 @@ umos/
   - 从消息头提取 Trace Context
   - 创建新的 span
 
+**TracerProvider 配置** (Session 2025-02-04):
+- 配置方式: YAML配置文件内嵌，在 config.yaml 中定义
+- 配置字段: `tracer.endpoint`, `tracer.sampling_rate`, `tracer.service_name`
+- 采样率: 开发环境100%，生产环境10%（通过config.yaml按环境配置）
+
 **W3C Trace Context 传递**:
 - HTTP: 通过 `traceparent` 和 `tracestate` 请求头
 - RabbitMQ: 通过消息的 `headers` 字段（`traceparent`、`tracestate`）
@@ -341,6 +346,11 @@ umos/
 **Exchange 和 Queue**:
 - Exchange: `iot` (Topic Exchange)
 - Queue: 每个服务创建自己的 Queue，通过 routing key 绑定
+- 初始化策略 (Session 2025-02-04): 每个服务启动时声明自己需要的Exchange/Queue（幂等操作），使用`passive=false`确保资源存在
+
+**RabbitMQ 连接与消息处理** (Session 2025-02-04):
+- 连接重试策略: 指数退避重试 (1s→2s→4s→8s...最大30s，最多10次)
+- 消息确认模式: 手动确认 (Manual Ack)，处理成功后确认，失败时 Nack 并重新入队或进入死信队列
 
 ### 4. 消息格式设计
 

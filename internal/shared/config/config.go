@@ -1,48 +1,46 @@
+// Package config provides configuration management for UMOS IoT services.
 package config
 
-import (
-	"fmt"
-	"os"
+import "time"
 
-	"gopkg.in/yaml.v3"
-)
-
-// Config represents the application configuration
+// Config is the main application configuration.
 type Config struct {
-	Environment string      `yaml:"environment"`
-	Server      ServerConfig `yaml:"server"`
-	Database    DatabaseConfig `yaml:"database"`
-	RabbitMQ    RabbitMQConfig `yaml:"rabbitmq"`
-	InfluxDB    InfluxDBConfig `yaml:"influxdb"`
-	Logging     LoggingConfig `yaml:"logging"`
-	Tracing     TracingConfig `yaml:"tracing"`
-	Metrics     MetricsConfig `yaml:"metrics"`
+	Server   ServerConfig   `yaml:"server"`
+	Database DatabaseConfig `yaml:"database"`
+	RabbitMQ RabbitMQConfig `yaml:"rabbitmq"`
+	Tracer   TracerConfig   `yaml:"tracer"`
+	Metrics  MetricsConfig  `yaml:"metrics"`
+	Logger   LoggerConfig   `yaml:"logger"`
 }
 
-// ServerConfig represents server configuration
+// ServerConfig holds HTTP server configuration.
 type ServerConfig struct {
-	Port         int    `yaml:"port"`
-	ReadTimeout  int    `yaml:"read_timeout"`
-	WriteTimeout int    `yaml:"write_timeout"`
+	Host         string        `yaml:"host"`
+	Port         int           `yaml:"port"`
+	ReadTimeout  time.Duration `yaml:"read_timeout"`
+	WriteTimeout time.Duration `yaml:"write_timeout"`
 }
 
-// DatabaseConfig represents database configuration
+// DatabaseConfig holds database configuration.
 type DatabaseConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	DBName   string `yaml:"dbname"`
-	SSLMode  string `yaml:"sslmode"`
+	Postgres PostgresConfig `yaml:"postgres"`
+	InfluxDB InfluxDBConfig `yaml:"influxdb"`
 }
 
-// RabbitMQConfig represents RabbitMQ configuration
-type RabbitMQConfig struct {
-	URL      string `yaml:"url"`
-	Exchange string `yaml:"exchange"`
+// PostgresConfig holds PostgreSQL configuration.
+type PostgresConfig struct {
+	Host            string        `yaml:"host"`
+	Port            int           `yaml:"port"`
+	User            string        `yaml:"user"`
+	Password        string        `yaml:"password"`
+	DBName          string        `yaml:"dbname"`
+	SSLMode         string        `yaml:"sslmode"`
+	MaxIdleConns    int           `yaml:"max_idle_conns"`
+	MaxOpenConns    int           `yaml:"max_open_conns"`
+	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime"`
 }
 
-// InfluxDBConfig represents InfluxDB configuration
+// InfluxDBConfig holds InfluxDB configuration.
 type InfluxDBConfig struct {
 	URL    string `yaml:"url"`
 	Token  string `yaml:"token"`
@@ -50,59 +48,45 @@ type InfluxDBConfig struct {
 	Bucket string `yaml:"bucket"`
 }
 
-// LoggingConfig represents logging configuration
-type LoggingConfig struct {
-	Level  string `yaml:"level"`
-	Format string `yaml:"format"`
+// RabbitMQConfig holds RabbitMQ configuration.
+type RabbitMQConfig struct {
+	URL           string      `yaml:"url"`
+	ExchangeName  string      `yaml:"exchange_name"`
+	ExchangeType  string      `yaml:"exchange_type"`
+	PrefetchCount int         `yaml:"prefetch_count"`
+	Retry         RetryConfig `yaml:"retry"`
 }
 
-// TracingConfig represents tracing configuration
-type TracingConfig struct {
-	Enabled  bool   `yaml:"enabled"`
-	Endpoint string `yaml:"endpoint"`
+// RetryConfig holds retry configuration.
+type RetryConfig struct {
+	MaxRetries   int           `yaml:"max_retries"`
+	InitialDelay time.Duration `yaml:"initial_delay"`
+	MaxDelay     time.Duration `yaml:"max_delay"`
+	Multiplier   float64       `yaml:"multiplier"`
 }
 
-// MetricsConfig represents metrics configuration
+// TracerConfig holds distributed tracing configuration.
+type TracerConfig struct {
+	Enabled      bool          `yaml:"enabled"`
+	Endpoint     string        `yaml:"endpoint"`
+	ServiceName  string        `yaml:"service_name"`
+	SamplingRate float64       `yaml:"sampling_rate"`
+	BatchTimeout time.Duration `yaml:"batch_timeout"`
+	MaxQueueSize int           `yaml:"max_queue_size"`
+}
+
+// MetricsConfig holds Prometheus metrics configuration.
 type MetricsConfig struct {
-	Enabled bool   `yaml:"enabled"`
-	Path    string `yaml:"path"`
+	Enabled   bool   `yaml:"enabled"`
+	Path      string `yaml:"path"`
+	Port      int    `yaml:"port"`
+	Namespace string `yaml:"namespace"`
 }
 
-// Load loads configuration from YAML file
-func Load(configPath string) (*Config, error) {
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	var config Config
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse config file: %w", err)
-	}
-
-	// Override with environment variables if set
-	overrideWithEnv(&config)
-
-	return &config, nil
+// LoggerConfig holds logger configuration.
+type LoggerConfig struct {
+	Level    string `yaml:"level"`
+	Format   string `yaml:"format"`
+	Output   string `yaml:"output"`
+	FilePath string `yaml:"file_path,omitempty"`
 }
-
-// overrideWithEnv overrides config values with environment variables
-func overrideWithEnv(config *Config) {
-	if env := os.Getenv("ENVIRONMENT"); env != "" {
-		config.Environment = env
-	}
-	if port := os.Getenv("SERVER_PORT"); port != "" {
-		// Parse port from string (simplified, should use strconv.Atoi)
-		// For now, keep default
-	}
-	if dbHost := os.Getenv("DB_HOST"); dbHost != "" {
-		config.Database.Host = dbHost
-	}
-	if dbPassword := os.Getenv("DB_PASSWORD"); dbPassword != "" {
-		config.Database.Password = dbPassword
-	}
-	if rabbitMQURL := os.Getenv("RABBITMQ_URL"); rabbitMQURL != "" {
-		config.RabbitMQ.URL = rabbitMQURL
-	}
-}
-

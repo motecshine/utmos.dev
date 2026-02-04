@@ -1,29 +1,31 @@
 # Tasks: Project Setup with Distributed Tracing and Multi-Vendor RabbitMQ Routing
 
 **Input**: Design documents from `/specs/001-project-setup/`
-**Prerequisites**: plan.md, spec.md, data-model.md, research.md
+**Prerequisites**: plan.md, spec.md, data-model.md, types.md, research.md
 
-**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story. Each phase follows TDD principle: tests first, then implementation.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Story?] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3, US4)
 - Include exact file paths in descriptions
+
+---
 
 ## Phase 1: Setup (Shared Infrastructure)
 
 **Purpose**: Project initialization and basic structure
 
 - [X] T001 Create monorepo directory structure per plan.md in repository root
-- [X] T002 Initialize Go module with `go mod init` in repository root
-- [X] T003 [P] Create go.mod and add core dependencies (Gin, GORM, RabbitMQ client, OpenTelemetry, Prometheus)
-- [X] T004 [P] Configure golangci-lint in .golangci.yml
-- [X] T005 [P] Configure misspell for typo checking in .golangci.yml
-- [X] T006 [P] Create Makefile with build, test, lint commands
-- [X] T007 [P] Setup GitHub Actions CI workflow in .github/workflows/ci.yml
-- [X] T008 [P] Create docker-compose.yml for local development environment
-- [X] T009 [P] Create README.md with project overview and setup instructions
+- [X] T002 Initialize Go module with `go mod init github.com/utmos/utmos` in repository root
+- [X] T003 [P] Add core dependencies to go.mod (Gin, GORM, RabbitMQ client, OpenTelemetry, Prometheus, logrus)
+- [X] T004 [P] Configure golangci-lint with misspell checker in .golangci.yml
+- [X] T005 [P] Create Makefile with build, test, lint, run commands
+- [X] T006 [P] Setup GitHub Actions CI workflow in .github/workflows/ci.yml
+- [X] T007 [P] Create docker-compose.yml for local development (PostgreSQL, RabbitMQ, InfluxDB, Tempo, Grafana)
+- [X] T008 [P] Create README.md with project overview and setup instructions
+- [X] T009 [P] Create config.dev.yaml and config.prod.yaml per types.md in configs/
 
 ---
 
@@ -33,16 +35,25 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T010 [P] Create internal/shared/config package for YAML configuration management in internal/shared/config/config.go (support multi-environment: dev, staging, prod)
-- [X] T011 [P] Create internal/shared/logger package for structured logging using logrus (github.com/sirupsen/logrus) in internal/shared/logger/logger.go
-- [X] T012 [P] Create pkg/errors package for error definitions in pkg/errors/errors.go
-- [X] T013 Create pkg/models/device.go with Device model (GORM)
-- [X] T014 Create pkg/models/thing_model.go with ThingModel model (GORM)
-- [X] T015 Create pkg/models/device_property.go with DeviceProperty model (GORM)
-- [X] T016 Create pkg/models/device_event.go with DeviceEvent model (GORM)
-- [X] T017 Create pkg/models/message_log.go with MessageLog model (GORM)
-- [X] T018 Create database migration using GORM AutoMigrate (not SQL scripts) in pkg/models/ with migration initialization function
-- [X] T019 Setup PostgreSQL connection configuration in internal/shared/config/database.go
+### 2.1 Shared Infrastructure
+
+- [X] T010 [P] Create internal/shared/config/config.go with Config struct per types.md Section 1
+- [X] T011 [P] Create internal/shared/config/loader.go with Load() function for YAML config (multi-environment support)
+- [X] T012 [P] Create internal/shared/logger/logger.go with logrus wrapper (JSON format, trace_id support)
+- [X] T013 [P] Create pkg/errors/errors.go with ErrorCode enum and Error struct per types.md Section 4
+
+### 2.2 Data Models (GORM)
+
+- [X] T014 [P] Create pkg/models/device.go with Device model per data-model.md
+- [X] T015 [P] Create pkg/models/thing_model.go with ThingModel model per data-model.md
+- [X] T016 [P] Create pkg/models/device_property.go with DeviceProperty model per data-model.md
+- [X] T017 [P] Create pkg/models/device_event.go with DeviceEvent model per data-model.md
+- [X] T018 [P] Create pkg/models/message_log.go with MessageLog model per data-model.md
+- [X] T019 Create pkg/models/migrate.go with AutoMigrate() function for all models
+
+### 2.3 Database Connection
+
+- [X] T020 Create internal/shared/database/postgres.go with GORM connection and pool configuration
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -52,19 +63,40 @@
 
 **Goal**: 实现分布式追踪基础设施，能够在所有微服务之间追踪消息流转
 
-**Independent Test**: 发送一条设备消息，验证 trace_id 能够在所有服务（iot-gateway → iot-uplink → iot-api/iot-ws）之间传递，并在 Tempo 中查询到完整的调用链路
+**Independent Test**: 发送一条设备消息，验证 trace_id 能够在所有服务之间传递，并在 Tempo 中查询到完整的调用链路
+
+### Tests for User Story 1
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [X] T021 [P] [US1] Create pkg/tracer/provider_test.go with unit tests for TracerProvider
+- [X] T022 [P] [US1] Create pkg/tracer/http_test.go with unit tests for HTTP middleware
+- [X] T023 [P] [US1] Create pkg/tracer/rabbitmq_test.go with unit tests for context injection/extraction
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Create pkg/tracer/provider.go with OpenTelemetry Tracer Provider configuration
-- [ ] T021 [US1] Create pkg/tracer/http.go with Gin HTTP tracing middleware (extract W3C Trace Context from headers)
-- [ ] T022 [US1] Create pkg/tracer/rabbitmq.go with RabbitMQ message tracing (inject/extract W3C Trace Context in message headers)
-- [ ] T023 [US1] Configure Tempo exporter in pkg/tracer/provider.go
-- [ ] T024 [US1] Integrate HTTP tracing middleware into Gin router setup
-- [ ] T025 [US1] Update internal/shared/logger to include trace_id in log entries
-- [ ] T026 [US1] Integrate tracer with metrics package to include trace_id and span_id in metrics labels
+- [X] T024 [US1] Create pkg/tracer/provider.go with OpenTelemetry TracerProvider per types.md Section 3.2 (depends on T021)
+  - NewProvider(cfg *TracerConfig) function
+  - Tempo OTLP HTTP exporter configuration
+  - Sampling rate configuration (dev: 100%, prod: 10%)
+  - Graceful shutdown support
 
-**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently - trace_id can be passed through HTTP and RabbitMQ
+- [X] T025 [US1] Create pkg/tracer/http.go with Gin HTTP tracing middleware per types.md Section 3.2 (depends on T022)
+  - HTTPMiddleware(tracer trace.Tracer) gin.HandlerFunc
+  - Extract W3C Trace Context from request headers (traceparent, tracestate)
+  - Create span for each HTTP request
+  - Add trace_id to response headers
+
+- [X] T026 [US1] Create pkg/tracer/rabbitmq.go with RabbitMQ message tracing per types.md Section 3.2 (depends on T023)
+  - InjectContext(ctx, headers) function
+  - ExtractContext(ctx, headers) function
+  - W3C Trace Context propagation in message headers
+
+- [X] T027 [US1] Update internal/shared/logger/logger.go to include trace_id and span_id in log entries
+  - WithTrace(ctx) function to extract trace context
+  - Automatic trace_id injection in all log calls
+
+**Checkpoint**: User Story 1 complete - trace_id can be passed through HTTP and RabbitMQ
 
 ---
 
@@ -72,20 +104,49 @@
 
 **Goal**: 定义多厂商 RabbitMQ routing key 规范，支持不同厂商的消息路由
 
-**Independent Test**: 模拟不同厂商（如 DJI、通用 MQTT）的消息，验证 routing key 能够正确路由到对应的处理服务
+**Independent Test**: 模拟不同厂商（DJI、通用 MQTT、Tuya）的消息，验证 routing key 能够正确生成和解析
+
+### Tests for User Story 2
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [X] T028 [P] [US2] Create pkg/rabbitmq/routing_test.go with unit tests for routing key generation and parsing
+- [X] T029 [P] [US2] Create pkg/rabbitmq/message_test.go with unit tests for StandardMessage validation
+- [X] T030 [P] [US2] Create pkg/rabbitmq/client_test.go with unit tests for RabbitMQ client
+- [X] T031 [P] [US2] Create pkg/repository/device_test.go with unit tests for GetVendorByDeviceSN
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Create pkg/rabbitmq/routing.go with routing key generation function (format: `iot.{vendor}.{service}.{action}`)
-- [ ] T028 [US2] Create pkg/rabbitmq/routing.go with routing key parsing function
-- [ ] T029 [US2] Create pkg/rabbitmq/exchange.go with Topic Exchange (`iot`) management
-- [ ] T030 [US2] Create pkg/rabbitmq/exchange.go with Queue creation and binding functions
-- [ ] T031 [US2] Create pkg/repository/device.go with GetVendorByDeviceSN function to query vendor from database
-- [ ] T032 [US2] Create pkg/rabbitmq/message.go with standard message format (includes device_sn, tid, bid, timestamp)
-- [ ] T033 [US2] Create pkg/rabbitmq/client.go with RabbitMQ client wrapper
-- [ ] T034 [US2] Implement routing key generation logic that queries vendor from database using device_sn
+- [X] T032 [US2] Create pkg/rabbitmq/routing.go with RoutingKey struct and functions per types.md Section 2.2 (depends on T028)
+  - RoutingKey struct with Vendor, Service, Action fields
+  - NewRoutingKey(vendor, service, action) function
+  - Parse(key string) function
+  - String() method returning `iot.{vendor}.{service}.{action}`
+  - Predefined constants: VendorDJI, VendorGeneric, VendorTuya, ActionPropertyReport, etc.
 
-**Checkpoint**: At this point, User Story 2 should be fully functional - routing keys can be generated and parsed correctly for multi-vendor support
+- [X] T033 [US2] Create pkg/rabbitmq/message.go with StandardMessage struct per types.md Section 2.1 (depends on T029)
+  - StandardMessage struct with TID, BID, Timestamp, Service, Action, DeviceSN, Data
+  - MessageHeader struct with Traceparent, Tracestate, MessageType, Vendor
+  - NewStandardMessage() function
+  - Validate() method
+
+- [X] T034 [US2] Create pkg/rabbitmq/client.go with RabbitMQ client per types.md Section 3.1 (depends on T030)
+  - Client interface implementation
+  - Connect() with exponential backoff retry (1s→2s→4s→8s...max 30s, 10 retries)
+  - DeclareExchange(), DeclareQueue(), BindQueue() functions
+  - IsConnected(), Close() functions
+
+- [X] T035 [US2] Create pkg/rabbitmq/exchange.go with Exchange and Queue management
+  - DeclareTopicExchange("iot") function
+  - DeclareQueueWithDLQ() function (dead letter queue support)
+  - BindQueueToExchange() function
+
+- [X] T036 [US2] Create pkg/repository/device.go with DeviceRepository per types.md Section 3.4 (depends on T031)
+  - GetByDeviceSN(ctx, deviceSN) function
+  - GetVendorByDeviceSN(ctx, deviceSN) function for routing key generation
+  - Create(), Update(), UpdateStatus() functions
+
+**Checkpoint**: User Story 2 complete - routing keys can be generated and parsed correctly for multi-vendor support
 
 ---
 
@@ -93,23 +154,40 @@
 
 **Goal**: 实现统一的 metrics 包来处理框架基础中间件和业务代码的 metrics
 
-**Independent Test**: 查看 Prometheus metrics 端点，验证框架中间件（RabbitMQ 连接数、PostgreSQL 查询延迟等）和业务 metrics（消息处理数量、错误率等）都能正确暴露
+**Independent Test**: 查看 Prometheus metrics 端点，验证框架中间件和业务 metrics 都能正确暴露
+
+### Tests for User Story 3
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [X] T037 [P] [US3] Create pkg/metrics/collector_test.go with unit tests for Collector
+- [X] T038 [P] [US3] Create pkg/metrics/business_test.go with unit tests for Counter, Histogram, Gauge APIs
+- [X] T039 [P] [US3] Create pkg/metrics/middleware_test.go with unit tests for middleware metrics
 
 ### Implementation for User Story 3
 
-- [ ] T035 [US3] Create pkg/metrics/collector.go with Prometheus Registry management
-- [ ] T036 [US3] Create pkg/metrics/middleware.go with RabbitMQ metrics collection (connection count, message count, latency)
-- [ ] T037 [US3] Create pkg/metrics/middleware.go with PostgreSQL metrics collection (connection pool, query latency, error count)
-- [ ] T038 [US3] Create pkg/metrics/middleware.go with InfluxDB metrics collection (write latency, error count)
-- [ ] T039 [US3] Create pkg/metrics/business.go with Counter API (NewCounter function)
-- [ ] T040 [US3] Create pkg/metrics/business.go with Histogram API (NewHistogram function)
-- [ ] T041 [US3] Create pkg/metrics/business.go with Gauge API (NewGauge function)
-- [ ] T042 [US3] Implement unified label specification (service, vendor, message_type, status, trace_id, span_id) in pkg/metrics/collector.go
-- [ ] T043 [US3] Implement naming convention `iot_{component}_{metric_type}_{unit}` in pkg/metrics/collector.go
-- [ ] T044 [US3] Create HTTP handler for `/metrics` endpoint in pkg/metrics/handler.go
-- [ ] T045 [US3] Integrate `/metrics` endpoint into Gin router or create standalone HTTP server
+- [X] T040 [US3] Create pkg/metrics/collector.go with Prometheus Registry management per types.md Section 3.3 (depends on T037)
+  - Collector interface implementation
+  - Registry() function
+  - NewCollector(namespace string) function
+  - Standard label constants: LabelService, LabelVendor, LabelMessageType, LabelStatus
 
-**Checkpoint**: At this point, User Story 3 should be fully functional - metrics can be collected from middleware and business code, exposed at `/metrics` endpoint
+- [X] T041 [US3] Create pkg/metrics/business.go with Counter, Histogram, Gauge APIs per types.md Section 3.3 (depends on T038)
+  - NewCounter(name, help, labels) function
+  - NewHistogram(name, help, labels, buckets) function
+  - NewGauge(name, help, labels) function
+  - Naming convention enforcement: `iot_{component}_{metric_type}_{unit}`
+
+- [X] T042 [US3] Create pkg/metrics/middleware.go with middleware metrics collection (depends on T039)
+  - RabbitMQ metrics: iot_rabbitmq_connection_total, iot_rabbitmq_message_total, iot_rabbitmq_message_duration_seconds
+  - PostgreSQL metrics: iot_postgres_connection_pool_size, iot_postgres_query_duration_seconds, iot_postgres_error_total
+  - InfluxDB metrics: iot_influxdb_write_duration_seconds, iot_influxdb_error_total
+
+- [X] T043 [US3] Create pkg/metrics/handler.go with HTTP handler for /metrics endpoint
+  - Handler(collector Collector) gin.HandlerFunc
+  - Prometheus exposition format
+
+**Checkpoint**: User Story 3 complete - metrics can be collected from middleware and business code, exposed at /metrics endpoint
 
 ---
 
@@ -117,25 +195,68 @@
 
 **Goal**: 建立服务间消息串联机制，确保所有服务能够通过 RabbitMQ 和分布式追踪串联起来
 
-**Independent Test**: 端到端测试，验证一条消息从设备到客户端响应的完整流程，所有服务都能正确处理和传递消息
+**Independent Test**: 端到端测试，验证一条消息从设备到客户端响应的完整流程
+
+**Dependencies**: US1 (tracing), US2 (routing), US3 (metrics)
+
+### Tests for User Story 4
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [ ] T044 [P] [US4] Create pkg/rabbitmq/publisher_test.go with unit tests for message publishing
+- [ ] T045 [P] [US4] Create pkg/rabbitmq/subscriber_test.go with unit tests for message subscription
+- [ ] T046 [P] [US4] Create tests/integration/message_flow_test.go with integration test for message flow
 
 ### Implementation for User Story 4
 
-- [ ] T046 [US4] Create pkg/rabbitmq/publisher.go with message publishing function (includes W3C Trace Context injection)
-- [ ] T047 [US4] Create pkg/rabbitmq/subscriber.go with message subscription function (includes W3C Trace Context extraction)
-- [ ] T048 [US4] Integrate W3C Trace Context injection into RabbitMQ message publishing in pkg/rabbitmq/publisher.go
-- [ ] T049 [US4] Integrate W3C Trace Context extraction from RabbitMQ message headers in pkg/rabbitmq/subscriber.go
-- [ ] T050 [US4] Create message validation function in pkg/rabbitmq/message.go (validate standard message format)
-- [ ] T051 [US4] Create cmd/iot-api/main.go with service skeleton and RabbitMQ integration
-- [ ] T052 [US4] Create cmd/iot-ws/main.go with service skeleton and RabbitMQ integration
-- [ ] T053 [US4] Create cmd/iot-uplink/main.go with service skeleton and RabbitMQ integration
-- [ ] T054 [US4] Create cmd/iot-downlink/main.go with service skeleton and RabbitMQ integration
-- [ ] T055 [US4] Create cmd/iot-gateway/main.go with service skeleton, MQTT and RabbitMQ integration
-- [ ] T056 [US4] Integrate tracing middleware and trace_id extraction in all service entry points (cmd/*/main.go)
-- [ ] T057 [US4] Implement health check endpoints (`/health`, `/ready`) in all services
-- [ ] T058 [US4] Implement graceful shutdown in all service main.go files
+- [X] T047 [US4] Create pkg/rabbitmq/publisher.go with message publishing per types.md Section 3.1 (depends on T044)
+  - Publisher interface implementation
+  - Publish(ctx, routingKey, msg) function
+  - Automatic W3C Trace Context injection via pkg/tracer/rabbitmq.go
 
-**Checkpoint**: At this point, User Story 4 should be fully functional - all services can communicate via RabbitMQ with distributed tracing
+- [X] T048 [US4] Create pkg/rabbitmq/subscriber.go with message subscription per types.md Section 3.1 (depends on T045)
+  - Subscriber interface implementation
+  - Subscribe(queueName, handler) function
+  - Manual Ack mode with Nack on error (dead letter queue)
+  - Automatic W3C Trace Context extraction
+
+### Service Skeletons
+
+- [X] T049 [US4] Create cmd/iot-api/main.go with service skeleton
+  - Config loading, logger, tracer, metrics initialization
+  - Gin router with /health, /ready, /metrics endpoints
+  - RabbitMQ publisher integration
+  - Graceful shutdown
+
+- [X] T050 [US4] Create cmd/iot-ws/main.go with service skeleton
+  - Config loading, logger, tracer, metrics initialization
+  - WebSocket connection management
+  - RabbitMQ subscriber integration
+  - Graceful shutdown
+
+- [X] T051 [US4] Create cmd/iot-uplink/main.go with service skeleton
+  - Config loading, logger, tracer, metrics initialization
+  - RabbitMQ subscriber (from gateway) and publisher (to api/ws)
+  - Graceful shutdown
+
+- [X] T052 [US4] Create cmd/iot-downlink/main.go with service skeleton
+  - Config loading, logger, tracer, metrics initialization
+  - RabbitMQ subscriber (from api) and publisher (to gateway)
+  - Graceful shutdown
+
+- [X] T053 [US4] Create cmd/iot-gateway/main.go with service skeleton
+  - Config loading, logger, tracer, metrics initialization
+  - MQTT client connection to VerneMQ
+  - RabbitMQ publisher (to uplink) and subscriber (from downlink)
+  - MQTT ↔ RabbitMQ message conversion
+  - Graceful shutdown
+
+- [X] T054 [US4] Create internal/shared/server/graceful.go with graceful shutdown helper
+  - WaitForShutdown(ctx, timeout) function
+  - Signal handling (SIGINT, SIGTERM)
+  - Resource cleanup order
+
+**Checkpoint**: User Story 4 complete - all services can communicate via RabbitMQ with distributed tracing
 
 ---
 
@@ -143,20 +264,31 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T059 [P] Create integration tests for distributed tracing in tests/integration/test_tracing.go
-- [ ] T060 [P] Create integration tests for RabbitMQ routing in tests/integration/test_routing.go
-- [ ] T061 [P] Create integration tests for metrics collection in tests/integration/test_metrics.go
-- [ ] T062 [P] Create unit tests for pkg/tracer package (coverage ≥ 80%)
-- [ ] T063 [P] Create unit tests for pkg/rabbitmq package (coverage ≥ 80%)
-- [ ] T064 [P] Create unit tests for pkg/metrics package (coverage ≥ 80%)
-- [ ] T065 [P] Update API documentation in api/v1/openapi.yaml
-- [ ] T066 [P] Update architecture documentation in docs/architecture/
-- [ ] T067 [P] Create development guide in docs/development/
-- [ ] T068 [P] Add Dockerfiles for all services in deployments/docker/
-- [ ] T069 [P] Add Kubernetes manifests for all services in deployments/kubernetes/
-- [ ] T070 Run quickstart.md validation to ensure all setup steps work correctly
-- [ ] T071 Code cleanup and refactoring across all packages
-- [ ] T072 Performance optimization for message processing and tracing
+### Integration Tests
+
+- [ ] T055 [P] Create tests/integration/tracing_test.go with end-to-end tracing test
+- [ ] T056 [P] Create tests/integration/routing_test.go with multi-vendor routing test
+- [ ] T057 [P] Create tests/integration/metrics_test.go with metrics collection test
+
+### Documentation
+
+- [ ] T058 [P] Update api/v1/openapi.yaml with service endpoints
+- [ ] T059 [P] Create docs/architecture/overview.md with architecture documentation
+- [ ] T060 [P] Create docs/development/getting-started.md with development guide
+
+### Deployment
+
+- [X] T061 [P] Create deployments/docker/iot-api.Dockerfile
+- [X] T062 [P] Create deployments/docker/iot-ws.Dockerfile
+- [X] T063 [P] Create deployments/docker/iot-uplink.Dockerfile
+- [X] T064 [P] Create deployments/docker/iot-downlink.Dockerfile
+- [X] T065 [P] Create deployments/docker/iot-gateway.Dockerfile
+
+### Validation
+
+- [ ] T066 Run quickstart.md validation to ensure all setup steps work correctly
+- [ ] T067 Run golangci-lint to verify code quality and no typos
+- [ ] T068 Verify test coverage >= 80% for all packages
 
 ---
 
@@ -167,41 +299,57 @@
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
 - **User Stories (Phase 3-6)**: All depend on Foundational phase completion
-  - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (US1 → US2 → US3 → US4)
-- **Polish (Phase 7)**: Depends on all desired user stories being complete
+  - US1, US2, US3 can proceed in parallel after Phase 2
+  - US4 depends on US1 (tracing) and US2 (routing) completion
+- **Polish (Phase 7)**: Depends on all user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
-- **User Story 2 (P1)**: Can start after Foundational (Phase 2) - May use database models from Phase 2
-- **User Story 3 (P1)**: Can start after Foundational (Phase 2) - Independent metrics implementation
-- **User Story 4 (P1)**: Depends on US1 (tracing) and US2 (routing) - Integrates all components
+```
+Phase 2 (Foundational)
+         │
+         ├──────────────┬──────────────┐
+         │              │              │
+         ▼              ▼              ▼
+    US1 (Tracing)  US2 (Routing)  US3 (Metrics)
+         │              │              │
+         └──────┬───────┘              │
+                │                      │
+                ▼                      │
+           US4 (Message Chain) ◄───────┘
+                │
+                ▼
+         Phase 7 (Polish)
+```
 
-### Within Each User Story
+### Within Each User Story (TDD Order)
 
-- Core infrastructure before integration
-- Package creation before service integration
-- Story complete before moving to next priority
+1. **Tests First**: Write tests, ensure they FAIL
+2. **Implementation**: Implement to make tests pass
+3. **Refactor**: Clean up code while keeping tests green
 
 ### Parallel Opportunities
 
-- All Setup tasks marked [P] can run in parallel
-- All Foundational tasks marked [P] can run in parallel (within Phase 2)
-- Once Foundational phase completes, US1, US2, US3 can start in parallel
-- US4 should start after US1 and US2 are complete (depends on tracing and routing)
-- All tests in Polish phase marked [P] can run in parallel
-- Different user stories can be worked on in parallel by different team members
+- **Phase 1**: All tasks marked [P] can run in parallel
+- **Phase 2**: All tasks in 2.1, 2.2, 2.3 can run in parallel within each section
+- **Phase 3-5**: US1, US2, US3 can run in parallel after Phase 2
+- **Phase 6**: US4 must wait for US1 and US2
+- **Phase 7**: All tasks marked [P] can run in parallel
 
 ---
 
 ## Parallel Example: User Story 1
 
 ```bash
-# Launch all tracer components in parallel:
-Task: "Create pkg/tracer/provider.go with OpenTelemetry Tracer Provider configuration"
-Task: "Create pkg/tracer/http.go with Gin HTTP tracing middleware"
-Task: "Create pkg/tracer/rabbitmq.go with RabbitMQ message tracing"
+# Launch all tests first (TDD):
+Task: "Create pkg/tracer/provider_test.go"
+Task: "Create pkg/tracer/http_test.go"
+Task: "Create pkg/tracer/rabbitmq_test.go"
+
+# Then implement (after tests fail):
+Task: "Create pkg/tracer/provider.go" (after provider_test.go)
+Task: "Create pkg/tracer/http.go" (after http_test.go)
+Task: "Create pkg/tracer/rabbitmq.go" (after rabbitmq_test.go)
 ```
 
 ---
@@ -209,23 +357,17 @@ Task: "Create pkg/tracer/rabbitmq.go with RabbitMQ message tracing"
 ## Parallel Example: User Story 2
 
 ```bash
-# Launch routing and exchange components in parallel:
-Task: "Create pkg/rabbitmq/routing.go with routing key generation function"
-Task: "Create pkg/rabbitmq/exchange.go with Topic Exchange management"
-Task: "Create pkg/rabbitmq/message.go with standard message format"
-```
+# Launch all tests first (TDD):
+Task: "Create pkg/rabbitmq/routing_test.go"
+Task: "Create pkg/rabbitmq/message_test.go"
+Task: "Create pkg/rabbitmq/client_test.go"
+Task: "Create pkg/repository/device_test.go"
 
----
-
-## Parallel Example: User Story 3
-
-```bash
-# Launch metrics components in parallel:
-Task: "Create pkg/metrics/middleware.go with RabbitMQ metrics collection"
-Task: "Create pkg/metrics/middleware.go with PostgreSQL metrics collection"
-Task: "Create pkg/metrics/business.go with Counter API"
-Task: "Create pkg/metrics/business.go with Histogram API"
-Task: "Create pkg/metrics/business.go with Gauge API"
+# Then implement (after tests fail):
+Task: "Create pkg/rabbitmq/routing.go"
+Task: "Create pkg/rabbitmq/message.go"
+Task: "Create pkg/rabbitmq/client.go"
+Task: "Create pkg/repository/device.go"
 ```
 
 ---
@@ -237,7 +379,7 @@ Task: "Create pkg/metrics/business.go with Gauge API"
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
 3. Complete Phase 3: User Story 1 (Distributed Tracing)
-4. **STOP and VALIDATE**: Test User Story 1 independently - verify trace_id propagation
+4. **STOP and VALIDATE**: Test trace_id propagation independently
 5. Deploy/demo if ready
 
 ### Incremental Delivery
@@ -246,7 +388,7 @@ Task: "Create pkg/metrics/business.go with Gauge API"
 2. Add User Story 1 (Tracing) → Test independently → Deploy/Demo
 3. Add User Story 2 (Routing) → Test independently → Deploy/Demo
 4. Add User Story 3 (Metrics) → Test independently → Deploy/Demo
-5. Add User Story 4 (Message Chaining) → Test independently → Deploy/Demo
+5. Add User Story 4 (Message Chaining) → Requires US1+US2 → Deploy/Demo
 6. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
@@ -269,31 +411,39 @@ With multiple developers:
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
+- **TDD Required**: Write tests FIRST, ensure they FAIL, then implement
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
+- All type definitions reference types.md to prevent implementation guessing
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- All tasks follow strict checklist format with Task ID, parallel markers, story labels, and file paths
 
 ---
 
 ## Task Summary
 
-**Total Tasks**: 72
+**Total Tasks**: 68
 
 **Tasks per Phase**:
 - Phase 1 (Setup): 9 tasks
-- Phase 2 (Foundational): 10 tasks
-- Phase 3 (US1 - Tracing): 7 tasks
-- Phase 4 (US2 - Routing): 8 tasks
-- Phase 5 (US3 - Metrics): 11 tasks
-- Phase 6 (US4 - Message Chaining): 13 tasks
+- Phase 2 (Foundational): 11 tasks
+- Phase 3 (US1 - Tracing): 7 tasks (3 tests + 4 implementation)
+- Phase 4 (US2 - Routing): 9 tasks (4 tests + 5 implementation)
+- Phase 5 (US3 - Metrics): 7 tasks (3 tests + 4 implementation)
+- Phase 6 (US4 - Message Chaining): 11 tasks (3 tests + 8 implementation)
 - Phase 7 (Polish): 14 tasks
 
-**Parallel Opportunities**: 
-- Phase 1: 6 parallel tasks
-- Phase 2: 8 parallel tasks
-- Phase 3-5: Can run in parallel after Phase 2
-- Phase 7: 13 parallel tasks
+**Parallel Opportunities**:
+- Phase 1: 7 parallel tasks
+- Phase 2: 10 parallel tasks
+- Phase 3-5: Can run in parallel after Phase 2 (US1, US2, US3 independent)
+- Phase 7: 11 parallel tasks
 
 **Suggested MVP Scope**: Phase 1 + Phase 2 + Phase 3 (User Story 1 - Distributed Tracing)
+
+**Key Improvements over Previous Version**:
+1. ✅ TDD Compliant: Tests before implementation in each user story
+2. ✅ No File Conflicts: Each task operates on a single file
+3. ✅ Type References: All tasks reference types.md for implementation details
+4. ✅ Clear Dependencies: US4 explicitly depends on US1 and US2
+5. ✅ Merged Conflicting Tasks: Previous T036-T038 and T039-T041 merged into single tasks
 

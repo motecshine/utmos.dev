@@ -1,3 +1,4 @@
+// Package models provides GORM data models for UMOS IoT platform.
 package models
 
 import (
@@ -6,36 +7,33 @@ import (
 	"gorm.io/gorm"
 )
 
-// DeviceStatus represents device status enum
+// DeviceStatus represents the status of a device.
 type DeviceStatus string
 
 const (
-	// DeviceStatusOnline indicates device is online
-	DeviceStatusOnline DeviceStatus = "online"
-	// DeviceStatusOffline indicates device is offline
+	DeviceStatusOnline  DeviceStatus = "online"
 	DeviceStatusOffline DeviceStatus = "offline"
-	// DeviceStatusUnknown indicates device status is unknown
 	DeviceStatusUnknown DeviceStatus = "unknown"
 )
 
-// Device represents a device entity
+// Device represents an IoT device in the system.
 type Device struct {
-	ID            uint           `gorm:"primaryKey" json:"id"`
-	DeviceSN      string         `gorm:"uniqueIndex;type:varchar(100);not null" json:"device_sn"`
-	DeviceName    string         `gorm:"type:varchar(200);not null" json:"device_name"`
-	DeviceType    string         `gorm:"type:varchar(50);not null" json:"device_type"`
-	GatewaySN     *string        `gorm:"index;type:varchar(100)" json:"gateway_sn,omitempty"`
-	ThingModelID  uint           `gorm:"index;not null" json:"thing_model_id"`
-	Vendor        string         `gorm:"type:varchar(50);not null" json:"vendor"`
-	Status        DeviceStatus  `gorm:"type:varchar(20);default:'unknown'" json:"status"`
-	LastOnlineTime *time.Time    `json:"last_online_time,omitempty"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	ID             uint           `gorm:"primaryKey" json:"id"`
+	DeviceSN       string         `gorm:"uniqueIndex;size:100;not null" json:"device_sn"`
+	DeviceName     string         `gorm:"size:200;not null" json:"device_name"`
+	DeviceType     string         `gorm:"size:50;not null" json:"device_type"`
+	Vendor         string         `gorm:"index;size:50;not null;default:'generic'" json:"vendor"`
+	GatewaySN      *string        `gorm:"index;size:100" json:"gateway_sn,omitempty"`
+	ThingModelID   *uint          `gorm:"index" json:"thing_model_id,omitempty"`
+	ThingModel     *ThingModel    `gorm:"foreignKey:ThingModelID" json:"thing_model,omitempty"`
+	Status         DeviceStatus   `gorm:"size:20;default:'unknown'" json:"status"`
+	LastOnlineTime *time.Time     `json:"last_online_time,omitempty"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 }
 
-// TableName returns the table name for Device
+// TableName returns the table name for the Device model.
 func (Device) TableName() string {
 	return "devices"
 }
-

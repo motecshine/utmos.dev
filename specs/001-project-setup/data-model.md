@@ -13,6 +13,7 @@
 - `device_sn` (string, Unique): 设备序列号
 - `device_name` (string): 设备名称
 - `device_type` (string): 设备类型
+- `vendor` (string, Index): 厂商标识（dji, generic, tuya 等），用于 RabbitMQ routing key 生成
 - `gateway_sn` (string, Nullable): 网关设备序列号（如果是子设备）
 - `thing_model_id` (uint, Foreign Key): 关联的物模型ID
 - `status` (enum): 设备状态（online, offline, unknown）
@@ -22,6 +23,7 @@
 
 **索引**:
 - `device_sn` (Unique Index)
+- `vendor` (Index)
 - `gateway_sn` (Index)
 - `thing_model_id` (Index)
 
@@ -137,6 +139,7 @@ CREATE TABLE devices (
     device_sn VARCHAR(100) UNIQUE NOT NULL,
     device_name VARCHAR(200) NOT NULL,
     device_type VARCHAR(50) NOT NULL,
+    vendor VARCHAR(50) NOT NULL DEFAULT 'generic',
     gateway_sn VARCHAR(100),
     thing_model_id INTEGER REFERENCES thing_models(id),
     status VARCHAR(20) DEFAULT 'unknown',
@@ -146,6 +149,7 @@ CREATE TABLE devices (
 );
 
 CREATE INDEX idx_devices_device_sn ON devices(device_sn);
+CREATE INDEX idx_devices_vendor ON devices(vendor);
 CREATE INDEX idx_devices_gateway_sn ON devices(gateway_sn);
 CREATE INDEX idx_devices_thing_model_id ON devices(thing_model_id);
 

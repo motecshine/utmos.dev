@@ -161,7 +161,7 @@ Follow-up TODOs: None
 - 所有服务间通信必须通过 RabbitMQ 进行，严禁服务间直接调用（HTTP/gRPC 等）
 - **MQTT 协议隔离**: 只有 iot-gateway 服务可以直接连接 VerneMQ，其他服务（iot-uplink、iot-downlink）严禁直接连接 MQTT Broker，必须通过 iot-gateway 和 RabbitMQ 进行消息传递
 - RabbitMQ 消息必须包含事务标识（tid）、业务标识（bid）、时间戳等标准字段
-- 消息队列命名必须遵循统一规范：`iot.{service}.{action}`（如 `iot.uplink.property.report`）
+- 消息队列命名必须遵循统一规范：`iot.{vendor}.{service}.{action}`（如 `iot.dji.uplink.property.report`），支持多厂商路由
 - 服务必须实现消息幂等性处理，支持消息重试和死信队列
 - 服务必须实现分布式追踪，在消息中传递追踪上下文
 
