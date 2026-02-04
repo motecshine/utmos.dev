@@ -71,10 +71,14 @@ func main() {
 	// Metrics endpoint
 	router.GET(cfg.Metrics.Path, metrics.Handler(metricsCollector))
 
-	// WebSocket endpoint (placeholder)
+	// WebSocket endpoint
+	// NOTE: WebSocket upgrade and connection management will be implemented in a future feature.
+	// This skeleton provides the endpoint structure and infrastructure integration (tracing, metrics, RabbitMQ).
 	router.GET("/ws", func(c *gin.Context) {
-		// TODO: Implement WebSocket upgrade and connection management
-		c.JSON(http.StatusNotImplemented, gin.H{"message": "WebSocket endpoint placeholder"})
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"message": "WebSocket endpoint - implementation pending",
+			"feature": "002-websocket-implementation",
+		})
 	})
 
 	// Create HTTP server

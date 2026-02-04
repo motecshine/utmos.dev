@@ -56,9 +56,10 @@ func main() {
 	subscriber := rabbitmq.NewSubscriber(rmqClient)
 	publisher := rabbitmq.NewPublisher(rmqClient)
 
-	// TODO: Initialize MQTT client connection to VerneMQ
-	// This is the only service allowed to connect to MQTT Broker
-	log.WithService(serviceName).Info("MQTT client initialization placeholder - connect to VerneMQ here")
+	// NOTE: MQTT client connection to VerneMQ will be implemented in a future feature.
+	// This is the only service allowed to connect to MQTT Broker per constitution.
+	// This skeleton provides the RabbitMQ bridge infrastructure; MQTT integration is pending.
+	log.WithService(serviceName).Info("Gateway skeleton ready - MQTT client integration pending (feature: 002-mqtt-integration)")
 
 	// Setup Gin router for health checks
 	if cfg.Logger.Level != "debug" {
@@ -73,7 +74,7 @@ func main() {
 	})
 	router.GET("/ready", func(c *gin.Context) {
 		// Check RabbitMQ connection
-		// TODO: Also check MQTT connection when implemented
+		// NOTE: MQTT connection check will be added when MQTT client is implemented (feature: 002-mqtt-integration)
 		if rmqClient.IsConnected() {
 			c.JSON(http.StatusOK, gin.H{"status": "ready"})
 			return
@@ -98,7 +99,7 @@ func main() {
 		log.WithService(serviceName).Info("Shutting down HTTP server")
 		return srv.Shutdown(ctx)
 	})
-	// TODO: Add MQTT client shutdown here
+	// NOTE: MQTT client shutdown will be registered here when implemented (feature: 002-mqtt-integration)
 	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
 		subscriber.UnsubscribeAll()
