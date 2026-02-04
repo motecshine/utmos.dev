@@ -203,9 +203,9 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T044 [P] [US4] Create pkg/rabbitmq/publisher_test.go with unit tests for message publishing
-- [ ] T045 [P] [US4] Create pkg/rabbitmq/subscriber_test.go with unit tests for message subscription
-- [ ] T046 [P] [US4] Create tests/integration/message_flow_test.go with integration test for message flow
+- [X] T044 [P] [US4] Create pkg/rabbitmq/publisher_test.go with unit tests for message publishing
+- [X] T045 [P] [US4] Create pkg/rabbitmq/subscriber_test.go with unit tests for message subscription
+- [X] T046 [P] [US4] Create tests/integration/message_flow_test.go with integration test for message flow
 
 ### Implementation for User Story 4
 
@@ -266,15 +266,15 @@
 
 ### Integration Tests
 
-- [ ] T055 [P] Create tests/integration/tracing_test.go with end-to-end tracing test
-- [ ] T056 [P] Create tests/integration/routing_test.go with multi-vendor routing test
-- [ ] T057 [P] Create tests/integration/metrics_test.go with metrics collection test
+- [X] T055 [P] Create tests/integration/tracing_test.go with end-to-end tracing test
+- [X] T056 [P] Create tests/integration/routing_test.go with multi-vendor routing test
+- [X] T057 [P] Create tests/integration/metrics_test.go with metrics collection test
 
 ### Documentation
 
-- [ ] T058 [P] Update api/v1/openapi.yaml with service endpoints
-- [ ] T059 [P] Create docs/architecture/overview.md with architecture documentation
-- [ ] T060 [P] Create docs/development/getting-started.md with development guide
+- [X] T058 [P] Update api/v1/openapi.yaml with service endpoints
+- [X] T059 [P] Create docs/architecture/overview.md with architecture documentation
+- [X] T060 [P] Create docs/development/getting-started.md with development guide
 
 ### Deployment
 

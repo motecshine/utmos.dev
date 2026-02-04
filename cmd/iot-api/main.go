@@ -78,11 +78,9 @@ func main() {
 
 	// API routes (placeholder)
 	v1 := router.Group("/api/v1")
-	{
-		v1.GET("/devices", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"message": "list devices"})
-		})
-	}
+	v1.GET("/devices", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "list devices"})
+	})
 
 	// Create HTTP server
 	srv := &http.Server{
@@ -102,7 +100,7 @@ func main() {
 		log.WithService(serviceName).Info("Shutting down tracer")
 		return tracerProvider.Shutdown(ctx)
 	})
-	shutdown.Register(func(ctx context.Context) error {
+	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Closing database connection")
 		return database.Close(db)
 	})

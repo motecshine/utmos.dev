@@ -13,12 +13,12 @@ import (
 
 // Client represents a RabbitMQ client.
 type Client struct {
-	cfg        *config.RabbitMQConfig
-	conn       *amqp.Connection
-	channel    *amqp.Channel
-	mu         sync.RWMutex
-	connected  bool
-	closeChan  chan struct{}
+	cfg       *config.RabbitMQConfig
+	conn      *amqp.Connection
+	channel   *amqp.Channel
+	closeChan chan struct{}
+	mu        sync.RWMutex
+	connected bool
 }
 
 // NewClient creates a new RabbitMQ client.
@@ -159,7 +159,7 @@ func (c *Client) DeclareQueue(name string, durable bool) (amqp.Queue, error) {
 }
 
 // DeclareQueueWithDLQ declares a queue with dead letter queue support.
-func (c *Client) DeclareQueueWithDLQ(name string, dlxName string) (amqp.Queue, error) {
+func (c *Client) DeclareQueueWithDLQ(name, dlxName string) (amqp.Queue, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 

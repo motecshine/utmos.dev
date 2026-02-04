@@ -8,10 +8,10 @@ import (
 
 // MessageMetrics provides message-related metrics.
 type MessageMetrics struct {
-	ProcessedTotal   *prometheus.CounterVec
-	ProcessDuration  *prometheus.HistogramVec
-	ErrorTotal       *prometheus.CounterVec
-	QueueSize        *prometheus.GaugeVec
+	ProcessedTotal  *prometheus.CounterVec
+	ProcessDuration *prometheus.HistogramVec
+	ErrorTotal      *prometheus.CounterVec
+	QueueSize       *prometheus.GaugeVec
 }
 
 // NewMessageMetrics creates message metrics.

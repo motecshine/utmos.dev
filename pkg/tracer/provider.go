@@ -30,7 +30,7 @@ func NewProvider(cfg *config.TracerConfig) (*Provider, error) {
 		noopProvider := noop.NewTracerProvider()
 		return &Provider{
 			provider: noopProvider,
-			shutdown: func(ctx context.Context) error { return nil },
+			shutdown: func(_ context.Context) error { return nil },
 		}, nil
 	}
 

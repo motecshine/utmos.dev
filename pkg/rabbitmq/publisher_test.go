@@ -77,17 +77,17 @@ func TestPublisher_RoutingKeyFormats(t *testing.T) {
 		{
 			name:       "DJI property report",
 			routingKey: NewRoutingKey(VendorDJI, ServiceDevice, ActionPropertyReport),
-			expected:   "iot.dji.device.property_report",
+			expected:   "iot.dji.device.property.report",
 		},
 		{
 			name:       "Generic device online",
 			routingKey: NewRoutingKey(VendorGeneric, ServiceDevice, ActionDeviceOnline),
-			expected:   "iot.generic.device.device_online",
+			expected:   "iot.generic.device.device.online",
 		},
 		{
 			name:       "Tuya service call",
 			routingKey: NewRoutingKey(VendorTuya, ServiceService, ActionServiceCall),
-			expected:   "iot.tuya.service.service_call",
+			expected:   "iot.tuya.service.service.call",
 		},
 	}
 

@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/utmos/utmos/pkg/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/utmos/utmos/pkg/models"
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
@@ -291,4 +292,3 @@ func TestDeviceRepository_ListByVendor(t *testing.T) {
 		t.Errorf("expected 2 DJI devices, got %d", len(djiDevices))
 	}
 }
-

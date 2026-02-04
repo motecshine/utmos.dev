@@ -38,7 +38,15 @@ func LoadFromEnv(env string) (*Config, error) {
 
 // applyDefaults applies default values to the configuration.
 func applyDefaults(cfg *Config) {
-	// Server defaults
+	applyServerDefaults(cfg)
+	applyDatabaseDefaults(cfg)
+	applyRabbitMQDefaults(cfg)
+	applyTracerDefaults(cfg)
+	applyMetricsDefaults(cfg)
+	applyLoggerDefaults(cfg)
+}
+
+func applyServerDefaults(cfg *Config) {
 	if cfg.Server.Host == "" {
 		cfg.Server.Host = "0.0.0.0"
 	}
@@ -51,7 +59,9 @@ func applyDefaults(cfg *Config) {
 	if cfg.Server.WriteTimeout == 0 {
 		cfg.Server.WriteTimeout = 30 * time.Second
 	}
+}
 
+func applyDatabaseDefaults(cfg *Config) {
 	// PostgreSQL defaults
 	if cfg.Database.Postgres.Host == "" {
 		cfg.Database.Postgres.Host = "localhost"
@@ -76,8 +86,9 @@ func applyDefaults(cfg *Config) {
 	if cfg.Database.InfluxDB.URL == "" {
 		cfg.Database.InfluxDB.URL = "http://localhost:8086"
 	}
+}
 
-	// RabbitMQ defaults
+func applyRabbitMQDefaults(cfg *Config) {
 	if cfg.RabbitMQ.URL == "" {
 		cfg.RabbitMQ.URL = "amqp://guest:guest@localhost:5672/"
 	}
@@ -104,8 +115,9 @@ func applyDefaults(cfg *Config) {
 	if cfg.RabbitMQ.Retry.Multiplier == 0 {
 		cfg.RabbitMQ.Retry.Multiplier = 2.0
 	}
+}
 
-	// Tracer defaults
+func applyTracerDefaults(cfg *Config) {
 	if cfg.Tracer.Endpoint == "" {
 		cfg.Tracer.Endpoint = "http://localhost:4318/v1/traces"
 	}
@@ -118,16 +130,18 @@ func applyDefaults(cfg *Config) {
 	if cfg.Tracer.MaxQueueSize == 0 {
 		cfg.Tracer.MaxQueueSize = 2048
 	}
+}
 
-	// Metrics defaults
+func applyMetricsDefaults(cfg *Config) {
 	if cfg.Metrics.Path == "" {
 		cfg.Metrics.Path = "/metrics"
 	}
 	if cfg.Metrics.Namespace == "" {
 		cfg.Metrics.Namespace = "iot"
 	}
+}
 
-	// Logger defaults
+func applyLoggerDefaults(cfg *Config) {
 	if cfg.Logger.Level == "" {
 		cfg.Logger.Level = "info"
 	}

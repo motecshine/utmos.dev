@@ -34,7 +34,7 @@ func TestSubscriber_SubscribeWithoutConnection(t *testing.T) {
 	client := NewClient(cfg)
 	subscriber := NewSubscriber(client)
 
-	handler := func(ctx context.Context, msg *StandardMessage) error {
+	handler := func(_ context.Context, _ *StandardMessage) error {
 		return nil
 	}
 
@@ -45,7 +45,7 @@ func TestSubscriber_SubscribeWithoutConnection(t *testing.T) {
 	}
 }
 
-func TestSubscriber_UnsubscribeAll(t *testing.T) {
+func TestSubscriber_UnsubscribeAll(_ *testing.T) {
 	cfg := &config.RabbitMQConfig{
 		URL:          "amqp://guest:guest@localhost:5672/",
 		ExchangeName: "iot",
@@ -63,7 +63,7 @@ func TestSubscriber_HandlerType(t *testing.T) {
 	var called bool
 	var mu sync.Mutex
 
-	handler := func(ctx context.Context, msg *StandardMessage) error {
+	handler := func(_ context.Context, msg *StandardMessage) error {
 		mu.Lock()
 		defer mu.Unlock()
 		called = true
@@ -99,7 +99,7 @@ func TestSubscriber_ContextCancellation(t *testing.T) {
 	defer cancel()
 
 	var handlerCalled bool
-	handler := func(ctx context.Context, msg *StandardMessage) error {
+	handler := func(ctx context.Context, _ *StandardMessage) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -140,7 +140,7 @@ func TestSubscriber_ErrorHandling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := func(ctx context.Context, msg *StandardMessage) error {
+			handler := func(_ context.Context, _ *StandardMessage) error {
 				return tt.handlerErr
 			}
 

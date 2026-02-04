@@ -76,7 +76,7 @@ func TestCollector_NewGauge(t *testing.T) {
 	gauge.WithLabelValues("api").Dec()
 }
 
-func TestCollector_MultipleMetrics(t *testing.T) {
+func TestCollector_MultipleMetrics(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// Create multiple metrics

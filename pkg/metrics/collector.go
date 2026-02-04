@@ -3,6 +3,7 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 // Standard label names
@@ -26,8 +27,8 @@ type Collector struct {
 func NewCollector(namespace string) *Collector {
 	registry := prometheus.NewRegistry()
 	// Register default collectors
-	registry.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
-	registry.MustRegister(prometheus.NewGoCollector())
+	registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	registry.MustRegister(collectors.NewGoCollector())
 
 	return &Collector{
 		registry:  registry,

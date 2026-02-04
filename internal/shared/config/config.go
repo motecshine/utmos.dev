@@ -30,14 +30,14 @@ type DatabaseConfig struct {
 // PostgresConfig holds PostgreSQL configuration.
 type PostgresConfig struct {
 	Host            string        `yaml:"host"`
-	Port            int           `yaml:"port"`
 	User            string        `yaml:"user"`
 	Password        string        `yaml:"password"`
 	DBName          string        `yaml:"dbname"`
 	SSLMode         string        `yaml:"sslmode"`
+	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime"`
+	Port            int           `yaml:"port"`
 	MaxIdleConns    int           `yaml:"max_idle_conns"`
 	MaxOpenConns    int           `yaml:"max_open_conns"`
-	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime"`
 }
 
 // InfluxDBConfig holds InfluxDB configuration.
@@ -67,20 +67,20 @@ type RetryConfig struct {
 
 // TracerConfig holds distributed tracing configuration.
 type TracerConfig struct {
-	Enabled      bool          `yaml:"enabled"`
 	Endpoint     string        `yaml:"endpoint"`
 	ServiceName  string        `yaml:"service_name"`
-	SamplingRate float64       `yaml:"sampling_rate"`
 	BatchTimeout time.Duration `yaml:"batch_timeout"`
+	SamplingRate float64       `yaml:"sampling_rate"`
 	MaxQueueSize int           `yaml:"max_queue_size"`
+	Enabled      bool          `yaml:"enabled"`
 }
 
 // MetricsConfig holds Prometheus metrics configuration.
 type MetricsConfig struct {
-	Enabled   bool   `yaml:"enabled"`
 	Path      string `yaml:"path"`
-	Port      int    `yaml:"port"`
 	Namespace string `yaml:"namespace"`
+	Port      int    `yaml:"port"`
+	Enabled   bool   `yaml:"enabled"`
 }
 
 // LoggerConfig holds logger configuration.

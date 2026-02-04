@@ -18,19 +18,19 @@ const (
 
 // Device represents an IoT device in the system.
 type Device struct {
-	ID             uint           `gorm:"primaryKey" json:"id"`
+	ThingModel     *ThingModel    `gorm:"foreignKey:ThingModelID" json:"thing_model,omitempty"`
+	GatewaySN      *string        `gorm:"index;size:100" json:"gateway_sn,omitempty"`
+	LastOnlineTime *time.Time     `json:"last_online_time,omitempty"`
+	ThingModelID   *uint          `gorm:"index" json:"thing_model_id,omitempty"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
 	DeviceSN       string         `gorm:"uniqueIndex;size:100;not null" json:"device_sn"`
 	DeviceName     string         `gorm:"size:200;not null" json:"device_name"`
 	DeviceType     string         `gorm:"size:50;not null" json:"device_type"`
 	Vendor         string         `gorm:"index;size:50;not null;default:'generic'" json:"vendor"`
-	GatewaySN      *string        `gorm:"index;size:100" json:"gateway_sn,omitempty"`
-	ThingModelID   *uint          `gorm:"index" json:"thing_model_id,omitempty"`
-	ThingModel     *ThingModel    `gorm:"foreignKey:ThingModelID" json:"thing_model,omitempty"`
 	Status         DeviceStatus   `gorm:"size:20;default:'unknown'" json:"status"`
-	LastOnlineTime *time.Time     `json:"last_online_time,omitempty"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	ID             uint           `gorm:"primaryKey" json:"id"`
 }
 
 // TableName returns the table name for the Device model.

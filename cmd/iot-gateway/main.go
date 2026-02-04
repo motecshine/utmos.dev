@@ -99,12 +99,12 @@ func main() {
 		return srv.Shutdown(ctx)
 	})
 	// TODO: Add MQTT client shutdown here
-	shutdown.Register(func(ctx context.Context) error {
+	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
 		subscriber.UnsubscribeAll()
 		return nil
 	})
-	shutdown.Register(func(ctx context.Context) error {
+	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Closing RabbitMQ connection")
 		return rmqClient.Close()
 	})

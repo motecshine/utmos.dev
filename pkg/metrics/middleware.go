@@ -13,12 +13,12 @@ type MiddlewareMetrics struct {
 
 // RabbitMQMetrics provides RabbitMQ-related metrics.
 type RabbitMQMetrics struct {
-	ConnectionTotal   *prometheus.GaugeVec
-	MessageTotal      *prometheus.CounterVec
-	MessageDuration   *prometheus.HistogramVec
-	PublishTotal      *prometheus.CounterVec
-	ConsumeTotal      *prometheus.CounterVec
-	ErrorTotal        *prometheus.CounterVec
+	ConnectionTotal *prometheus.GaugeVec
+	MessageTotal    *prometheus.CounterVec
+	MessageDuration *prometheus.HistogramVec
+	PublishTotal    *prometheus.CounterVec
+	ConsumeTotal    *prometheus.CounterVec
+	ErrorTotal      *prometheus.CounterVec
 }
 
 // PostgreSQLMetrics provides PostgreSQL-related metrics.

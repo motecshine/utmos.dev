@@ -10,21 +10,21 @@ import (
 
 // StandardMessage represents the standard message format for RabbitMQ.
 type StandardMessage struct {
+	Data      json.RawMessage `json:"data"`      // Business data
 	TID       string          `json:"tid"`       // Transaction ID (UUID)
 	BID       string          `json:"bid"`       // Business ID (UUID)
-	Timestamp int64           `json:"timestamp"` // Millisecond Unix timestamp
 	Service   string          `json:"service"`   // Sending service name
 	Action    string          `json:"action"`    // Action identifier
 	DeviceSN  string          `json:"device_sn"` // Device serial number
-	Data      json.RawMessage `json:"data"`      // Business data
+	Timestamp int64           `json:"timestamp"` // Millisecond Unix timestamp
 }
 
 // MessageHeader represents RabbitMQ message headers.
 type MessageHeader struct {
-	Traceparent string `json:"traceparent"`          // W3C Trace Context
-	Tracestate  string `json:"tracestate"`           // W3C Trace State
-	MessageType string `json:"message_type"`         // property, event, service
-	Vendor      string `json:"vendor,omitempty"`     // Vendor identifier (optional)
+	Traceparent string `json:"traceparent"`      // W3C Trace Context
+	Tracestate  string `json:"tracestate"`       // W3C Trace State
+	MessageType string `json:"message_type"`     // property, event, service
+	Vendor      string `json:"vendor,omitempty"` // Vendor identifier (optional)
 }
 
 // NewStandardMessage creates a new standard message with auto-generated IDs and timestamp.

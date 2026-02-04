@@ -17,9 +17,6 @@ type Logger struct {
 	*logrus.Logger
 }
 
-// traceContextKey is the key for trace context in context.Context.
-type traceContextKey struct{}
-
 // New creates a new Logger instance based on the provided configuration.
 func New(cfg *config.LoggerConfig) *Logger {
 	logger := logrus.New()

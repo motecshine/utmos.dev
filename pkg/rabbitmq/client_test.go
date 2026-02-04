@@ -20,9 +20,8 @@ func TestNewClient(t *testing.T) {
 		t.Fatal("expected non-nil client")
 	}
 
-	if !client.IsConnected() {
-		// Expected - we're not actually connecting
-	}
+	// Client should not be connected initially (expected behavior)
+	_ = client.IsConnected()
 }
 
 func TestClientIsConnected(t *testing.T) {
@@ -107,10 +106,10 @@ func TestRetryBackoff(t *testing.T) {
 }
 
 // calculateBackoff is a helper for testing exponential backoff
-func calculateBackoff(attempt int, base, max time.Duration) time.Duration {
+func calculateBackoff(attempt int, base, maxDelay time.Duration) time.Duration {
 	backoff := base * (1 << attempt)
-	if backoff > max {
-		return max
+	if backoff > maxDelay {
+		return maxDelay
 	}
 	return backoff
 }

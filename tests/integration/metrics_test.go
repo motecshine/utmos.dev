@@ -3,8 +3,9 @@ package integration
 import (
 	"testing"
 
-	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/utmos/utmos/pkg/metrics"
 )
 
 // TestMetricsCollectorIntegration tests the metrics collector integration

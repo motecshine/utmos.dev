@@ -91,7 +91,7 @@ func TestBusinessMetrics_NamingConvention(t *testing.T) {
 	}
 }
 
-func TestBusinessMetrics_DeviceMetrics(t *testing.T) {
+func TestBusinessMetrics_DeviceMetrics(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// Device online/offline counter
@@ -117,7 +117,7 @@ func TestBusinessMetrics_DeviceMetrics(t *testing.T) {
 	activeDevices.WithLabelValues("generic").Set(50)
 }
 
-func TestBusinessMetrics_MessageMetrics(t *testing.T) {
+func TestBusinessMetrics_MessageMetrics(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// Message throughput
@@ -144,7 +144,7 @@ func TestBusinessMetrics_MessageMetrics(t *testing.T) {
 	messageSizeHistogram.WithLabelValues("command").Observe(128)
 }
 
-func TestBusinessMetrics_ErrorMetrics(t *testing.T) {
+func TestBusinessMetrics_ErrorMetrics(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// Error counter
@@ -159,7 +159,7 @@ func TestBusinessMetrics_ErrorMetrics(t *testing.T) {
 	errorCounter.WithLabelValues("downlink", "3001").Add(3)
 }
 
-func TestBusinessMetrics_LatencyMetrics(t *testing.T) {
+func TestBusinessMetrics_LatencyMetrics(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// End-to-end latency

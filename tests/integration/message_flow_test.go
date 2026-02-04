@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // TestMessageFlowWithTracing tests that trace context is properly propagated through message flow

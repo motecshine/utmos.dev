@@ -10,7 +10,7 @@ import (
 )
 
 // WaitForShutdown waits for shutdown signals and returns a context that is canceled on shutdown.
-func WaitForShutdown(timeout time.Duration) context.Context {
+func WaitForShutdown(_ time.Duration) context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
@@ -25,8 +25,8 @@ func WaitForShutdown(timeout time.Duration) context.Context {
 
 // GracefulShutdown handles graceful shutdown with a timeout.
 type GracefulShutdown struct {
-	timeout  time.Duration
 	cleanups []func(context.Context) error
+	timeout  time.Duration
 }
 
 // NewGracefulShutdown creates a new GracefulShutdown handler.

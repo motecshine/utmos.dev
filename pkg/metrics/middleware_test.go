@@ -6,7 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func TestMiddlewareMetrics_RabbitMQ(t *testing.T) {
+func TestMiddlewareMetrics_RabbitMQ(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// RabbitMQ connection metrics
@@ -43,7 +43,7 @@ func TestMiddlewareMetrics_RabbitMQ(t *testing.T) {
 	messageDuration.WithLabelValues("consume").Observe(0.015)
 }
 
-func TestMiddlewareMetrics_PostgreSQL(t *testing.T) {
+func TestMiddlewareMetrics_PostgreSQL(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// PostgreSQL connection pool
@@ -81,7 +81,7 @@ func TestMiddlewareMetrics_PostgreSQL(t *testing.T) {
 	errorTotal.WithLabelValues("insert", "constraint_violation").Inc()
 }
 
-func TestMiddlewareMetrics_InfluxDB(t *testing.T) {
+func TestMiddlewareMetrics_InfluxDB(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// InfluxDB write duration
@@ -116,7 +116,7 @@ func TestMiddlewareMetrics_InfluxDB(t *testing.T) {
 	batchSize.WithLabelValues("device_telemetry").Observe(100)
 }
 
-func TestMiddlewareMetrics_HTTP(t *testing.T) {
+func TestMiddlewareMetrics_HTTP(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// HTTP request total
@@ -153,7 +153,7 @@ func TestMiddlewareMetrics_HTTP(t *testing.T) {
 	responseSize.WithLabelValues("GET", "/api/v1/devices").Observe(2500)
 }
 
-func TestMiddlewareMetrics_WebSocket(t *testing.T) {
+func TestMiddlewareMetrics_WebSocket(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// WebSocket connections
@@ -188,7 +188,7 @@ func TestMiddlewareMetrics_WebSocket(t *testing.T) {
 	wsConnectionDuration.WithLabelValues("dji").Observe(300)
 }
 
-func TestMiddlewareMetrics_MQTT(t *testing.T) {
+func TestMiddlewareMetrics_MQTT(_ *testing.T) {
 	collector := NewCollector("iot")
 
 	// MQTT connections

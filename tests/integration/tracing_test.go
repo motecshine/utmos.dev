@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/utmos/utmos/internal/shared/config"
 	"github.com/utmos/utmos/pkg/tracer"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // TestTracerProviderCreation tests tracer provider initialization

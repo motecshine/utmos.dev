@@ -92,12 +92,12 @@ func main() {
 		log.WithService(serviceName).Info("Shutting down HTTP server")
 		return srv.Shutdown(ctx)
 	})
-	shutdown.Register(func(ctx context.Context) error {
+	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
 		subscriber.UnsubscribeAll()
 		return nil
 	})
-	shutdown.Register(func(ctx context.Context) error {
+	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Closing RabbitMQ connection")
 		return rmqClient.Close()
 	})

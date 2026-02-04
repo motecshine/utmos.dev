@@ -56,10 +56,10 @@ var codeMessages = map[ErrorCode]string{
 
 // Error represents a business error with code and message.
 type Error struct {
-	Code    ErrorCode `json:"code"`
+	cause   error
 	Message string    `json:"message"`
 	Details string    `json:"details,omitempty"`
-	cause   error
+	Code    ErrorCode `json:"code"`
 }
 
 // Error implements the error interface.

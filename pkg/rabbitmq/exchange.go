@@ -52,8 +52,8 @@ func (c *Client) SetupQueueWithDLQ(queueName, routingKeyPattern string) error {
 	}
 
 	// Bind DLQ to DLX
-	if err := c.BindQueue(dlqName, routingKeyPattern, DeadLetterExchange); err != nil {
-		return err
+	if bindErr := c.BindQueue(dlqName, routingKeyPattern, DeadLetterExchange); bindErr != nil {
+		return bindErr
 	}
 
 	// Declare main queue with DLX
