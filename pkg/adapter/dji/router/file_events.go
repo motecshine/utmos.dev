@@ -1,12 +1,17 @@
 package router
 
+import (
+	"github.com/utmos/utmos/pkg/adapter/dji/protocol/file"
+)
+
 // RegisterFileEvents registers file-related events to the event router.
 // Returns an error if any handler registration fails.
 func RegisterFileEvents(r *EventRouter) error {
 	handlers := map[string]EventHandlerFunc{
-		MethodFileUploadCallback:    SimpleEventHandler[FileUploadCallbackData](MethodFileUploadCallback),
+		// Use types from protocol/file package
+		MethodFileUploadCallback:    SimpleEventHandler[file.FileUploadCallbackData](MethodFileUploadCallback),
 		MethodFileUploadProgress:    NoDataEventHandler(MethodFileUploadProgress),
-		MethodHighestPriorityUpload: NoDataEventHandler(MethodHighestPriorityUpload),
+		MethodHighestPriorityUpload: SimpleEventHandler[file.HighestPriorityUploadFlighttaskMediaData](MethodHighestPriorityUpload),
 	}
 
 	return RegisterEventHandlers(r, handlers)

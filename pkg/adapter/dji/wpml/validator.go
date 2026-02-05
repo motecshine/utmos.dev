@@ -12,22 +12,36 @@ type WPMLValidator struct {
 	validator *validator.Validate
 }
 
-func NewWPMLValidator() *WPMLValidator {
+func NewWPMLValidator() (*WPMLValidator, error) {
 	validate := validator.New()
 
 	w := &WPMLValidator{validator: validate}
-	w.registerCustomValidators()
+	if err := w.registerCustomValidators(); err != nil {
+		return nil, err
+	}
 
-	return w
+	return w, nil
 }
 
-func (w *WPMLValidator) registerCustomValidators() {
-	w.validator.RegisterValidation("payload_position", w.validatePayloadPosition)
-	w.validator.RegisterValidation("drone_model", w.validateDroneModel)
-	w.validator.RegisterValidation("payload_model", w.validatePayloadModel)
-	w.validator.RegisterValidation("action_type", w.validateActionType)
-	w.validator.RegisterValidation("required_for_drone", w.validateRequiredForDrone)
-	w.validator.RegisterValidation("required_for_payload", w.validateRequiredForPayload)
+func (w *WPMLValidator) registerCustomValidators() error {
+	validations := []struct {
+		tag string
+		fn  validator.Func
+	}{
+		{"payload_position", w.validatePayloadPosition},
+		{"drone_model", w.validateDroneModel},
+		{"payload_model", w.validatePayloadModel},
+		{"action_type", w.validateActionType},
+		{"required_for_drone", w.validateRequiredForDrone},
+		{"required_for_payload", w.validateRequiredForPayload},
+	}
+
+	for _, v := range validations {
+		if err := w.validator.RegisterValidation(v.tag, v.fn); err != nil {
+			return fmt.Errorf("failed to register validation %s: %w", v.tag, err)
+		}
+	}
+	return nil
 }
 
 func (w *WPMLValidator) validatePayloadPosition(fl validator.FieldLevel) bool {
@@ -197,7 +211,6 @@ func (w *WPMLValidator) ValidateTemplateDocument(template *TemplateDocument) err
 }
 
 func (w *WPMLValidator) ValidateWithContext(s interface{}, droneModel DroneModel, payloadModel PayloadModel) error {
-
 	if err := w.ValidateStruct(s); err != nil {
 		return err
 	}
@@ -206,7 +219,6 @@ func (w *WPMLValidator) ValidateWithContext(s interface{}, droneModel DroneModel
 }
 
 func (w *WPMLValidator) validateWithMachineContext(s interface{}, droneModel DroneModel, payloadModel PayloadModel) error {
-
 	val := reflect.ValueOf(s)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -233,12 +245,10 @@ func (w *WPMLValidator) validateWithMachineContext(s interface{}, droneModel Dro
 }
 
 func (w *WPMLValidator) validateFieldWithMachineContext(field reflect.Value, fieldType reflect.StructField, validateTag string, droneModel DroneModel, payloadModel PayloadModel) error {
-
 	rules := strings.Split(validateTag, ",")
 
 	for _, rule := range rules {
 		if strings.HasPrefix(rule, "required_for_drone:") {
-
 			requiredForDrone := strings.TrimPrefix(rule, "required_for_drone:")
 			if w.isRequiredForDrone(requiredForDrone, droneModel) {
 				if field.IsZero() {
@@ -248,7 +258,6 @@ func (w *WPMLValidator) validateFieldWithMachineContext(field reflect.Value, fie
 		}
 
 		if strings.HasPrefix(rule, "required_for_payload:") {
-
 			requiredForPayload := strings.TrimPrefix(rule, "required_for_payload:")
 			if w.isRequiredForPayload(requiredForPayload, payloadModel) {
 				if field.IsZero() {
@@ -262,7 +271,6 @@ func (w *WPMLValidator) validateFieldWithMachineContext(field reflect.Value, fie
 }
 
 func (w *WPMLValidator) isRequiredForDrone(dronePattern string, droneModel DroneModel) bool {
-
 	requiredDrones := strings.Split(dronePattern, "|")
 	for _, pattern := range requiredDrones {
 		if w.matchesDronePattern(pattern, droneModel) {
@@ -273,7 +281,6 @@ func (w *WPMLValidator) isRequiredForDrone(dronePattern string, droneModel Drone
 }
 
 func (w *WPMLValidator) isRequiredForPayload(payloadPattern string, payloadModel PayloadModel) bool {
-
 	requiredPayloads := strings.Split(payloadPattern, "|")
 	for _, pattern := range requiredPayloads {
 		if w.matchesPayloadPattern(pattern, payloadModel) {
@@ -387,27 +394,41 @@ func (w *WPMLValidator) formatValidationError(e validator.FieldError) string {
 
 var globalValidator *WPMLValidator
 
-func InitGlobalValidator() {
-	globalValidator = NewWPMLValidator()
+func InitGlobalValidator() error {
+	var err error
+	globalValidator, err = NewWPMLValidator()
+	return err
+}
+
+func MustInitGlobalValidator() {
+	if err := InitGlobalValidator(); err != nil {
+		panic(err)
+	}
 }
 
 func Validate(s interface{}) error {
 	if globalValidator == nil {
-		InitGlobalValidator()
+		if err := InitGlobalValidator(); err != nil {
+			return err
+		}
 	}
 	return globalValidator.ValidateStruct(s)
 }
 
 func ValidateActionGlobal(action interface{}) error {
 	if globalValidator == nil {
-		InitGlobalValidator()
+		if err := InitGlobalValidator(); err != nil {
+			return err
+		}
 	}
 	return globalValidator.ValidateAction(action)
 }
 
 func ValidateWaylinesDocumentGlobal(waylineDoc *WaylinesDocument) error {
 	if globalValidator == nil {
-		InitGlobalValidator()
+		if err := InitGlobalValidator(); err != nil {
+			return err
+		}
 	}
 	return globalValidator.ValidateWaylinesDocument(waylineDoc)
 }

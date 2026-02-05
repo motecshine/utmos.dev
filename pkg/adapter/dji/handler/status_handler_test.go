@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	dji "github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	dji "github.com/utmos/utmos/pkg/adapter/dji"
 )
 
 func TestNewStatusHandler(t *testing.T) {

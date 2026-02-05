@@ -1,13 +1,27 @@
 package dji
 
 import (
+	"context"
+
 	"github.com/utmos/utmos/pkg/adapter"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
+// MessageHandler defines the interface for message handlers.
+type MessageHandler interface {
+	Handle(ctx context.Context, msg *Message, topic *TopicInfo) (*rabbitmq.StandardMessage, error)
+	GetTopicType() TopicType
+}
+
+// HandlerRegistry defines the interface for handler registry.
+type HandlerRegistry interface {
+	Get(topicType TopicType) (MessageHandler, error)
+}
+
 // Adapter implements the ProtocolAdapter interface for DJI devices.
 type Adapter struct {
 	converter *Converter
+	registry  HandlerRegistry
 }
 
 // NewAdapter creates a new DJI adapter.
@@ -15,6 +29,37 @@ func NewAdapter() *Adapter {
 	return &Adapter{
 		converter: NewConverter(),
 	}
+}
+
+// SetHandlerRegistry sets the handler registry for the adapter.
+func (a *Adapter) SetHandlerRegistry(registry HandlerRegistry) {
+	a.registry = registry
+}
+
+// HandleMessage processes a raw message using the appropriate handler.
+func (a *Adapter) HandleMessage(ctx context.Context, topic string, payload []byte) (*rabbitmq.StandardMessage, error) {
+	// Parse the topic
+	topicInfo, err := ParseTopic(topic)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the message
+	msg, err := ParseMessage(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// If registry is set, try to get handler
+	if a.registry != nil {
+		h, err := a.registry.Get(topicInfo.Type)
+		if err == nil {
+			return h.Handle(ctx, msg, topicInfo)
+		}
+	}
+
+	// Fall back to converter for unsupported topic types
+	return a.converter.ToStandardMessage(msg, topicInfo)
 }
 
 // GetVendor returns the vendor identifier.

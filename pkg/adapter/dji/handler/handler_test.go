@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	dji "github.com/utmos/utmos/pkg/adapter/dji"
-	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	dji "github.com/utmos/utmos/pkg/adapter/dji"
+	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
 // mockHandler is a test implementation of Handler.

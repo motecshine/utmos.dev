@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	dji "github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/utmos/utmos/pkg/adapter/dji/config"
 	"github.com/utmos/utmos/pkg/adapter/dji/router"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewServiceHandler(t *testing.T) {

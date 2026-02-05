@@ -2,7 +2,6 @@ package wpml
 
 import (
 	"fmt"
-	"math"
 )
 
 const DefaultAuthor = "DJI WPML SDK"
@@ -39,7 +38,6 @@ func ConvertWaylinesToWPMLMission(waylines *Waylines) (*WPMLMission, error) {
 }
 
 func convertToMissionConfig(waylines *Waylines) (*MissionConfig, error) {
-
 	flyToWaylineMode := FlightModeSafely
 	finishAction := FinishActionGoHome
 	if waylines.FinishAction != "" {
@@ -61,10 +59,8 @@ func convertToMissionConfig(waylines *Waylines) (*MissionConfig, error) {
 
 	globalRTHHeight := 100.0
 	if waylines.GlobalRTHHeight > 0 {
-
 		globalRTHHeight = waylines.GlobalRTHHeight
 	} else if waylines.TakeOffSecurityHeight > 0 {
-
 		globalRTHHeight = waylines.TakeOffSecurityHeight
 	}
 
@@ -82,7 +78,6 @@ func convertToMissionConfig(waylines *Waylines) (*MissionConfig, error) {
 	var takeOffRefPointAGLHeight *float64
 
 	if waylines.TakeOffRefPointLatitude != 0 && waylines.TakeOffRefPointLongitude != 0 {
-
 		takeOffPointStr := fmt.Sprintf("%.6f,%.6f,%.1f",
 			waylines.TakeOffRefPointLatitude,
 			waylines.TakeOffRefPointLongitude,
@@ -93,7 +88,6 @@ func convertToMissionConfig(waylines *Waylines) (*MissionConfig, error) {
 			takeOffRefPointAGLHeight = waylines.TakeOffRefPointAGLHeight
 		}
 	} else if len(waylines.Waypoints) > 0 {
-
 		firstWaypoint := waylines.Waypoints[0]
 		takeOffPointStr := fmt.Sprintf("%.6f,%.6f,%.1f",
 			firstWaypoint.Latitude,
@@ -121,7 +115,6 @@ func convertToMissionConfig(waylines *Waylines) (*MissionConfig, error) {
 }
 
 func convertToTemplateFolder(waylines *Waylines) (*TemplateFolder, error) {
-
 	heightMode := HeightModeRelativeToStartPoint
 
 	globalShootHeight := waylines.GlobalHeight
@@ -617,23 +610,6 @@ func convertGlobalHeadingParam(waylines *Waylines) *GlobalWaypointHeadingParam {
 	}
 }
 
-func calculateWaylineStats(waypoints []WaylinesWaypoint, speed float64) (distance, duration float64) {
-	if len(waypoints) < 2 {
-		return 0, 0
-	}
-	totalDistance := 0.0
-	for i := 1; i < len(waypoints); i++ {
-		prev := waypoints[i-1]
-		curr := waypoints[i]
-		latDiff := curr.Latitude - prev.Latitude
-		lonDiff := curr.Longitude - prev.Longitude
-		segmentDistance := math.Sqrt(latDiff*latDiff+lonDiff*lonDiff) * 111000
-		totalDistance += segmentDistance
-	}
-	duration = totalDistance / speed
-	return totalDistance, duration
-}
-
 func intPtr(v int) *int {
 	return &v
 }
@@ -650,19 +626,15 @@ func float64Ptr(v float64) *float64 {
 }
 
 func formatCoordinates(lon, lat float64) string {
-
 	return fmt.Sprintf("%g,%g", lon, lat)
 }
 
 func createWaypointTurnParam(waypoint WaylinesWaypoint, waylines *Waylines) *WaypointTurnParam {
-
 	turnMode := TurnModeToPointAndStopWithDiscontinuityCurvature
 
 	if waypoint.WaypointTurnMode != "" {
-
 		turnMode = waypoint.WaypointTurnMode
 	} else if waylines.GlobalWaypointTurnMode != "" {
-
 		turnMode = waylines.GlobalWaypointTurnMode
 	}
 
@@ -680,7 +652,6 @@ func createWaypointTurnParam(waypoint WaylinesWaypoint, waylines *Waylines) *Way
 }
 
 func getUseStraightLine(waypoint WaylinesWaypoint, waylines *Waylines, turnMode string) *int {
-
 	if turnMode != TurnModeCoordinateTurn &&
 		turnMode != TurnModeToPointAndStopWithContinuityCurvature &&
 		turnMode != TurnModeToPointAndPassWithContinuityCurvature &&

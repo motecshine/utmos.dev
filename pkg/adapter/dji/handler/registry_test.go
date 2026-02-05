@@ -5,10 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	dji "github.com/utmos/utmos/pkg/adapter/dji"
-	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	dji "github.com/utmos/utmos/pkg/adapter/dji"
+	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
 func TestNewRegistry(t *testing.T) {

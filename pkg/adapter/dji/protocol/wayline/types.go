@@ -32,7 +32,7 @@ type PrepareData struct {
 	ExecuteTime           int64                 `json:"execute_time"`
 	ExitWaylineWhenRcLost int                   `json:"exit_wayline_when_rc_lost"`
 	File                  File                  `json:"file"`
-	FlightId              string                `json:"flight_id"`
+	FlightID              string                `json:"flight_id"`
 	OutOfControlAction    int                   `json:"out_of_control_action"`
 	ReadyConditions       *ReadyConditions      `json:"ready_conditions,omitempty"`
 	RthAltitude           int                   `json:"rth_altitude"`
@@ -43,7 +43,7 @@ type PrepareData struct {
 
 type File struct {
 	Fingerprint string `json:"fingerprint"`
-	Url         string `json:"url"`
+	URL         string `json:"url"`
 }
 
 // ExecuteData represents the execute flight task data
@@ -54,7 +54,7 @@ type ExecuteData struct {
 
 // UndoData represents the undo flight task data
 type UndoData struct {
-	FlightIds []string `json:"flight_ids"` // Flight task ID
+	FlightIDs []string `json:"flight_ids"` // Flight task ID
 }
 
 // ReadyConditions represents the task ready conditions

@@ -153,7 +153,6 @@ func (m *WPMLMission) SetMissionConfig(config MissionConfig) {
 	}
 
 	if m.Waylines != nil {
-
 		waylineAvoidMode := 0
 
 		globalRTHHeight := 100.0

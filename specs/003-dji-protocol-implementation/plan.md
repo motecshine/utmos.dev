@@ -126,19 +126,39 @@ cmd/
 # 003 新增/修改
 pkg/adapter/dji/
 ├── handler/                   # 新增: 消息处理器
+│   ├── handler.go             # Handler 接口定义
+│   ├── registry.go            # Handler 注册表
 │   ├── osd_handler.go         # OSD 消息处理
 │   ├── state_handler.go       # State 消息处理
 │   ├── status_handler.go      # Status 消息处理
 │   ├── service_handler.go     # Service 消息处理
 │   ├── event_handler.go       # Event 消息处理
-│   └── request_handler.go     # Request 消息处理
+│   ├── request_handler.go     # Request 消息处理
+│   └── drc_handler.go         # DRC 消息处理
 ├── router/                    # 新增: 服务路由
+│   ├── router.go              # 错误定义
+│   ├── handler.go             # 通用 handler 工厂
 │   ├── service_router.go      # 服务调用路由
-│   └── event_router.go        # 事件路由
-└── integration/               # 新增: 协议集成
-    ├── osd_parser.go          # OSD 数据解析
-    ├── command_builder.go     # 命令构建器
-    └── event_parser.go        # 事件解析
+│   ├── event_router.go        # 事件路由
+│   ├── device_commands.go     # 设备命令
+│   ├── camera_commands.go     # 相机命令
+│   ├── wayline_commands.go    # 航线命令
+│   ├── drc_commands.go        # DRC 命令
+│   ├── file_commands.go       # 文件命令
+│   ├── firmware_commands.go   # 固件命令
+│   ├── live_commands.go       # 直播命令
+│   ├── config_commands.go     # 配置命令
+│   ├── core_events.go         # 核心事件
+│   ├── wayline_events.go      # 航线事件
+│   ├── drc_events.go          # DRC 事件
+│   ├── file_events.go         # 文件事件
+│   └── firmware_events.go     # 固件事件
+├── integration/               # 新增: 协议集成
+│   └── osd_parser.go          # OSD 数据解析
+├── init/                      # 新增: 初始化
+│   └── init.go                # Handler 初始化
+└── config/                    # 新增: 配置
+    └── config.go              # 配置常量
 
 tests/
 ├── integration/

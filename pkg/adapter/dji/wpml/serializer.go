@@ -20,7 +20,6 @@ func NewXMLSerializer(indent bool) *XMLSerializer {
 }
 
 func (s *XMLSerializer) Marshal(doc *Document) ([]byte, error) {
-
 	var buf bytes.Buffer
 	buf.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 
@@ -179,7 +178,6 @@ func GetXMLElements(data []byte, elementName string) ([]string, error) {
 }
 
 func MarshalTemplate(template *TemplateDocument) ([]byte, error) {
-
 	if template.XMLNS == "" {
 		template.XMLNS = "http://www.opengis.net/kml/2.2"
 	}
@@ -200,7 +198,6 @@ func MarshalTemplate(template *TemplateDocument) ([]byte, error) {
 }
 
 func MarshalWaylines(waylines *WaylinesDocument) ([]byte, error) {
-
 	if waylines.XMLNS == "" {
 		waylines.XMLNS = "http://www.opengis.net/kml/2.2"
 	}

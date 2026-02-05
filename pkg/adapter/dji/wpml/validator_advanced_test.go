@@ -8,7 +8,7 @@ import (
 )
 
 func TestWPMLValidator_ValidateVar(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	tests := []struct {
 		name      string
@@ -55,7 +55,7 @@ func TestWPMLValidator_ValidateVar(t *testing.T) {
 }
 
 func TestWPMLValidator_ValidateAction(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	tests := []struct {
 		name      string
@@ -120,7 +120,7 @@ func TestWPMLValidator_ValidateActionGroup(t *testing.T) {
 }
 
 func TestWPMLValidator_ValidateWaylinesDocument(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	// Create a valid document using helper
 	waylines := createValidWaylines("Test Mission")
@@ -148,7 +148,7 @@ func TestWPMLValidator_ValidateTemplateDocument(t *testing.T) {
 }
 
 func TestWPMLValidator_ValidateWithContext(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	waylines := createValidWaylines("Test Mission")
 
@@ -157,7 +157,7 @@ func TestWPMLValidator_ValidateWithContext(t *testing.T) {
 }
 
 func TestWPMLValidator_GetValidationErrors(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	// Create an invalid waylines with multiple errors
 	waylines := &Waylines{
@@ -222,7 +222,7 @@ func TestValidateWaylinesDocumentGlobal(t *testing.T) {
 }
 
 func TestWPMLValidator_ValidateActionGroup_Real(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	// Create a minimal valid ActionGroup using actual WPML structure
 	actionGroup := &ActionGroup{
@@ -248,7 +248,7 @@ func TestWPMLValidator_ValidateActionGroup_Real(t *testing.T) {
 }
 
 func TestWPMLValidator_ValidateTemplateDocument_Real(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	// Create a basic template document
 	waylines := createValidWaylines("Template Test")

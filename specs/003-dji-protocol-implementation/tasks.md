@@ -52,10 +52,10 @@
   - `Handle(ctx context.Context, msg *Message, topic *TopicInfo) (*StandardMessage, error)`
   - `GetTopicType() TopicType`
 
-- [x] T009 [P] Create Router interface in pkg/adapter/dji/router/router.go
-  - `Register(method string, handler func) error`
-  - `Route(ctx context.Context, method string, msg interface{}) (interface{}, error)`
-  - `List() []string`
+- [x] T009 [P] Create Router types in pkg/adapter/dji/router/router.go
+  - `ErrMethodNotFound` error
+  - `ErrMethodAlreadyRegistered` error
+  - ServiceRouter and EventRouter in separate files
 
 - [x] T010 [P] Create config constants in pkg/adapter/dji/config/config.go
   - `SERVICE_CALL_TIMEOUT = 30s`
@@ -111,9 +111,11 @@
   - Extract device topology from OSD
   - Convert to StandardMessage with full data
 
-- [ ] T017 [US1] Update adapter.go to use OSDHandler in pkg/adapter/dji/adapter.go
-  - Integrate HandlerRegistry
-  - Route OSD messages to OSDHandler
+- [x] T017 [US1] Update adapter.go to use OSDHandler in pkg/adapter/dji/adapter.go
+  - Add MessageHandler and HandlerRegistry interfaces
+  - Add SetHandlerRegistry method
+  - Add HandleMessage method for handler-based processing
+  - Create pkg/adapter/dji/init package for handler initialization
 
 - [x] T018 [P] [US1] Add OSD mock messages in tests/mocks/dji_osd_messages.go
   - Full AircraftOSD sample

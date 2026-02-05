@@ -13,7 +13,6 @@ import (
 )
 
 func CreateKmz(mission *WPMLMission, kmzPath string) error {
-
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
 		return fmt.Errorf(ErrGenerateKMZBuffer, err)
@@ -56,9 +55,9 @@ func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
 		zipWriter.Close()
 		return nil, fmt.Errorf(ErrCreateTemplateEntry, err)
 	}
-	if _, err := templateWriter.Write(templateData); err != nil {
+	if _, writeErr := templateWriter.Write(templateData); writeErr != nil {
 		zipWriter.Close()
-		return nil, fmt.Errorf(ErrWriteTemplate, err)
+		return nil, fmt.Errorf(ErrWriteTemplate, writeErr)
 	}
 
 	waylinesWriter, err := zipWriter.Create("wpmz/waylines.wpml")
@@ -79,7 +78,6 @@ func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
 }
 
 func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
-
 	mission, err := ConvertWaylinesToWPMLMission(waylines)
 	if err != nil {
 		return nil, fmt.Errorf(ErrConvertWaylines, err)
@@ -139,9 +137,9 @@ func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
 				return nil, fmt.Errorf(ErrReadWaylinesWPML, err)
 			}
 		case strings.HasPrefix(file.Name, "res/"):
-			data, err := readZipFile(file)
-			if err == nil {
-				resources[file.Name] = data
+			resData, readErr := readZipFile(file)
+			if readErr == nil {
+				resources[file.Name] = resData
 			}
 		}
 	}

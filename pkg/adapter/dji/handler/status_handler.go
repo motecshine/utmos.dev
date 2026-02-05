@@ -76,9 +76,9 @@ func (h *StatusHandler) GetTopicType() dji.TopicType {
 
 // DeviceTopology represents the device topology from status message.
 type DeviceTopology struct {
-	GatewaySN   string           `json:"gateway_sn"`
-	GatewayType string           `json:"gateway_type,omitempty"`
-	SubDevices  []SubDeviceInfo  `json:"sub_devices,omitempty"`
+	GatewaySN   string          `json:"gateway_sn"`
+	GatewayType string          `json:"gateway_type,omitempty"`
+	SubDevices  []SubDeviceInfo `json:"sub_devices,omitempty"`
 }
 
 // SubDeviceInfo represents a sub-device in the topology.

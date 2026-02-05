@@ -8,12 +8,12 @@ import (
 )
 
 func TestNewWPMLValidator(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 	require.NotNil(t, validator)
 }
 
 func TestWPMLValidator_ValidateStruct(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	tests := []struct {
 		name        string
@@ -106,7 +106,7 @@ func TestWPMLValidator_ValidateStruct(t *testing.T) {
 }
 
 func TestDroneModelValidation(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	tests := []struct {
 		name        string
@@ -168,7 +168,7 @@ func TestDroneModelValidation(t *testing.T) {
 }
 
 func TestPayloadModelValidation(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	tests := []struct {
 		name         string
@@ -230,7 +230,7 @@ func TestPayloadModelValidation(t *testing.T) {
 }
 
 func TestWaypointValidation(t *testing.T) {
-	validator := NewWPMLValidator()
+	validator, _ := NewWPMLValidator()
 
 	tests := []struct {
 		name        string

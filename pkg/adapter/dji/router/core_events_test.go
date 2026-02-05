@@ -17,20 +17,11 @@ func TestRegisterCoreEvents(t *testing.T) {
 	// Verify all core events are registered
 	expectedMethods := []string{
 		MethodHMS,
-		MethodFileUploadCallback,
-		MethodFileUploadProgress,
-		MethodHighestPriorityUpload,
 		MethodDeviceExitHomingNotify,
 		MethodDeviceTempNtfyNeedClear,
-		MethodFlighttaskProgress,
-		MethodFlighttaskReady,
-		MethodReturnHomeInfo,
 		MethodControlSourceChange,
 		MethodFlyToPointProgress,
 		MethodTakeoffToPointProgress,
-		MethodDRCStatusNotify,
-		MethodJoystickInvalidNotify,
-		MethodOTAProgress,
 	}
 
 	for _, method := range expectedMethods {
@@ -102,85 +93,6 @@ func TestCoreEvents_HMS(t *testing.T) {
 	}
 }
 
-func TestCoreEvents_FileUploadCallback(t *testing.T) {
-	r := NewEventRouter()
-	err := RegisterCoreEvents(r)
-	require.NoError(t, err)
-
-	req := &EventRequest{
-		Method: MethodFileUploadCallback,
-		Data: json.RawMessage(`{
-			"file": {
-				"path": "/media/DJI_001.jpg",
-				"name": "DJI_001.jpg",
-				"size": 1024000,
-				"fingerprint": "abc123"
-			}
-		}`),
-	}
-
-	resp, err := r.RouteEvent(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, 0, resp.Result)
-}
-
-func TestCoreEvents_FlighttaskProgress(t *testing.T) {
-	r := NewEventRouter()
-	err := RegisterCoreEvents(r)
-	require.NoError(t, err)
-
-	req := &EventRequest{
-		Method: MethodFlighttaskProgress,
-		Data: json.RawMessage(`{
-			"flight_id": "flight-001",
-			"status": "executing",
-			"progress": 50
-		}`),
-	}
-
-	resp, err := r.RouteEvent(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, 0, resp.Result)
-}
-
-func TestCoreEvents_FlighttaskReady(t *testing.T) {
-	r := NewEventRouter()
-	err := RegisterCoreEvents(r)
-	require.NoError(t, err)
-
-	needReply := 1
-	req := &EventRequest{
-		Method:    MethodFlighttaskReady,
-		NeedReply: &needReply,
-		Data:      json.RawMessage(`{"flight_id": "flight-001"}`),
-	}
-
-	resp, err := r.RouteEvent(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, 0, resp.Result)
-}
-
-func TestCoreEvents_ReturnHomeInfo(t *testing.T) {
-	r := NewEventRouter()
-	err := RegisterCoreEvents(r)
-	require.NoError(t, err)
-
-	req := &EventRequest{
-		Method: MethodReturnHomeInfo,
-		Data: json.RawMessage(`{
-			"flight_id": "flight-001",
-			"last_point_type": 1,
-			"planned_path_points": [
-				{"latitude": 22.5, "longitude": 113.9, "height": 100}
-			]
-		}`),
-	}
-
-	resp, err := r.RouteEvent(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, 0, resp.Result)
-}
-
 func TestCoreEvents_DeviceExitHomingNotify(t *testing.T) {
 	r := NewEventRouter()
 	err := RegisterCoreEvents(r)
@@ -211,28 +123,13 @@ func TestCoreEvents_DeviceTempNtfyNeedClear(t *testing.T) {
 	assert.Equal(t, 0, resp.Result)
 }
 
-func TestCoreEvents_DRCStatusNotify(t *testing.T) {
+func TestCoreEvents_ControlSourceChange(t *testing.T) {
 	r := NewEventRouter()
 	err := RegisterCoreEvents(r)
 	require.NoError(t, err)
 
 	req := &EventRequest{
-		Method: MethodDRCStatusNotify,
-		Data:   json.RawMessage(`{"status": 1}`),
-	}
-
-	resp, err := r.RouteEvent(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, 0, resp.Result)
-}
-
-func TestCoreEvents_JoystickInvalidNotify(t *testing.T) {
-	r := NewEventRouter()
-	err := RegisterCoreEvents(r)
-	require.NoError(t, err)
-
-	req := &EventRequest{
-		Method: MethodJoystickInvalidNotify,
+		Method: MethodControlSourceChange,
 		Data:   json.RawMessage(`{}`),
 	}
 
@@ -241,14 +138,29 @@ func TestCoreEvents_JoystickInvalidNotify(t *testing.T) {
 	assert.Equal(t, 0, resp.Result)
 }
 
-func TestCoreEvents_OTAProgress(t *testing.T) {
+func TestCoreEvents_FlyToPointProgress(t *testing.T) {
 	r := NewEventRouter()
 	err := RegisterCoreEvents(r)
 	require.NoError(t, err)
 
 	req := &EventRequest{
-		Method: MethodOTAProgress,
-		Data:   json.RawMessage(`{"progress": 50}`),
+		Method: MethodFlyToPointProgress,
+		Data:   json.RawMessage(`{}`),
+	}
+
+	resp, err := r.RouteEvent(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, 0, resp.Result)
+}
+
+func TestCoreEvents_TakeoffToPointProgress(t *testing.T) {
+	r := NewEventRouter()
+	err := RegisterCoreEvents(r)
+	require.NoError(t, err)
+
+	req := &EventRequest{
+		Method: MethodTakeoffToPointProgress,
+		Data:   json.RawMessage(`{}`),
 	}
 
 	resp, err := r.RouteEvent(context.Background(), req)

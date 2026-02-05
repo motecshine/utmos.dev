@@ -16,8 +16,10 @@ func TestRegisterConfigCommands(t *testing.T) {
 
 	// Verify all config commands are registered
 	expectedMethods := []string{
-		MethodConfigGet,
-		MethodConfigSet,
+		MethodConfig,
+		MethodStorageConfigGet,
+		MethodPhotoStorageSet,
+		MethodVideoStorageSet,
 	}
 
 	for _, method := range expectedMethods {
@@ -25,7 +27,7 @@ func TestRegisterConfigCommands(t *testing.T) {
 	}
 }
 
-func TestConfigCommands_ConfigGet(t *testing.T) {
+func TestConfigCommands_Config(t *testing.T) {
 	r := NewServiceRouter()
 	err := RegisterConfigCommands(r)
 	require.NoError(t, err)
@@ -35,19 +37,15 @@ func TestConfigCommands_ConfigGet(t *testing.T) {
 		data string
 	}{
 		{
-			name: "get single config",
-			data: `{"config_type": "basic_device_info"}`,
-		},
-		{
-			name: "get multiple configs",
-			data: `{"config_type": "basic_device_info,firmware_version"}`,
+			name: "config request with json type",
+			data: `{"config_type": "json", "config_scope": "product"}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := &ServiceRequest{
-				Method: MethodConfigGet,
+				Method: MethodConfig,
 				Data:   json.RawMessage(tt.data),
 			}
 			resp, err := r.RouteService(context.Background(), req)
@@ -57,7 +55,7 @@ func TestConfigCommands_ConfigGet(t *testing.T) {
 	}
 }
 
-func TestConfigCommands_ConfigSet(t *testing.T) {
+func TestConfigCommands_StorageConfigGet(t *testing.T) {
 	r := NewServiceRouter()
 	err := RegisterConfigCommands(r)
 	require.NoError(t, err)
@@ -67,19 +65,75 @@ func TestConfigCommands_ConfigSet(t *testing.T) {
 		data string
 	}{
 		{
-			name: "set basic config",
-			data: `{"config_type": "basic_device_info", "config_value": {"name": "Dock-001"}}`,
+			name: "get media storage config",
+			data: `{"module": 0}`,
 		},
 		{
-			name: "set network config",
-			data: `{"config_type": "network", "config_value": {"ssid": "test-wifi"}}`,
+			name: "get psdk ui resource config",
+			data: `{"module": 1}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := &ServiceRequest{
-				Method: MethodConfigSet,
+				Method: MethodStorageConfigGet,
+				Data:   json.RawMessage(tt.data),
+			}
+			resp, err := r.RouteService(context.Background(), req)
+			require.NoError(t, err)
+			assert.Equal(t, 0, resp.Result)
+		})
+	}
+}
+
+func TestConfigCommands_PhotoStorageSet(t *testing.T) {
+	r := NewServiceRouter()
+	err := RegisterConfigCommands(r)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name string
+		data string
+	}{
+		{
+			name: "set photo storage settings",
+			data: `{"payload_index": "39-0-7", "photo_storage_settings": ["current", "wide"]}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &ServiceRequest{
+				Method: MethodPhotoStorageSet,
+				Data:   json.RawMessage(tt.data),
+			}
+			resp, err := r.RouteService(context.Background(), req)
+			require.NoError(t, err)
+			assert.Equal(t, 0, resp.Result)
+		})
+	}
+}
+
+func TestConfigCommands_VideoStorageSet(t *testing.T) {
+	r := NewServiceRouter()
+	err := RegisterConfigCommands(r)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name string
+		data string
+	}{
+		{
+			name: "set video storage settings",
+			data: `{"payload_index": "39-0-7", "video_storage_settings": ["current", "zoom"]}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &ServiceRequest{
+				Method: MethodVideoStorageSet,
 				Data:   json.RawMessage(tt.data),
 			}
 			resp, err := r.RouteService(context.Background(), req)
@@ -95,7 +149,7 @@ func TestConfigCommands_InvalidData(t *testing.T) {
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
-		Method: MethodConfigGet,
+		Method: MethodConfig,
 		Data:   json.RawMessage(`{invalid json}`),
 	}
 

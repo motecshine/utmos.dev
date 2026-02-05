@@ -19,24 +19,6 @@ const (
 	MethodIRMeteringArea         = "ir_metering_area"
 )
 
-// IRMeteringPointData represents IR metering point data.
-// Note: This type is specific to router and not in protocol/camera.
-type IRMeteringPointData struct {
-	PayloadIndex string  `json:"payload_index"`
-	X            float64 `json:"x"`
-	Y            float64 `json:"y"`
-}
-
-// IRMeteringAreaData represents IR metering area data.
-// Note: This type is specific to router and not in protocol/camera.
-type IRMeteringAreaData struct {
-	PayloadIndex string  `json:"payload_index"`
-	X            float64 `json:"x"`
-	Y            float64 `json:"y"`
-	Width        float64 `json:"width"`
-	Height       float64 `json:"height"`
-}
-
 // RegisterCameraCommands registers all camera commands to the router.
 // Returns an error if any handler registration fails.
 func RegisterCameraCommands(r *ServiceRouter) error {
@@ -52,9 +34,9 @@ func RegisterCameraCommands(r *ServiceRouter) error {
 		MethodCameraPointFocusAction: SimpleCommandHandler[camera.CameraPointFocusActionData](MethodCameraPointFocusAction),
 		MethodCameraScreenSplit:      SimpleCommandHandler[camera.CameraScreenSplitData](MethodCameraScreenSplit),
 
-		// IR metering commands - using local types as they're not in protocol/camera
-		MethodIRMeteringPoint: SimpleCommandHandler[IRMeteringPointData](MethodIRMeteringPoint),
-		MethodIRMeteringArea:  SimpleCommandHandler[IRMeteringAreaData](MethodIRMeteringArea),
+		// IR metering commands - use types from protocol/camera
+		MethodIRMeteringPoint: SimpleCommandHandler[camera.IRMeteringPointSetData](MethodIRMeteringPoint),
+		MethodIRMeteringArea:  SimpleCommandHandler[camera.IRMeteringAreaSetData](MethodIRMeteringArea),
 	}
 
 	return RegisterHandlers(r, handlers)

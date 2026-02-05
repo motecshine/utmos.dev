@@ -2,6 +2,8 @@ package wpml
 
 // createValidWaylines creates a fully valid Waylines object for testing
 func createValidWaylines(name string) *Waylines {
+	distance := 100.0
+	duration := 60.0
 	return &Waylines{
 		Name:                    name,
 		Description:             "Test Description",
@@ -16,6 +18,9 @@ func createValidWaylines(name string) *Waylines {
 		AircraftYawMode:         "followWayline",
 		GimbalPitchMode:         "usePointSetting",
 		GlobalTransitionalSpeed: 10.0,
+		SafeHeight:              50.0,
+		Distance:                &distance,
+		Duration:                &duration,
 		Waypoints: []WaylinesWaypoint{
 			{
 				Latitude:    39.9093,

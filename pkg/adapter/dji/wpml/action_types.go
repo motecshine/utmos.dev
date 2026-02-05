@@ -12,7 +12,6 @@ type ActionRequest struct {
 }
 
 func (ar *ActionRequest) UnmarshalJSON(data []byte) error {
-
 	var temp struct {
 		Type   string          `json:"type"`
 		Action json.RawMessage `json:"action"`

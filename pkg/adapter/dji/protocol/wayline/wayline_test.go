@@ -29,7 +29,7 @@ func TestCreateCommand(t *testing.T) {
 
 func TestPrepareCommand(t *testing.T) {
 	data := PrepareData{
-		FlightId: "task-123",
+		FlightID: "task-123",
 	}
 	cmd := NewPrepareCommand(data)
 
@@ -67,7 +67,7 @@ func TestRecoveryCommand(t *testing.T) {
 
 func TestUndoCommand(t *testing.T) {
 	data := UndoData{
-		FlightIds: []string{"task-123"},
+		FlightIDs: []string{"task-123"},
 	}
 	cmd := NewUndoCommand(data)
 
