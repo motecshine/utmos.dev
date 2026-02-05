@@ -19,8 +19,15 @@ const (
 	ActionDeviceOffline  = rabbitmq.ActionDeviceOffline
 )
 
-// ActionStatusReply is DJI-specific action not in rabbitmq package.
-const ActionStatusReply = "status.reply"
+// DJI-specific actions not in rabbitmq package.
+const (
+	ActionStatusReply        = "status.reply"
+	ActionEventReply         = "event.reply"
+	ActionDeviceRequest      = "device.request"
+	ActionDeviceRequestReply = "device.request.reply"
+	ActionDRCCommand         = "drc.command"
+	ActionDRCEvent           = "drc.event"
+)
 
 // TopicType represents the type of DJI MQTT topic.
 type TopicType string
@@ -32,8 +39,13 @@ const (
 	TopicTypeServices      TopicType = "services"
 	TopicTypeServicesReply TopicType = "services_reply"
 	TopicTypeEvents        TopicType = "events"
+	TopicTypeEventsReply   TopicType = "events_reply"
 	TopicTypeStatus        TopicType = "status"
 	TopicTypeStatusReply   TopicType = "status_reply"
+	TopicTypeRequests      TopicType = "requests"
+	TopicTypeRequestsReply TopicType = "requests_reply"
+	TopicTypeDRCUp         TopicType = "drc/up"
+	TopicTypeDRCDown       TopicType = "drc/down"
 )
 
 // Direction represents the message direction.
@@ -53,7 +65,7 @@ type Message struct {
 	Method    string          `json:"method,omitempty"`     // Protocol method
 	NeedReply *int            `json:"need_reply,omitempty"` // 0 or 1 to indicate if reply is needed
 	Data      json.RawMessage `json:"data,omitempty"`       // Business data
-	GatewaySN string          `json:"gateway_sn,omitempty"` // Gateway serial number
+	GatewaySN string          `json:"gateway,omitempty"`    // Gateway serial number
 }
 
 // Validate validates the DJI message.

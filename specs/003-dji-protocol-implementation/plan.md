@@ -198,32 +198,74 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 
 ## Implementation Phases
 
-### Phase 1: 核心协议集成 (P1)
+详细任务列表见 [tasks.md](./tasks.md)
 
-1. 修复 import 路径问题
-2. 集成 OSD 解析到 adapter
-3. 集成 State 解析到 adapter
-4. 集成 Status 解析到 adapter
-5. 实现 ServiceRouter
-6. 实现 EventRouter
+### Phase 2: Foundational (P0 - Blocking)
+- Handler/Router 接口定义
+- 配置常量 (超时、策略)
+- HandlerRegistry 实现
 
-### Phase 2: 业务功能支持 (P2)
+### Phase 3-6: 核心协议 (P1 - MVP)
 
-1. 航线任务服务集成 (wayline)
-2. 相机控制服务集成 (camera)
-3. 设备控制服务集成 (device)
-4. 配置管理服务集成 (config)
+| Phase | 功能 | 任务数 | 工作量 |
+|-------|------|--------|--------|
+| 3 | OSD 完整解析 | 7 | 2 天 |
+| 4 | State/Status 处理 | 5 | 1 天 |
+| 5 | Services 路由 (16 方法) | 7 | 2 天 |
+| 6 | Events 路由 (4 事件) | 6 | 1 天 |
 
-### Phase 3: 高级功能支持 (P3)
+**P1 总计**: 25 任务, 6 天
 
-1. DRC 实时控制集成
-2. 文件管理集成
-3. 固件升级集成
-4. 实时视频集成
+### Phase 7-9: 业务功能 (P2)
+
+| Phase | 功能 | 任务数 | 工作量 |
+|-------|------|--------|--------|
+| 7 | Wayline 航线任务 (8 方法 + 3 事件) | 5 | 1 天 |
+| 8 | Camera 相机控制 (7 方法) | 3 | 0.5 天 |
+| 9 | Config 配置管理 (2 方法) | 4 | 0.5 天 |
+
+**P2 总计**: 12 任务, 2 天
+
+### Phase 10-12: 高级功能 (P3)
+
+| Phase | 功能 | 任务数 | 工作量 |
+|-------|------|--------|--------|
+| 10 | DRC 实时控制 (5 方法 + 2 事件) | 7 | 1.5 天 |
+| 11 | File 文件管理 (3 方法 + 3 事件) | 4 | 0.5 天 |
+| 12 | Firmware/Live (5 方法 + 1 事件) | 5 | 0.5 天 |
+
+**P3 总计**: 16 任务, 2.5 天
+
+### Phase 13: Polish & Integration
+- 集成测试 (4 个)
+- 性能测试 (1000 设备)
+- 文档更新
+- **预计工作量**: 1 天
+
+## Summary
+
+| 优先级 | Phases | 任务数 | 工作量 | 累计 |
+|--------|--------|--------|--------|------|
+| Setup | 1 | 4 | - | - |
+| P0 | 2 | 7 | 1 天 | 1 天 |
+| P1 | 3-6 | 25 | 6 天 | 7 天 |
+| P2 | 7-9 | 12 | 2 天 | 9 天 |
+| P3 | 10-12 | 16 | 2.5 天 | 11.5 天 |
+| Polish | 13 | 9 | 1 天 | 12.5 天 |
+
+**总计**: 73 任务 (含 4 个已完成的 Setup 任务), 约 12.5 天
+
+## Milestones
+
+1. **Milestone 1**: OSD 可用 (Phase 0-1) → 3 天
+2. **Milestone 2**: 核心协议完成 (Phase 2-4) → 7 天
+3. **Milestone 3**: 业务功能完成 (Phase 5-7) → 9 天
+4. **Milestone 4**: 高级功能完成 (Phase 8-10) → 11.5 天
+5. **Milestone 5**: 生产就绪 (Phase 11) → 12.5 天
 
 ## Next Steps
 
-1. 运行 Phase 0 研究任务
-2. 生成 research.md
-3. 生成 data-model.md 和 contracts/
-4. 运行 `/speckit.tasks` 生成任务列表
+1. ✅ 运行 Phase 0 研究任务 (research.md 已完成)
+2. ✅ 生成 data-model.md 和 contracts/ (已完成)
+3. ✅ 生成 tasks.md (已完成)
+4. 开始 Phase 0 实现
