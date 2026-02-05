@@ -245,6 +245,6 @@ func TestServiceHandler_Handle_TimestampDefault(t *testing.T) {
 	assert.Greater(t, sm.Timestamp, int64(0))
 }
 
-func TestServiceHandler_ImplementsHandler(t *testing.T) {
+func TestServiceHandler_ImplementsHandler(_ *testing.T) {
 	var _ Handler = (*ServiceHandler)(nil)
 }

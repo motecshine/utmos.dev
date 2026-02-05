@@ -669,9 +669,8 @@ func getUseStraightLine(waypoint WaylinesWaypoint, waylines *Waylines, turnMode 
 	if useStraightLine != nil {
 		if *useStraightLine {
 			return intPtr(1)
-		} else {
-			return intPtr(0)
 		}
+		return intPtr(0)
 	}
 
 	return intPtr(1)

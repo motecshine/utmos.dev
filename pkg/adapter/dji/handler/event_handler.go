@@ -30,7 +30,7 @@ func NewEventHandler(r *router.EventRouter) *EventHandler {
 }
 
 // Handle processes an Event message and returns a StandardMessage.
-func (h *EventHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+func (h *EventHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	sm, err := HandleMessage(msg, topic, h.cfg, DefaultDataBuilder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build event data: %w", err)

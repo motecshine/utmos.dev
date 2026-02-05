@@ -167,6 +167,6 @@ func TestRequestHandler_GetRouter(t *testing.T) {
 	assert.Equal(t, r, handler.GetRouter())
 }
 
-func TestRequestHandler_ImplementsHandler(t *testing.T) {
+func TestRequestHandler_ImplementsHandler(_ *testing.T) {
 	var _ Handler = (*RequestHandler)(nil)
 }

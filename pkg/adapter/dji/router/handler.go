@@ -10,7 +10,7 @@ import (
 // SimpleCommandHandler creates a handler for commands that just need to be accepted.
 // It validates the JSON data against the provided type T and returns an accepted response.
 func SimpleCommandHandler[T any](method string) ServiceHandlerFunc {
-	return func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+	return func(_ context.Context, data json.RawMessage) (*ServiceResponse, error) {
 		if len(data) > 0 {
 			var req T
 			if err := json.Unmarshal(data, &req); err != nil {
@@ -27,7 +27,7 @@ func SimpleCommandHandler[T any](method string) ServiceHandlerFunc {
 
 // NoDataCommandHandler creates a handler for commands without data payload.
 func NoDataCommandHandler(method string) ServiceHandlerFunc {
-	return func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+	return func(_ context.Context, _ json.RawMessage) (*ServiceResponse, error) {
 		return &ServiceResponse{
 			Result: ResultSuccess,
 			Output: json.RawMessage(fmt.Sprintf(`{"method": %q, "status": "accepted"}`, method)),
@@ -69,7 +69,7 @@ func RegisterHandlers(r *ServiceRouter, handlers map[string]ServiceHandlerFunc) 
 // SimpleEventHandler creates a handler for events that just need to be acknowledged.
 // It validates the JSON data against the provided type T and returns a received response.
 func SimpleEventHandler[T any](method string) EventHandlerFunc {
-	return func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	return func(_ context.Context, data json.RawMessage) (*EventResponse, error) {
 		if len(data) > 0 {
 			var req T
 			if err := json.Unmarshal(data, &req); err != nil {
@@ -86,7 +86,7 @@ func SimpleEventHandler[T any](method string) EventHandlerFunc {
 
 // NoDataEventHandler creates a handler for events without data payload.
 func NoDataEventHandler(method string) EventHandlerFunc {
-	return func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	return func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{
 			Result: ResultSuccess,
 			Output: json.RawMessage(fmt.Sprintf(`{"method": %q, "status": "received"}`, method)),

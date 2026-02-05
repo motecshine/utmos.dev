@@ -18,7 +18,7 @@ func TestNewEventRouter(t *testing.T) {
 func TestEventRouter_RegisterEventHandler(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{Result: 0}, nil
 	}
 
@@ -30,7 +30,7 @@ func TestEventRouter_RegisterEventHandler(t *testing.T) {
 func TestEventRouter_RegisterEventHandler_Duplicate(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{Result: 0}, nil
 	}
 
@@ -45,7 +45,7 @@ func TestEventRouter_RegisterEventHandler_Duplicate(t *testing.T) {
 func TestEventRouter_RouteEvent(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{
 			Result: 0,
 			Output: json.RawMessage(`{"status": "processed"}`),
@@ -80,7 +80,7 @@ func TestEventRouter_RouteEvent_UnknownMethod(t *testing.T) {
 func TestEventRouter_RouteEvent_HandlerError(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return nil, errors.New("handler error")
 	}
 
@@ -99,7 +99,7 @@ func TestEventRouter_RouteEvent_HandlerError(t *testing.T) {
 func TestEventRouter_RouteEvent_NeedReply(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{
 			Result: 0,
 			Output: json.RawMessage(`{"ack": true}`),
@@ -124,7 +124,7 @@ func TestEventRouter_RouteEvent_NeedReply(t *testing.T) {
 func TestEventRouter_List(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{Result: 0}, nil
 	}
 
@@ -145,7 +145,7 @@ func TestEventRouter_List(t *testing.T) {
 func TestEventRouter_Has(t *testing.T) {
 	r := NewEventRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*EventResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*EventResponse, error) {
 		return &EventResponse{Result: 0}, nil
 	}
 

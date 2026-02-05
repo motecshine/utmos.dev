@@ -19,7 +19,7 @@ func NewStateHandler() *StateHandler {
 }
 
 // Handle processes a State message and returns a StandardMessage.
-func (h *StateHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+func (h *StateHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	if msg == nil {
 		return nil, fmt.Errorf("nil message")
 	}

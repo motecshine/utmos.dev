@@ -35,7 +35,7 @@ func NewServiceHandler(r *router.ServiceRouter) *ServiceHandler {
 }
 
 // Handle processes a Service message and returns a StandardMessage.
-func (h *ServiceHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+func (h *ServiceHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	builder := func(msg *dji.Message, topic *dji.TopicInfo, isReply bool, cfg MessageConfig) (json.RawMessage, error) {
 		if isReply {
 			return BuildReplyData(msg, topic, cfg.ReplyType)

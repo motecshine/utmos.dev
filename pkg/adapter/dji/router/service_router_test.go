@@ -19,7 +19,7 @@ func TestNewServiceRouter(t *testing.T) {
 func TestServiceRouter_RegisterServiceHandler(t *testing.T) {
 	r := NewServiceRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*ServiceResponse, error) {
 		return &ServiceResponse{Result: 0}, nil
 	}
 
@@ -36,7 +36,7 @@ func TestServiceRouter_RegisterServiceHandler(t *testing.T) {
 func TestServiceRouter_RouteService(t *testing.T) {
 	r := NewServiceRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*ServiceResponse, error) {
 		return &ServiceResponse{
 			Result: 0,
 			Output: json.RawMessage(`{"status": "success"}`),
@@ -81,7 +81,7 @@ func TestServiceRouter_RouteService_HandlerError(t *testing.T) {
 	r := NewServiceRouter()
 
 	expectedErr := errors.New("handler error")
-	handler := func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+	handler := func(_ context.Context, _ json.RawMessage) (*ServiceResponse, error) {
 		return nil, expectedErr
 	}
 
@@ -100,7 +100,7 @@ func TestServiceRouter_RouteService_HandlerError(t *testing.T) {
 func TestServiceRouter_RouteService_WithData(t *testing.T) {
 	r := NewServiceRouter()
 
-	handler := func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+	handler := func(_ context.Context, data json.RawMessage) (*ServiceResponse, error) {
 		// Parse and echo back the data
 		var input map[string]interface{}
 		if err := json.Unmarshal(data, &input); err != nil {
@@ -150,7 +150,7 @@ func TestServiceRouter_MultipleHandlers(t *testing.T) {
 
 	for _, method := range methods {
 		m := method // capture
-		handler := func(ctx context.Context, data json.RawMessage) (*ServiceResponse, error) {
+		handler := func(_ context.Context, _ json.RawMessage) (*ServiceResponse, error) {
 			return &ServiceResponse{
 				Result: 0,
 				Output: json.RawMessage(`{"method": "` + m + `"}`),

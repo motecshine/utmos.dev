@@ -249,6 +249,6 @@ func TestOSDHandler_Handle_TimestampDefault(t *testing.T) {
 	assert.Greater(t, sm.Timestamp, int64(0))
 }
 
-func TestOSDHandler_ImplementsHandler(t *testing.T) {
+func TestOSDHandler_ImplementsHandler(_ *testing.T) {
 	var _ Handler = (*OSDHandler)(nil)
 }

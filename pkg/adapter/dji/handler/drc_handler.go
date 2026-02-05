@@ -37,7 +37,7 @@ func NewDRCHandler(sr *router.ServiceRouter, er *router.EventRouter) *DRCHandler
 }
 
 // Handle processes a DRC message and returns a StandardMessage.
-func (h *DRCHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+func (h *DRCHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	builder := func(msg *dji.Message, topic *dji.TopicInfo, isReply bool, cfg MessageConfig) (json.RawMessage, error) {
 		if isReply {
 			return h.buildDRCEventData(msg, topic)

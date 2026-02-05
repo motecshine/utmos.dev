@@ -221,7 +221,7 @@ func TestValidateWaylinesDocumentGlobal(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWPMLValidator_ValidateActionGroup_Real(t *testing.T) {
+func TestWPMLValidator_ValidateActionGroup_Real(_ *testing.T) {
 	validator, _ := NewWPMLValidator()
 
 	// Create a minimal valid ActionGroup using actual WPML structure

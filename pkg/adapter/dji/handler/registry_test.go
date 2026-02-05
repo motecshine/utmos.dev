@@ -145,7 +145,7 @@ func TestRegistry_Integration(t *testing.T) {
 
 	osdHandler := &mockHandler{
 		topicType: dji.TopicTypeOSD,
-		handleFn: func(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+		handleFn: func(_ context.Context, _ *dji.Message, _ *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 			return expectedMsg, nil
 		},
 	}

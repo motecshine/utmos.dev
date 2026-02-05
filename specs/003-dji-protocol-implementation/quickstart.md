@@ -170,11 +170,71 @@ func TestNewCustomMethod(t *testing.T) {
 # 运行所有 DJI 适配器测试
 go test -v ./pkg/adapter/dji/...
 
-# 运行集成测试
-go test -v ./tests/integration/dji_adapter_test.go
+# 运行特定包的测试
+go test -v ./pkg/adapter/dji/handler/...
+go test -v ./pkg/adapter/dji/router/...
+
+# 运行基准测试
+go test -bench=. ./pkg/adapter/dji/handler/...
 
 # 检查测试覆盖率
 go test -cover ./pkg/adapter/dji/...
+
+# 生成覆盖率报告
+go test -coverprofile=coverage.out ./pkg/adapter/dji/...
+go tool cover -html=coverage.out -o coverage.html
+```
+
+### 测试示例
+
+#### 测试 OSD Handler
+
+```go
+func TestOSDHandler(t *testing.T) {
+    handler := handler.NewOSDHandler()
+
+    osdData := json.RawMessage(`{
+        "mode_code": 0,
+        "longitude": 113.943,
+        "latitude": 22.577,
+        "height": 100.5
+    }`)
+
+    msg := &dji.Message{
+        TID:       "test-tid",
+        BID:       "test-bid",
+        Timestamp: time.Now().UnixMilli(),
+        Data:      osdData,
+    }
+
+    topic := &dji.TopicInfo{
+        Type:      dji.TopicTypeOSD,
+        DeviceSN:  "test-device",
+        GatewaySN: "test-gateway",
+    }
+
+    result, err := handler.Handle(context.Background(), msg, topic)
+    require.NoError(t, err)
+    assert.Equal(t, "test-device", result.DeviceSN)
+}
+```
+
+#### 测试 Service Router
+
+```go
+func TestServiceRouter(t *testing.T) {
+    r := router.NewServiceRouter()
+    router.RegisterDeviceCommands(r)
+
+    req := &router.ServiceRequest{
+        Method: "cover_open",
+        Data:   nil,
+    }
+
+    resp, err := r.RouteService(context.Background(), req)
+    require.NoError(t, err)
+    assert.Equal(t, 0, resp.Result)
+}
 ```
 
 ## 7. 常见问题

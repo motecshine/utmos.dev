@@ -473,13 +473,13 @@
 ### Validation
 
 - [x] T069 Run all tests and verify ≥80% coverage
-- [ ] T070 Run golangci-lint and fix any issues
-- [ ] T071 Verify message processing latency < 50ms (P95)
+- [x] T070 Run golangci-lint and fix any issues
+- [x] T071 Verify message processing latency < 50ms (P95)
 
 ### Documentation
 
-- [ ] T072 [P] Update pkg/adapter/dji/README.md with handler/router documentation
-- [ ] T073 [P] Update quickstart.md with testing examples
+- [x] T072 [P] Update pkg/adapter/dji/README.md with handler/router documentation
+- [x] T073 [P] Update quickstart.md with testing examples
 
 **Checkpoint**: 003 Feature 完成
 

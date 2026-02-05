@@ -207,6 +207,6 @@ func TestDRCHandler_Handle_TimestampDefault(t *testing.T) {
 	assert.Greater(t, sm.Timestamp, int64(0))
 }
 
-func TestDRCHandler_ImplementsHandler(t *testing.T) {
+func TestDRCHandler_ImplementsHandler(_ *testing.T) {
 	var _ Handler = (*DRCHandler)(nil)
 }

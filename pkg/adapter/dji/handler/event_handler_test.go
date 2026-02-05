@@ -294,6 +294,6 @@ func TestEventHandler_GetRouter(t *testing.T) {
 	assert.Equal(t, r, handler.GetRouter())
 }
 
-func TestEventHandler_ImplementsHandler(t *testing.T) {
+func TestEventHandler_ImplementsHandler(_ *testing.T) {
 	var _ Handler = (*EventHandler)(nil)
 }

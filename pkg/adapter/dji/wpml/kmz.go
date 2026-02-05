@@ -23,7 +23,7 @@ func CreateKmz(mission *WPMLMission, kmzPath string) error {
 		return fmt.Errorf(ErrCreateDirectory, err)
 	}
 
-	if err := os.WriteFile(kmzPath, buffer.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(kmzPath, buffer.Bytes(), 0600); err != nil {
 		return fmt.Errorf(ErrWriteKMZFile, err)
 	}
 

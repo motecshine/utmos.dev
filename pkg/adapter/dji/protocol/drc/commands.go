@@ -119,7 +119,7 @@ type TakeoffToPointData struct {
 	CommanderFlightHeight   float64 `json:"commander_flight_height" example:"40"`   // 【必填】Commander flight height (relative to dock ALT)
 	FlightID                string  `json:"flight_id" binding:"required"`           // One-key takeoff mission UUID
 	MaxSpeed                *int    `json:"max_speed,omitempty" example:"10"`       // Max speed (1-15 m/s, optional)
-	//SimulateMission          *SimulateMission `json:"simulate_mission,omitempty"`             // Simulator mission settings (optional)
+	// SimulateMission          *SimulateMission `json:"simulate_mission,omitempty"`             // Simulator mission settings (optional)
 	FlightSafetyAdvanceCheck int `json:"flight_safety_advance_check"` // 飞行安全预检查 "0":"关闭","1":"开启"
 }
 

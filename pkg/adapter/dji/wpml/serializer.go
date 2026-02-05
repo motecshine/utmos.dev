@@ -41,7 +41,7 @@ func (s *XMLSerializer) Marshal(doc *Document) ([]byte, error) {
 }
 
 func (s *XMLSerializer) Unmarshal(data []byte, doc *Document) error {
-	if err := nbioxml.Unmarshal([]byte(data), doc); err != nil {
+	if err := nbioxml.Unmarshal(data, doc); err != nil {
 		return fmt.Errorf(ErrUnmarshalDocument, err)
 	}
 	return nil

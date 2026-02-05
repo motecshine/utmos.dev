@@ -24,7 +24,7 @@ func NewOSDHandler() *OSDHandler {
 }
 
 // Handle processes an OSD message and returns a StandardMessage.
-func (h *OSDHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+func (h *OSDHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	if msg == nil {
 		return nil, fmt.Errorf("nil message")
 	}
@@ -75,80 +75,71 @@ func (h *OSDHandler) GetTopicType() dji.TopicType {
 
 // buildOSDData converts parsed OSD to a data map for StandardMessage.
 func (h *OSDHandler) buildOSDData(osd *integration.ParsedOSD, topic *dji.TopicInfo) (json.RawMessage, error) {
-	result := make(map[string]interface{})
-
-	result["osd_type"] = string(osd.Type)
-	result["device_sn"] = topic.DeviceSN
-	result["gateway_sn"] = topic.GatewaySN
+	result := map[string]interface{}{
+		"osd_type":   string(osd.Type),
+		"device_sn":  topic.DeviceSN,
+		"gateway_sn": topic.GatewaySN,
+	}
 
 	switch osd.Type {
 	case integration.OSDTypeDock:
-		if osd.Dock != nil {
-			result["dock"] = osd.Dock
-			// Extract key fields for quick access
-			if osd.Dock.ModeCode != nil {
-				result["mode_code"] = *osd.Dock.ModeCode
-			}
-			if osd.Dock.CoverState != nil {
-				result["cover_state"] = *osd.Dock.CoverState
-			}
-			if osd.Dock.DroneInDock != nil {
-				result["drone_in_dock"] = *osd.Dock.DroneInDock
-			}
-			if osd.Dock.Longitude != nil {
-				result["longitude"] = *osd.Dock.Longitude
-			}
-			if osd.Dock.Latitude != nil {
-				result["latitude"] = *osd.Dock.Latitude
-			}
-		}
-
+		h.extractDockFields(osd, result)
 	case integration.OSDTypeRC:
-		if osd.RC != nil {
-			result["rc"] = osd.RC
-			if osd.RC.CapacityPercent != nil {
-				result["capacity_percent"] = *osd.RC.CapacityPercent
-			}
-			if osd.RC.Longitude != nil {
-				result["longitude"] = *osd.RC.Longitude
-			}
-			if osd.RC.Latitude != nil {
-				result["latitude"] = *osd.RC.Latitude
-			}
-		}
-
+		h.extractRCFields(osd, result)
 	case integration.OSDTypeAircraft:
-		if osd.Aircraft != nil {
-			result["aircraft"] = osd.Aircraft
-			// Extract key fields for quick access
-			if osd.Aircraft.ModeCode != nil {
-				result["mode_code"] = *osd.Aircraft.ModeCode
-			}
-			if osd.Aircraft.Longitude != nil {
-				result["longitude"] = *osd.Aircraft.Longitude
-			}
-			if osd.Aircraft.Latitude != nil {
-				result["latitude"] = *osd.Aircraft.Latitude
-			}
-			if osd.Aircraft.Height != nil {
-				result["height"] = *osd.Aircraft.Height
-			}
-			if osd.Aircraft.Elevation != nil {
-				result["elevation"] = *osd.Aircraft.Elevation
-			}
-			if osd.Aircraft.HorizontalSpeed != nil {
-				result["horizontal_speed"] = *osd.Aircraft.HorizontalSpeed
-			}
-			if osd.Aircraft.VerticalSpeed != nil {
-				result["vertical_speed"] = *osd.Aircraft.VerticalSpeed
-			}
-			if osd.Aircraft.Battery != nil && osd.Aircraft.Battery.CapacityPercent != nil {
-				result["battery_percent"] = *osd.Aircraft.Battery.CapacityPercent
-			}
-		}
+		h.extractAircraftFields(osd, result)
 	}
 
 	return json.Marshal(result)
+}
+
+// extractDockFields extracts key fields from DockOSD.
+func (h *OSDHandler) extractDockFields(osd *integration.ParsedOSD, result map[string]interface{}) {
+	if osd.Dock == nil {
+		return
+	}
+	result["dock"] = osd.Dock
+	setIfNotNil(result, "mode_code", osd.Dock.ModeCode)
+	setIfNotNil(result, "cover_state", osd.Dock.CoverState)
+	setIfNotNil(result, "drone_in_dock", osd.Dock.DroneInDock)
+	setIfNotNil(result, "longitude", osd.Dock.Longitude)
+	setIfNotNil(result, "latitude", osd.Dock.Latitude)
+}
+
+// extractRCFields extracts key fields from RCOSD.
+func (h *OSDHandler) extractRCFields(osd *integration.ParsedOSD, result map[string]interface{}) {
+	if osd.RC == nil {
+		return
+	}
+	result["rc"] = osd.RC
+	setIfNotNil(result, "capacity_percent", osd.RC.CapacityPercent)
+	setIfNotNil(result, "longitude", osd.RC.Longitude)
+	setIfNotNil(result, "latitude", osd.RC.Latitude)
+}
+
+// extractAircraftFields extracts key fields from AircraftOSD.
+func (h *OSDHandler) extractAircraftFields(osd *integration.ParsedOSD, result map[string]interface{}) {
+	if osd.Aircraft == nil {
+		return
+	}
+	result["aircraft"] = osd.Aircraft
+	setIfNotNil(result, "mode_code", osd.Aircraft.ModeCode)
+	setIfNotNil(result, "longitude", osd.Aircraft.Longitude)
+	setIfNotNil(result, "latitude", osd.Aircraft.Latitude)
+	setIfNotNil(result, "height", osd.Aircraft.Height)
+	setIfNotNil(result, "elevation", osd.Aircraft.Elevation)
+	setIfNotNil(result, "horizontal_speed", osd.Aircraft.HorizontalSpeed)
+	setIfNotNil(result, "vertical_speed", osd.Aircraft.VerticalSpeed)
+	if osd.Aircraft.Battery != nil {
+		setIfNotNil(result, "battery_percent", osd.Aircraft.Battery.CapacityPercent)
+	}
+}
+
+// setIfNotNil sets a value in the map if the pointer is not nil.
+func setIfNotNil[T any](m map[string]interface{}, key string, ptr *T) {
+	if ptr != nil {
+		m[key] = *ptr
+	}
 }
 
 // Ensure OSDHandler implements Handler interface.

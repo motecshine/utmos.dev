@@ -146,13 +146,11 @@ func (w *WPMLValidator) validateActionType(fl validator.FieldLevel) bool {
 	return false
 }
 
-func (w *WPMLValidator) validateRequiredForDrone(fl validator.FieldLevel) bool {
-
+func (w *WPMLValidator) validateRequiredForDrone(_ validator.FieldLevel) bool {
 	return true
 }
 
-func (w *WPMLValidator) validateRequiredForPayload(fl validator.FieldLevel) bool {
-
+func (w *WPMLValidator) validateRequiredForPayload(_ validator.FieldLevel) bool {
 	return true
 }
 

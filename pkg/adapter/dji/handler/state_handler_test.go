@@ -189,6 +189,6 @@ func TestStateHandler_Handle_TimestampDefault(t *testing.T) {
 	assert.Greater(t, sm.Timestamp, int64(0))
 }
 
-func TestStateHandler_ImplementsHandler(t *testing.T) {
+func TestStateHandler_ImplementsHandler(_ *testing.T) {
 	var _ Handler = (*StateHandler)(nil)
 }

@@ -193,7 +193,7 @@ const (
 	HeadingPathModeFollowBadArc     = "followBadArc"
 )
 
-func NewActionGroup(id int, startIndex, endIndex int) *ActionGroup {
+func NewActionGroup(id, startIndex, endIndex int) *ActionGroup {
 	return &ActionGroup{
 		ActionGroupID:         id,
 		ActionGroupStartIndex: startIndex,

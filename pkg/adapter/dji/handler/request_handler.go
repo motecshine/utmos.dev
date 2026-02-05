@@ -30,7 +30,7 @@ func NewRequestHandler(r *router.ServiceRouter) *RequestHandler {
 }
 
 // Handle processes a Request message and returns a StandardMessage.
-func (h *RequestHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+func (h *RequestHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	sm, err := HandleMessage(msg, topic, h.cfg, DefaultDataBuilder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build request data: %w", err)

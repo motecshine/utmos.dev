@@ -41,7 +41,7 @@ func TestOSDParser_ParseAircraftOSD(t *testing.T) {
 				}
 			}`,
 			wantErr: false,
-			check: func(t *testing.T, osd interface{}) {
+			check: func(_ *testing.T, osd interface{}) {
 				a := osd.(*struct {
 					ModeCode        *int
 					Longitude       *float64

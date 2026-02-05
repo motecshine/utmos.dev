@@ -28,7 +28,7 @@ func (h *mockHandler) GetTopicType() dji.TopicType {
 	return h.topicType
 }
 
-func TestHandlerInterface(t *testing.T) {
+func TestHandlerInterface(_ *testing.T) {
 	// Verify mockHandler implements Handler interface
 	var _ Handler = (*mockHandler)(nil)
 }
@@ -41,7 +41,7 @@ func TestMockHandler_Handle(t *testing.T) {
 
 	handler := &mockHandler{
 		topicType: dji.TopicTypeOSD,
-		handleFn: func(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
+		handleFn: func(_ context.Context, _ *dji.Message, _ *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 			return expectedMsg, nil
 		},
 	}
