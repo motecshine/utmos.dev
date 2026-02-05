@@ -176,3 +176,35 @@ func TestSubscriber_QueueNaming(t *testing.T) {
 		})
 	}
 }
+
+func TestSubscriber_Unsubscribe(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+	subscriber := NewSubscriber(client)
+
+	// Unsubscribe from non-existent queue should not error
+	err := subscriber.Unsubscribe("non-existent-queue")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestSubscriber_MultipleUnsubscribeAll(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+	subscriber := NewSubscriber(client)
+
+	// Multiple calls should not panic
+	subscriber.UnsubscribeAll()
+	subscriber.UnsubscribeAll()
+}

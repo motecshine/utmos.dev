@@ -174,3 +174,80 @@ func TestBusinessMetrics_LatencyMetrics(_ *testing.T) {
 	latencyHistogram.WithLabelValues("dji", "downlink").Observe(0.045)
 	latencyHistogram.WithLabelValues("tuya", "uplink").Observe(0.028)
 }
+
+func TestNewMessageMetrics(t *testing.T) {
+	collector := NewCollector("iot")
+	metrics := NewMessageMetrics(collector)
+
+	if metrics == nil {
+		t.Fatal("expected non-nil MessageMetrics")
+	}
+	if metrics.ProcessedTotal == nil {
+		t.Error("expected non-nil ProcessedTotal")
+	}
+	if metrics.ProcessDuration == nil {
+		t.Error("expected non-nil ProcessDuration")
+	}
+	if metrics.ErrorTotal == nil {
+		t.Error("expected non-nil ErrorTotal")
+	}
+	if metrics.QueueSize == nil {
+		t.Error("expected non-nil QueueSize")
+	}
+
+	// Test using the metrics
+	metrics.ProcessedTotal.WithLabelValues("gateway", "dji", "property", "success").Inc()
+	metrics.ProcessDuration.WithLabelValues("gateway", "dji", "property").Observe(0.05)
+	metrics.ErrorTotal.WithLabelValues("gateway", "dji", "property").Inc()
+	metrics.QueueSize.WithLabelValues("gateway").Set(100)
+}
+
+func TestNewDeviceMetrics(t *testing.T) {
+	collector := NewCollector("iot")
+	metrics := NewDeviceMetrics(collector)
+
+	if metrics == nil {
+		t.Fatal("expected non-nil DeviceMetrics")
+	}
+	if metrics.OnlineTotal == nil {
+		t.Error("expected non-nil OnlineTotal")
+	}
+	if metrics.EventTotal == nil {
+		t.Error("expected non-nil EventTotal")
+	}
+	if metrics.PropertyTotal == nil {
+		t.Error("expected non-nil PropertyTotal")
+	}
+
+	// Test using the metrics
+	metrics.OnlineTotal.WithLabelValues("gateway", "dji").Set(50)
+	metrics.EventTotal.WithLabelValues("gateway", "dji").Inc()
+	metrics.PropertyTotal.WithLabelValues("gateway", "dji").Add(10)
+}
+
+func TestNewHTTPMetrics(t *testing.T) {
+	collector := NewCollector("iot")
+	metrics := NewHTTPMetrics(collector)
+
+	if metrics == nil {
+		t.Fatal("expected non-nil HTTPMetrics")
+	}
+	if metrics.RequestTotal == nil {
+		t.Error("expected non-nil RequestTotal")
+	}
+	if metrics.RequestDuration == nil {
+		t.Error("expected non-nil RequestDuration")
+	}
+	if metrics.RequestSize == nil {
+		t.Error("expected non-nil RequestSize")
+	}
+	if metrics.ResponseSize == nil {
+		t.Error("expected non-nil ResponseSize")
+	}
+
+	// Test using the metrics
+	metrics.RequestTotal.WithLabelValues("api", "GET", "/health", "200").Inc()
+	metrics.RequestDuration.WithLabelValues("api", "GET", "/health").Observe(0.01)
+	metrics.RequestSize.WithLabelValues("api", "POST", "/devices").Observe(1024)
+	metrics.ResponseSize.WithLabelValues("api", "GET", "/devices").Observe(2048)
+}

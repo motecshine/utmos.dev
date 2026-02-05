@@ -40,7 +40,7 @@ func TestInjectContext(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := tt.setupContext()
-			headers := make(map[string]interface{})
+			headers := make(map[string]any)
 
 			InjectContext(ctx, headers)
 
@@ -56,28 +56,28 @@ func TestInjectContext(t *testing.T) {
 func TestExtractContext(t *testing.T) {
 	tests := []struct {
 		name    string
-		headers map[string]interface{}
+		headers map[string]any
 	}{
 		{
 			name: "extract with valid traceparent",
-			headers: map[string]interface{}{
+			headers: map[string]any{
 				"traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 			},
 		},
 		{
 			name: "extract with traceparent and tracestate",
-			headers: map[string]interface{}{
+			headers: map[string]any{
 				"traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 				"tracestate":  "congo=t61rcWkgMzE",
 			},
 		},
 		{
 			name:    "extract with empty headers",
-			headers: map[string]interface{}{},
+			headers: map[string]any{},
 		},
 		{
 			name: "extract with invalid traceparent",
-			headers: map[string]interface{}{
+			headers: map[string]any{
 				"traceparent": "invalid",
 			},
 		},
@@ -105,7 +105,7 @@ func TestRoundTrip_InjectAndExtract(t *testing.T) {
 	defer span.End()
 
 	// Inject the context into headers
-	headers := make(map[string]interface{})
+	headers := make(map[string]any)
 	InjectContext(ctx, headers)
 
 	// Extract the context from headers
@@ -116,7 +116,7 @@ func TestRoundTrip_InjectAndExtract(t *testing.T) {
 }
 
 func TestMessageCarrier(t *testing.T) {
-	headers := map[string]interface{}{
+	headers := map[string]any{
 		"traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 		"tracestate":  "congo=t61rcWkgMzE",
 		"custom":      "value",

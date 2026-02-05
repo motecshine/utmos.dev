@@ -22,6 +22,7 @@ const (
 	ServiceDevice  = "device"
 	ServiceEvent   = "event"
 	ServiceService = "service"
+	ServiceRaw     = "raw" // Raw messages from/to protocol adapters
 )
 
 // Predefined action constants
@@ -34,6 +35,12 @@ const (
 	ActionEventNotify    = "event.notify"
 	ActionDeviceOnline   = "device.online"
 	ActionDeviceOffline  = "device.offline"
+)
+
+// Predefined direction constants for raw messages
+const (
+	DirectionUplink   = "uplink"
+	DirectionDownlink = "downlink"
 )
 
 // RoutingKey represents a RabbitMQ routing key.
@@ -127,4 +134,49 @@ func BuildBindingPattern(vendor, service, action string) string {
 		a = "#"
 	}
 	return fmt.Sprintf("%s.%s.%s.%s", RoutingKeyPrefix, v, s, a)
+}
+
+// RawRoutingKey represents a routing key for raw messages between gateway and adapters.
+// Format: iot.raw.{vendor}.{direction}
+type RawRoutingKey struct {
+	Vendor    string
+	Direction string // uplink or downlink
+}
+
+// NewRawRoutingKey creates a new raw routing key.
+func NewRawRoutingKey(vendor, direction string) RawRoutingKey {
+	return RawRoutingKey{
+		Vendor:    vendor,
+		Direction: direction,
+	}
+}
+
+// String returns the raw routing key as a string.
+// Format: iot.raw.{vendor}.{direction}
+func (r RawRoutingKey) String() string {
+	return fmt.Sprintf("%s.%s.%s.%s", RoutingKeyPrefix, ServiceRaw, r.Vendor, r.Direction)
+}
+
+// Validate validates the raw routing key.
+func (r RawRoutingKey) Validate() error {
+	if r.Vendor == "" {
+		return errors.New("vendor is required")
+	}
+	if r.Direction != DirectionUplink && r.Direction != DirectionDownlink {
+		return fmt.Errorf("direction must be '%s' or '%s'", DirectionUplink, DirectionDownlink)
+	}
+	return nil
+}
+
+// BuildRawBindingPattern creates a routing key pattern for raw message queue binding.
+func BuildRawBindingPattern(vendor, direction string) string {
+	v := vendor
+	if v == "" {
+		v = "*"
+	}
+	d := direction
+	if d == "" {
+		d = "*"
+	}
+	return fmt.Sprintf("%s.%s.%s.%s", RoutingKeyPrefix, ServiceRaw, v, d)
 }

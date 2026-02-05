@@ -183,3 +183,200 @@ func TestRoutingKey_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestNewRawRoutingKey(t *testing.T) {
+	tests := []struct {
+		name      string
+		vendor    string
+		direction string
+		expected  string
+	}{
+		{
+			name:      "DJI uplink",
+			vendor:    VendorDJI,
+			direction: DirectionUplink,
+			expected:  "iot.raw.dji.uplink",
+		},
+		{
+			name:      "DJI downlink",
+			vendor:    VendorDJI,
+			direction: DirectionDownlink,
+			expected:  "iot.raw.dji.downlink",
+		},
+		{
+			name:      "Tuya uplink",
+			vendor:    VendorTuya,
+			direction: DirectionUplink,
+			expected:  "iot.raw.tuya.uplink",
+		},
+		{
+			name:      "Generic downlink",
+			vendor:    VendorGeneric,
+			direction: DirectionDownlink,
+			expected:  "iot.raw.generic.downlink",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rk := NewRawRoutingKey(tt.vendor, tt.direction)
+			assert.Equal(t, tt.expected, rk.String())
+			assert.Equal(t, tt.vendor, rk.Vendor)
+			assert.Equal(t, tt.direction, rk.Direction)
+		})
+	}
+}
+
+func TestRawRoutingKey_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		rk      RawRoutingKey
+		wantErr bool
+	}{
+		{
+			name: "valid uplink",
+			rk: RawRoutingKey{
+				Vendor:    "dji",
+				Direction: DirectionUplink,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid downlink",
+			rk: RawRoutingKey{
+				Vendor:    "tuya",
+				Direction: DirectionDownlink,
+			},
+			wantErr: false,
+		},
+		{
+			name: "empty vendor",
+			rk: RawRoutingKey{
+				Vendor:    "",
+				Direction: DirectionUplink,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid direction",
+			rk: RawRoutingKey{
+				Vendor:    "dji",
+				Direction: "invalid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty direction",
+			rk: RawRoutingKey{
+				Vendor:    "dji",
+				Direction: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.rk.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestBuildRawBindingPattern(t *testing.T) {
+	tests := []struct {
+		name      string
+		vendor    string
+		direction string
+		expected  string
+	}{
+		{
+			name:      "specific vendor and direction",
+			vendor:    "dji",
+			direction: "uplink",
+			expected:  "iot.raw.dji.uplink",
+		},
+		{
+			name:      "wildcard vendor",
+			vendor:    "",
+			direction: "uplink",
+			expected:  "iot.raw.*.uplink",
+		},
+		{
+			name:      "wildcard direction",
+			vendor:    "dji",
+			direction: "",
+			expected:  "iot.raw.dji.*",
+		},
+		{
+			name:      "all wildcards",
+			vendor:    "",
+			direction: "",
+			expected:  "iot.raw.*.*",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pattern := BuildRawBindingPattern(tt.vendor, tt.direction)
+			assert.Equal(t, tt.expected, pattern)
+		})
+	}
+}
+
+func TestBuildBindingPattern(t *testing.T) {
+	tests := []struct {
+		name     string
+		vendor   string
+		service  string
+		action   string
+		expected string
+	}{
+		{
+			name:     "all specified",
+			vendor:   "dji",
+			service:  "device",
+			action:   "property.report",
+			expected: "iot.dji.device.property.report",
+		},
+		{
+			name:     "wildcard vendor",
+			vendor:   "",
+			service:  "device",
+			action:   "property.report",
+			expected: "iot.*.device.property.report",
+		},
+		{
+			name:     "wildcard service",
+			vendor:   "dji",
+			service:  "",
+			action:   "property.report",
+			expected: "iot.dji.*.property.report",
+		},
+		{
+			name:     "wildcard action",
+			vendor:   "dji",
+			service:  "device",
+			action:   "",
+			expected: "iot.dji.device.#",
+		},
+		{
+			name:     "all wildcards",
+			vendor:   "",
+			service:  "",
+			action:   "",
+			expected: "iot.*.*.#",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pattern := BuildBindingPattern(tt.vendor, tt.service, tt.action)
+			assert.Equal(t, tt.expected, pattern)
+		})
+	}
+}

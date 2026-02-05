@@ -8,15 +8,26 @@ import (
 	"github.com/google/uuid"
 )
 
+// ProtocolMeta contains protocol-specific metadata extracted by protocol adapters.
+// This field is optional and only populated when messages pass through a protocol adapter.
+type ProtocolMeta struct {
+	Vendor        string `json:"vendor"`                   // Vendor identifier (dji, tuya, generic)
+	OriginalTopic string `json:"original_topic,omitempty"` // Original MQTT topic
+	QoS           *int   `json:"qos,omitempty"`            // MQTT QoS level
+	Method        string `json:"method,omitempty"`         // Protocol method (e.g., DJI method field)
+	NeedReply     *bool  `json:"need_reply,omitempty"`     // Whether response is required
+}
+
 // StandardMessage represents the standard message format for RabbitMQ.
 type StandardMessage struct {
-	Data      json.RawMessage `json:"data"`      // Business data
-	TID       string          `json:"tid"`       // Transaction ID (UUID)
-	BID       string          `json:"bid"`       // Business ID (UUID)
-	Service   string          `json:"service"`   // Sending service name
-	Action    string          `json:"action"`    // Action identifier
-	DeviceSN  string          `json:"device_sn"` // Device serial number
-	Timestamp int64           `json:"timestamp"` // Millisecond Unix timestamp
+	Data         json.RawMessage `json:"data"`                    // Business data
+	TID          string          `json:"tid"`                     // Transaction ID (UUID)
+	BID          string          `json:"bid"`                     // Business ID (UUID)
+	Service      string          `json:"service"`                 // Sending service name
+	Action       string          `json:"action"`                  // Action identifier
+	DeviceSN     string          `json:"device_sn"`               // Device serial number
+	Timestamp    int64           `json:"timestamp"`               // Millisecond Unix timestamp
+	ProtocolMeta *ProtocolMeta   `json:"protocol_meta,omitempty"` // Protocol-specific metadata (optional)
 }
 
 // MessageHeader represents RabbitMQ message headers.
@@ -28,7 +39,7 @@ type MessageHeader struct {
 }
 
 // NewStandardMessage creates a new standard message with auto-generated IDs and timestamp.
-func NewStandardMessage(service, action, deviceSN string, data interface{}) (*StandardMessage, error) {
+func NewStandardMessage(service, action, deviceSN string, data any) (*StandardMessage, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -46,7 +57,7 @@ func NewStandardMessage(service, action, deviceSN string, data interface{}) (*St
 }
 
 // NewStandardMessageWithIDs creates a new standard message with specified IDs.
-func NewStandardMessageWithIDs(tid, bid, service, action, deviceSN string, data interface{}) (*StandardMessage, error) {
+func NewStandardMessageWithIDs(tid, bid, service, action, deviceSN string, data any) (*StandardMessage, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -87,12 +98,12 @@ func (m *StandardMessage) Validate() error {
 }
 
 // GetData unmarshals the Data field into the provided interface.
-func (m *StandardMessage) GetData(v interface{}) error {
+func (m *StandardMessage) GetData(v any) error {
 	return json.Unmarshal(m.Data, v)
 }
 
 // SetData marshals the provided interface into the Data field.
-func (m *StandardMessage) SetData(v interface{}) error {
+func (m *StandardMessage) SetData(v any) error {
 	data, err := json.Marshal(v)
 	if err != nil {
 		return err

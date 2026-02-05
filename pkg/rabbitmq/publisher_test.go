@@ -35,7 +35,7 @@ func TestPublisher_PublishWithoutConnection(t *testing.T) {
 	ctx := context.Background()
 	routingKey := NewRoutingKey(VendorDJI, ServiceDevice, ActionPropertyReport)
 
-	msg, err := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device-001", map[string]interface{}{
+	msg, err := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device-001", map[string]any{
 		"temperature": 25.5,
 	})
 	if err != nil {
@@ -111,7 +111,7 @@ func TestPublisher_MessageWithTraceContext(t *testing.T) {
 	publisher := NewPublisher(client)
 
 	ctx := context.Background()
-	msg, _ := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device", map[string]interface{}{})
+	msg, _ := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device", map[string]any{})
 
 	// Verify message has required fields
 	if msg.TID == "" {
@@ -126,4 +126,24 @@ func TestPublisher_MessageWithTraceContext(t *testing.T) {
 
 	// Publishing should fail (not connected) but message should be valid
 	_ = publisher.Publish(ctx, "iot.dji.device.property_report", msg)
+}
+
+func TestPublisher_PublishWithVendorNotConnected(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+	publisher := NewPublisher(client)
+
+	ctx := context.Background()
+	msg, _ := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device", map[string]any{})
+
+	// Should fail because not connected
+	err := publisher.PublishWithVendor(ctx, VendorDJI, ServiceDevice, ActionPropertyReport, msg)
+	if err == nil {
+		t.Error("expected error when publishing without connection")
+	}
 }

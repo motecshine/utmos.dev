@@ -15,7 +15,7 @@ var _ interface {
 
 // MessageCarrier implements propagation.TextMapCarrier for RabbitMQ message headers.
 type MessageCarrier struct {
-	Headers map[string]interface{}
+	Headers map[string]any
 }
 
 // Get returns the value for a given key.
@@ -34,7 +34,7 @@ func (c *MessageCarrier) Get(key string) string {
 // Set sets a key-value pair.
 func (c *MessageCarrier) Set(key, value string) {
 	if c.Headers == nil {
-		c.Headers = make(map[string]interface{})
+		c.Headers = make(map[string]any)
 	}
 	c.Headers[key] = value
 }
@@ -52,7 +52,7 @@ func (c *MessageCarrier) Keys() []string {
 }
 
 // InjectContext injects the trace context from ctx into the message headers.
-func InjectContext(ctx context.Context, headers map[string]interface{}) {
+func InjectContext(ctx context.Context, headers map[string]any) {
 	if headers == nil {
 		return
 	}
@@ -62,7 +62,7 @@ func InjectContext(ctx context.Context, headers map[string]interface{}) {
 }
 
 // ExtractContext extracts the trace context from message headers into a new context.
-func ExtractContext(ctx context.Context, headers map[string]interface{}) context.Context {
+func ExtractContext(ctx context.Context, headers map[string]any) context.Context {
 	if headers == nil {
 		return ctx
 	}

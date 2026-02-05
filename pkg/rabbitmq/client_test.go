@@ -113,3 +113,121 @@ func calculateBackoff(attempt int, base, maxDelay time.Duration) time.Duration {
 	}
 	return backoff
 }
+
+func TestClientDeclareExchangeNotConnected(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+
+	// Should fail because not connected
+	err := client.DeclareExchange("test-exchange", "topic")
+	if err == nil {
+		t.Error("expected error when declaring exchange without connection")
+	}
+	if err != ErrNotConnected {
+		t.Errorf("expected ErrNotConnected, got %v", err)
+	}
+}
+
+func TestClientDeclareQueueNotConnected(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+
+	// Should fail because not connected
+	_, err := client.DeclareQueue("test-queue", true)
+	if err == nil {
+		t.Error("expected error when declaring queue without connection")
+	}
+	if err != ErrNotConnected {
+		t.Errorf("expected ErrNotConnected, got %v", err)
+	}
+}
+
+func TestClientDeclareQueueWithDLQNotConnected(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+
+	// Should fail because not connected
+	_, err := client.DeclareQueueWithDLQ("test-queue", "dlx")
+	if err == nil {
+		t.Error("expected error when declaring queue with DLQ without connection")
+	}
+	if err != ErrNotConnected {
+		t.Errorf("expected ErrNotConnected, got %v", err)
+	}
+}
+
+func TestClientBindQueueNotConnected(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+
+	// Should fail because not connected
+	err := client.BindQueue("test-queue", "test.routing.key", "test-exchange")
+	if err == nil {
+		t.Error("expected error when binding queue without connection")
+	}
+	if err != ErrNotConnected {
+		t.Errorf("expected ErrNotConnected, got %v", err)
+	}
+}
+
+func TestClientChannelNotConnected(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@localhost:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+	}
+
+	client := NewClient(cfg)
+
+	// Channel should be nil when not connected
+	ch := client.Channel()
+	if ch != nil {
+		t.Error("expected nil channel when not connected")
+	}
+}
+
+func TestClientConnectContextCanceled(t *testing.T) {
+	cfg := &config.RabbitMQConfig{
+		URL:          "amqp://guest:guest@invalid-host:5672/",
+		ExchangeName: "iot",
+		ExchangeType: "topic",
+		Retry: config.RetryConfig{
+			MaxRetries:   10,
+			InitialDelay: 100 * time.Millisecond,
+			MaxDelay:     1 * time.Second,
+			Multiplier:   2.0,
+		},
+	}
+
+	client := NewClient(cfg)
+
+	// Cancel context immediately
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := client.Connect(ctx)
+	if err == nil {
+		t.Error("expected error when context is canceled")
+		client.Close()
+	}
+}

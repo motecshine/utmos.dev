@@ -73,7 +73,7 @@ func TestTracerProviderCreation(t *testing.T) {
 // TestTraceContextPropagation tests W3C trace context propagation
 func TestTraceContextPropagation(t *testing.T) {
 	// Test with valid traceparent header
-	headers := map[string]interface{}{
+	headers := map[string]any{
 		"traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 	}
 
@@ -176,7 +176,7 @@ func TestMessageHeaderTracing(t *testing.T) {
 	defer span.End()
 
 	// Inject trace context into headers
-	headers := make(map[string]interface{})
+	headers := make(map[string]any)
 	tracer.InjectContext(ctx, headers)
 
 	// Headers should contain traceparent

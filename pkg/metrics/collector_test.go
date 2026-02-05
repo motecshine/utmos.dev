@@ -131,3 +131,36 @@ func TestLabelConstants(t *testing.T) {
 		}
 	}
 }
+
+func TestCollector_NewSummary(t *testing.T) {
+	collector := NewCollector("test")
+
+	summary := collector.NewSummary(
+		"request_latency",
+		"Request latency in seconds",
+		[]string{"method"},
+	)
+	if summary == nil {
+		t.Fatal("expected non-nil summary")
+	}
+
+	// Should be able to observe values
+	summary.WithLabelValues("GET").Observe(0.25)
+}
+
+func TestCollector_NewHistogramWithNilBuckets(t *testing.T) {
+	collector := NewCollector("test")
+
+	// Should use default buckets when nil is passed
+	histogram := collector.NewHistogram(
+		"request_duration_default",
+		"Request duration in seconds",
+		[]string{"method"},
+		nil,
+	)
+	if histogram == nil {
+		t.Fatal("expected non-nil histogram")
+	}
+
+	histogram.WithLabelValues("GET").Observe(0.25)
+}

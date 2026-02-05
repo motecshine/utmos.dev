@@ -72,7 +72,7 @@ func (s *Subscriber) processMessages(msgs <-chan amqp.Delivery, handler MessageH
 // handleDelivery handles a single message delivery.
 func (s *Subscriber) handleDelivery(delivery amqp.Delivery, handler MessageHandler) {
 	// Extract trace context from headers
-	headerMap := make(map[string]interface{})
+	headerMap := make(map[string]any)
 	for k, v := range delivery.Headers {
 		headerMap[k] = v
 	}

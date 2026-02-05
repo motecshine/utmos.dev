@@ -44,7 +44,7 @@ func (p *Publisher) Publish(ctx context.Context, routingKey string, msg *Standar
 
 	// Create headers and inject trace context
 	headers := make(amqp.Table)
-	headerMap := make(map[string]interface{})
+	headerMap := make(map[string]any)
 	tracer.InjectContext(ctx, headerMap)
 
 	// Copy trace headers to AMQP table

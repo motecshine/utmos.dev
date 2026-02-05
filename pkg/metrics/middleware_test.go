@@ -211,3 +211,41 @@ func TestMiddlewareMetrics_MQTT(_ *testing.T) {
 	mqttMessages.WithLabelValues("publish", "1").Add(1000)
 	mqttMessages.WithLabelValues("subscribe", "1").Add(6000)
 }
+
+func TestNewMiddlewareMetrics(t *testing.T) {
+	collector := NewCollector("iot")
+	metrics := NewMiddlewareMetrics(collector)
+
+	if metrics == nil {
+		t.Fatal("expected non-nil MiddlewareMetrics")
+	}
+	if metrics.RabbitMQ == nil {
+		t.Error("expected non-nil RabbitMQ metrics")
+	}
+	if metrics.PostgreSQL == nil {
+		t.Error("expected non-nil PostgreSQL metrics")
+	}
+	if metrics.InfluxDB == nil {
+		t.Error("expected non-nil InfluxDB metrics")
+	}
+
+	// Test RabbitMQ metrics
+	metrics.RabbitMQ.ConnectionTotal.WithLabelValues("gateway").Set(1)
+	metrics.RabbitMQ.MessageTotal.WithLabelValues("gateway", "success").Inc()
+	metrics.RabbitMQ.MessageDuration.WithLabelValues("gateway").Observe(0.01)
+	metrics.RabbitMQ.PublishTotal.WithLabelValues("gateway", "success").Inc()
+	metrics.RabbitMQ.ConsumeTotal.WithLabelValues("gateway", "success").Inc()
+	metrics.RabbitMQ.ErrorTotal.WithLabelValues("gateway").Inc()
+
+	// Test PostgreSQL metrics
+	metrics.PostgreSQL.ConnectionPoolSize.WithLabelValues("api").Set(10)
+	metrics.PostgreSQL.ConnectionPoolUsed.WithLabelValues("api").Set(5)
+	metrics.PostgreSQL.QueryDuration.WithLabelValues("api").Observe(0.005)
+	metrics.PostgreSQL.QueryTotal.WithLabelValues("api", "success").Inc()
+	metrics.PostgreSQL.ErrorTotal.WithLabelValues("api").Inc()
+
+	// Test InfluxDB metrics
+	metrics.InfluxDB.WriteDuration.WithLabelValues("uplink").Observe(0.008)
+	metrics.InfluxDB.WriteTotal.WithLabelValues("uplink", "success").Inc()
+	metrics.InfluxDB.ErrorTotal.WithLabelValues("uplink").Inc()
+}

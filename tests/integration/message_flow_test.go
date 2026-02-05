@@ -16,7 +16,7 @@ func TestMessageFlowWithTracing(t *testing.T) {
 	ctx := context.Background()
 
 	// Test trace context injection into message headers
-	headers := make(map[string]interface{})
+	headers := make(map[string]any)
 	tracer.InjectContext(ctx, headers)
 
 	// Headers should be set (even if empty without active span)
@@ -99,7 +99,7 @@ func TestRoutingKeyParsing(t *testing.T) {
 
 // TestStandardMessageCreation tests message creation with all required fields
 func TestStandardMessageCreation(t *testing.T) {
-	data := map[string]interface{}{
+	data := map[string]any{
 		"temperature": 25.5,
 		"humidity":    60.0,
 	}
@@ -146,7 +146,7 @@ func TestTraceContextRoundTrip(t *testing.T) {
 	ctx := context.Background()
 
 	// Simulate trace context in headers
-	headers := map[string]interface{}{
+	headers := map[string]any{
 		"traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 		"tracestate":  "congo=t61rcWkgMzE",
 	}
@@ -165,7 +165,7 @@ func TestTraceContextRoundTrip(t *testing.T) {
 	}
 
 	// Inject back into new headers
-	newHeaders := make(map[string]interface{})
+	newHeaders := make(map[string]any)
 	tracer.InjectContext(extractedCtx, newHeaders)
 
 	// Headers should be propagated
