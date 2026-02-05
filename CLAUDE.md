@@ -93,3 +93,6 @@ See `.specify/memory/constitution.md` for complete architectural principles. Key
 - Thing Model Driven Architecture (TSL JSON format)
 - Test-First Development (TDD mandatory)
 - Microservice Architecture (5 services, RabbitMQ communication)
+
+## Recent Changes
+- 003-dji-protocol-implementation: Added Go 1.22+

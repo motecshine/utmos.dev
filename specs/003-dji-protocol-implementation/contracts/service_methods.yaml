@@ -1,0 +1,355 @@
+# DJI Service Methods Contract
+
+# 服务方法定义
+# 格式: method -> module, description, request_type, response_type
+
+service_methods:
+  # ==================== 设备控制 (device) ====================
+  cover_open:
+    module: device
+    description: 打开舱盖
+    request_type: null
+    response_type: CommonResponse
+
+  cover_close:
+    module: device
+    description: 关闭舱盖
+    request_type: null
+    response_type: CommonResponse
+
+  cover_force_close:
+    module: device
+    description: 强制关闭舱盖
+    request_type: null
+    response_type: CommonResponse
+
+  drone_open:
+    module: device
+    description: 飞行器开机
+    request_type: null
+    response_type: CommonResponse
+
+  drone_close:
+    module: device
+    description: 飞行器关机
+    request_type: null
+    response_type: CommonResponse
+
+  charge_open:
+    module: device
+    description: 开始充电
+    request_type: null
+    response_type: CommonResponse
+
+  charge_close:
+    module: device
+    description: 停止充电
+    request_type: null
+    response_type: CommonResponse
+
+  device_reboot:
+    module: device
+    description: 设备重启
+    request_type: null
+    response_type: CommonResponse
+
+  device_format:
+    module: device
+    description: 格式化设备存储
+    request_type: null
+    response_type: CommonResponse
+
+  drone_format:
+    module: device
+    description: 格式化飞行器存储
+    request_type: null
+    response_type: CommonResponse
+
+  debug_mode_open:
+    module: device
+    description: 开启调试模式
+    request_type: null
+    response_type: CommonResponse
+
+  debug_mode_close:
+    module: device
+    description: 关闭调试模式
+    request_type: null
+    response_type: CommonResponse
+
+  putter_open:
+    module: device
+    description: 打开推杆 (Dock1)
+    request_type: null
+    response_type: CommonResponse
+
+  putter_close:
+    module: device
+    description: 关闭推杆 (Dock1)
+    request_type: null
+    response_type: CommonResponse
+
+  supplement_light_open:
+    module: device
+    description: 开启补光灯
+    request_type: null
+    response_type: CommonResponse
+
+  supplement_light_close:
+    module: device
+    description: 关闭补光灯
+    request_type: null
+    response_type: CommonResponse
+
+  battery_maintenance_switch:
+    module: device
+    description: 电池维护模式切换
+    request_type: BatteryMaintenanceSwitchData
+    response_type: CommonResponse
+
+  air_conditioner_mode_switch:
+    module: device
+    description: 空调模式切换
+    request_type: AirConditionerModeSwitchData
+    response_type: CommonResponse
+
+  alarm_state_switch:
+    module: device
+    description: 告警状态切换
+    request_type: AlarmStateSwitchData
+    response_type: CommonResponse
+
+  battery_store_mode_switch:
+    module: device
+    description: 电池存储模式切换
+    request_type: BatteryStoreModeSwitchData
+    response_type: CommonResponse
+
+  sdr_workmode_switch:
+    module: device
+    description: SDR 工作模式切换
+    request_type: SDRWorkmodeSwitchData
+    response_type: CommonResponse
+
+  # ==================== 航线任务 (wayline) ====================
+  flighttask_create:
+    module: wayline
+    description: 创建航线任务
+    request_type: FlightTaskCreateData
+    response_type: CommonResponse
+
+  flighttask_prepare:
+    module: wayline
+    description: 准备航线任务
+    request_type: FlightTaskPrepareData
+    response_type: CommonResponse
+
+  flighttask_execute:
+    module: wayline
+    description: 执行航线任务
+    request_type: FlightTaskExecuteData
+    response_type: CommonResponse
+
+  flighttask_pause:
+    module: wayline
+    description: 暂停航线任务
+    request_type: null
+    response_type: CommonResponse
+
+  flighttask_recovery:
+    module: wayline
+    description: 恢复航线任务
+    request_type: null
+    response_type: CommonResponse
+
+  flighttask_undo:
+    module: wayline
+    description: 撤销航线任务
+    request_type: FlightTaskUndoData
+    response_type: CommonResponse
+
+  return_home:
+    module: wayline
+    description: 返航
+    request_type: null
+    response_type: CommonResponse
+
+  return_home_cancel:
+    module: wayline
+    description: 取消返航
+    request_type: null
+    response_type: CommonResponse
+
+  flight_setup_abort:
+    module: wayline
+    description: 中止飞行准备 (Dock1)
+    request_type: null
+    response_type: CommonResponse
+
+  # ==================== 相机控制 (camera) ====================
+  camera_mode_switch:
+    module: camera
+    description: 切换相机模式
+    request_type: CameraModeSwitchData
+    response_type: CommonResponse
+
+  camera_photo_take:
+    module: camera
+    description: 拍照
+    request_type: CameraPhotoTakeData
+    response_type: CommonResponse
+
+  camera_recording_start:
+    module: camera
+    description: 开始录像
+    request_type: CameraRecordingData
+    response_type: CommonResponse
+
+  camera_recording_stop:
+    module: camera
+    description: 停止录像
+    request_type: CameraRecordingData
+    response_type: CommonResponse
+
+  camera_aim:
+    module: camera
+    description: 相机瞄准
+    request_type: CameraAimData
+    response_type: CommonResponse
+
+  camera_focal_length_set:
+    module: camera
+    description: 设置焦距
+    request_type: CameraFocalLengthData
+    response_type: CommonResponse
+
+  gimbal_reset:
+    module: camera
+    description: 云台复位
+    request_type: GimbalResetData
+    response_type: CommonResponse
+
+  ir_metering_point_set:
+    module: camera
+    description: 设置红外测温点
+    request_type: IRMeteringPointData
+    response_type: CommonResponse
+
+  ir_metering_area_set:
+    module: camera
+    description: 设置红外测温区域
+    request_type: IRMeteringAreaData
+    response_type: CommonResponse
+
+  # ==================== DRC 实时控制 (drc) ====================
+  drc_mode_enter:
+    module: drc
+    description: 进入 DRC 模式
+    request_type: DRCModeEnterData
+    response_type: CommonResponse
+
+  drc_mode_exit:
+    module: drc
+    description: 退出 DRC 模式
+    request_type: null
+    response_type: CommonResponse
+
+  drone_control:
+    module: drc
+    description: 飞行器控制 (虚拟摇杆)
+    request_type: DroneControlData
+    response_type: CommonResponse
+
+  drone_emergency_stop:
+    module: drc
+    description: 紧急停止
+    request_type: null
+    response_type: CommonResponse
+
+  heart:
+    module: drc
+    description: DRC 心跳
+    request_type: HeartData
+    response_type: CommonResponse
+
+  # ==================== 文件管理 (file) ====================
+  file_upload_start:
+    module: file
+    description: 开始文件上传
+    request_type: FileUploadStartData
+    response_type: FileUploadStartResponse
+
+  file_upload_finish:
+    module: file
+    description: 完成文件上传
+    request_type: FileUploadFinishData
+    response_type: CommonResponse
+
+  file_upload_list:
+    module: file
+    description: 获取文件列表
+    request_type: FileUploadListData
+    response_type: FileUploadListResponse
+
+  # ==================== 固件升级 (firmware) ====================
+  ota_create:
+    module: firmware
+    description: 创建 OTA 升级任务
+    request_type: OTACreateData
+    response_type: CommonResponse
+
+  # ==================== 实时视频 (live) ====================
+  live_start_push:
+    module: live
+    description: 开始推流
+    request_type: LiveStartPushData
+    response_type: CommonResponse
+
+  live_stop_push:
+    module: live
+    description: 停止推流
+    request_type: LiveStopPushData
+    response_type: CommonResponse
+
+  live_set_quality:
+    module: live
+    description: 设置画质
+    request_type: LiveSetQualityData
+    response_type: CommonResponse
+
+  live_lens_change:
+    module: live
+    description: 切换镜头
+    request_type: LiveLensChangeData
+    response_type: CommonResponse
+
+  # ==================== 安全相关 (safety) ====================
+  flight_areas_update:
+    module: safety
+    description: 更新飞行区域
+    request_type: FlightAreasUpdateData
+    response_type: CommonResponse
+
+  # ==================== 配置管理 (config) ====================
+  config_get:
+    module: config
+    description: 获取配置
+    request_type: ConfigGetData
+    response_type: ConfigGetResponse
+
+  config_set:
+    module: config
+    description: 设置配置
+    request_type: ConfigSetData
+    response_type: CommonResponse
+
+# 通用响应类型
+response_types:
+  CommonResponse:
+    fields:
+      - name: result
+        type: int
+        description: 结果码 (0=成功)
+      - name: output
+        type: object
+        description: 输出数据 (可选)
