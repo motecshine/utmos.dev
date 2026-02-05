@@ -476,6 +476,14 @@
 - [x] T070 Run golangci-lint and fix any issues
 - [x] T071 Verify message processing latency < 50ms (P95)
 
+### Observability Integration (FR-018, FR-019, FR-020)
+
+- [x] T074 [P] Create pkg/adapter/dji/observability/metrics.go with Prometheus metrics
+- [x] T075 [P] Create pkg/adapter/dji/observability/logger.go with structured logging
+- [x] T076 [P] Create pkg/adapter/dji/observability/tracer.go with trace context support
+- [x] T077 [P] Create pkg/adapter/dji/observability/handler_observer.go for handler integration
+- [x] T078 [P] Create pkg/adapter/dji/observability/observability_test.go with unit tests
+
 ### Documentation
 
 - [x] T072 [P] Update pkg/adapter/dji/README.md with handler/router documentation
