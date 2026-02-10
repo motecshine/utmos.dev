@@ -93,7 +93,7 @@
   - Test ParseDockOSD
   - Test ParseRCOSD
 
-- [ ] T014 [P] [US1] Integration test for OSD flow in tests/integration/dji_osd_test.go
+- [x] T014 [P] [US1] Integration test for OSD flow in tests/integration/dji_osd_test.go
   - Mock RabbitMQ message with OSD payload
   - Verify StandardMessage output
 
@@ -465,10 +465,10 @@
 
 ### Integration Tests
 
-- [ ] T065 [P] End-to-end test for OSD flow in tests/integration/dji_e2e_osd_test.go
-- [ ] T066 [P] End-to-end test for Service flow in tests/integration/dji_e2e_service_test.go
-- [ ] T067 [P] End-to-end test for Event flow in tests/integration/dji_e2e_event_test.go
-- [ ] T068 [P] Performance test for 1000 devices in tests/integration/dji_performance_test.go
+- [x] T065 [P] End-to-end test for OSD flow in tests/integration/dji_e2e_osd_test.go
+- [x] T066 [P] End-to-end test for Service flow in tests/integration/dji_e2e_service_test.go
+- [x] T067 [P] End-to-end test for Event flow in tests/integration/dji_e2e_event_test.go
+- [x] T068 [P] Performance test for 1000 devices in tests/integration/dji_performance_test.go
 
 ### Validation
 
