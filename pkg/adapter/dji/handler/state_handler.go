@@ -64,7 +64,7 @@ func (h *StateHandler) GetTopicType() dji.TopicType {
 
 // buildStateData converts state data to a data map for StandardMessage.
 func (h *StateHandler) buildStateData(data json.RawMessage, topic *dji.TopicInfo) (json.RawMessage, error) {
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
 	result["device_sn"] = topic.DeviceSN
 	result["gateway_sn"] = topic.GatewaySN
@@ -72,7 +72,7 @@ func (h *StateHandler) buildStateData(data json.RawMessage, topic *dji.TopicInfo
 
 	// Parse the raw state data
 	if len(data) > 0 {
-		var stateData map[string]interface{}
+		var stateData map[string]any
 		if err := json.Unmarshal(data, &stateData); err != nil {
 			return nil, fmt.Errorf("failed to parse state data: %w", err)
 		}

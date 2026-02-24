@@ -75,8 +75,10 @@ func (r *Registry) List() []dji.TopicType {
 }
 
 // MustRegister registers a handler and panics on error.
+// This should only be used during program initialization (e.g., in init() or main()).
+// For runtime registration, use Register() which returns an error.
 func (r *Registry) MustRegister(handler Handler) {
 	if err := r.Register(handler); err != nil {
-		panic(err)
+		panic(fmt.Errorf("MustRegister: %w", err))
 	}
 }

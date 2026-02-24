@@ -78,8 +78,8 @@ func BuildStandardMessage(msg *dji.Message, topic *dji.TopicInfo, cfg MessageCon
 }
 
 // BuildRequestData builds data for request messages.
-func BuildRequestData(msg *dji.Message, topic *dji.TopicInfo, messageType string, extraFields map[string]interface{}) (json.RawMessage, error) {
-	result := map[string]interface{}{
+func BuildRequestData(msg *dji.Message, topic *dji.TopicInfo, messageType string, extraFields map[string]any) (json.RawMessage, error) {
+	result := map[string]any{
 		"device_sn":    topic.DeviceSN,
 		"gateway_sn":   topic.GatewaySN,
 		"message_type": messageType,
@@ -91,7 +91,7 @@ func BuildRequestData(msg *dji.Message, topic *dji.TopicInfo, messageType string
 	}
 
 	if len(msg.Data) > 0 {
-		var data interface{}
+		var data any
 		if err := json.Unmarshal(msg.Data, &data); err == nil {
 			result["data"] = data
 		} else {
@@ -108,7 +108,7 @@ func BuildRequestData(msg *dji.Message, topic *dji.TopicInfo, messageType string
 
 // BuildReplyData builds data for reply messages.
 func BuildReplyData(msg *dji.Message, topic *dji.TopicInfo, messageType string) (json.RawMessage, error) {
-	result := map[string]interface{}{
+	result := map[string]any{
 		"device_sn":    topic.DeviceSN,
 		"gateway_sn":   topic.GatewaySN,
 		"message_type": messageType,
@@ -116,7 +116,7 @@ func BuildReplyData(msg *dji.Message, topic *dji.TopicInfo, messageType string) 
 	}
 
 	if len(msg.Data) > 0 {
-		var replyData map[string]interface{}
+		var replyData map[string]any
 		if err := json.Unmarshal(msg.Data, &replyData); err == nil {
 			if resultCode, ok := replyData["result"].(float64); ok {
 				result["result"] = int(resultCode)

@@ -17,7 +17,7 @@ func TestWPMLValidator_ValidateStruct(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		input       interface{}
+		input       any
 		expectError bool
 	}{
 		{

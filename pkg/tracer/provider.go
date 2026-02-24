@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/pkg/config"
 )
 
 // Provider wraps the OpenTelemetry TracerProvider.

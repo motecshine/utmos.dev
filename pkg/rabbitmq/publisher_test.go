@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/pkg/config"
 )
 
 func TestNewPublisher(t *testing.T) {
@@ -33,7 +33,7 @@ func TestPublisher_PublishWithoutConnection(t *testing.T) {
 	publisher := NewPublisher(client)
 
 	ctx := context.Background()
-	routingKey := NewRoutingKey(VendorDJI, ServiceDevice, ActionPropertyReport)
+	routingKey := NewRoutingKey("dji", ServiceDevice, ActionPropertyReport)
 
 	msg, err := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device-001", map[string]any{
 		"temperature": 25.5,
@@ -76,7 +76,7 @@ func TestPublisher_RoutingKeyFormats(t *testing.T) {
 	}{
 		{
 			name:       "DJI property report",
-			routingKey: NewRoutingKey(VendorDJI, ServiceDevice, ActionPropertyReport),
+			routingKey: NewRoutingKey("dji", ServiceDevice, ActionPropertyReport),
 			expected:   "iot.dji.device.property.report",
 		},
 		{
@@ -86,7 +86,7 @@ func TestPublisher_RoutingKeyFormats(t *testing.T) {
 		},
 		{
 			name:       "Tuya service call",
-			routingKey: NewRoutingKey(VendorTuya, ServiceService, ActionServiceCall),
+			routingKey: NewRoutingKey("tuya", ServiceService, ActionServiceCall),
 			expected:   "iot.tuya.service.service.call",
 		},
 	}
@@ -142,7 +142,7 @@ func TestPublisher_PublishWithVendorNotConnected(t *testing.T) {
 	msg, _ := NewStandardMessage(ServiceDevice, ActionPropertyReport, "test-device", map[string]any{})
 
 	// Should fail because not connected
-	err := publisher.PublishWithVendor(ctx, VendorDJI, ServiceDevice, ActionPropertyReport, msg)
+	err := publisher.PublishWithVendor(ctx, "dji", ServiceDevice, ActionPropertyReport, msg)
 	if err == nil {
 		t.Error("expected error when publishing without connection")
 	}

@@ -57,7 +57,7 @@ func TestGetKmzInfo(t *testing.T) {
 	assert.Contains(t, info, "files")
 	assert.Greater(t, info["total_size"], 0)
 
-	files := info["files"].([]map[string]interface{})
+	files := info["files"].([]map[string]any)
 	assert.NotEmpty(t, files)
 
 	// Check that we have expected files - may be different structure

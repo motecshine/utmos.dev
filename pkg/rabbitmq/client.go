@@ -8,7 +8,7 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/pkg/config"
 )
 
 // Client represents a RabbitMQ client.
@@ -57,14 +57,14 @@ func (c *Client) Connect(ctx context.Context) error {
 				if c.cfg.PrefetchCount > 0 {
 					err = c.channel.Qos(c.cfg.PrefetchCount, 0, false)
 					if err != nil {
-						c.conn.Close()
+						_ = c.conn.Close()
 						continue
 					}
 				}
 				c.connected = true
 				return nil
 			}
-			c.conn.Close()
+			_ = c.conn.Close()
 		}
 
 		// Exponential backoff

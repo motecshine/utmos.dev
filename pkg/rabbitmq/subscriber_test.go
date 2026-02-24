@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/pkg/config"
 )
 
 func TestNewSubscriber(t *testing.T) {

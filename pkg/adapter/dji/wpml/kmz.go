@@ -19,7 +19,8 @@ func CreateKmz(mission *WPMLMission, kmzPath string) error {
 	}
 
 	dir := filepath.Dir(kmzPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	//nolint:gosec // G301: Directory permissions 0750 for wayline files
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return fmt.Errorf(ErrCreateDirectory, err)
 	}
 
@@ -52,21 +53,21 @@ func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
 	zipWriter := zip.NewWriter(buffer)
 	templateWriter, err := zipWriter.Create("wpmz/template.kml")
 	if err != nil {
-		zipWriter.Close()
+		_ = zipWriter.Close()
 		return nil, fmt.Errorf(ErrCreateTemplateEntry, err)
 	}
 	if _, writeErr := templateWriter.Write(templateData); writeErr != nil {
-		zipWriter.Close()
+		_ = zipWriter.Close()
 		return nil, fmt.Errorf(ErrWriteTemplate, writeErr)
 	}
 
 	waylinesWriter, err := zipWriter.Create("wpmz/waylines.wpml")
 	if err != nil {
-		zipWriter.Close()
+		_ = zipWriter.Close()
 		return nil, fmt.Errorf(ErrCreateWaylinesEntry, err)
 	}
 	if _, err := waylinesWriter.Write(waylinesData); err != nil {
-		zipWriter.Close()
+		_ = zipWriter.Close()
 		return nil, fmt.Errorf(ErrWriteWaylines, err)
 	}
 
@@ -86,7 +87,7 @@ func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
 	return CreateKmzBuffer(mission)
 }
 
-func GetKmzInfo(mission *WPMLMission) (map[string]interface{}, error) {
+func GetKmzInfo(mission *WPMLMission) (map[string]any, error) {
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
 		return nil, err
@@ -97,19 +98,19 @@ func GetKmzInfo(mission *WPMLMission) (map[string]interface{}, error) {
 		return nil, fmt.Errorf(ErrParseZIP, err)
 	}
 
-	info := map[string]interface{}{
+	info := map[string]any{
 		"total_size": buffer.Len(),
-		"files":      make([]map[string]interface{}, 0),
+		"files":      make([]map[string]any, 0),
 	}
 
 	for _, file := range zipReader.File {
-		fileInfo := map[string]interface{}{
+		fileInfo := map[string]any{
 			"name":              file.Name,
 			"compressed_size":   file.CompressedSize64,
 			"uncompressed_size": file.UncompressedSize64,
 			"method":            file.Method,
 		}
-		info["files"] = append(info["files"].([]map[string]interface{}), fileInfo)
+		info["files"] = append(info["files"].([]map[string]any), fileInfo)
 	}
 
 	return info, nil
@@ -166,6 +167,7 @@ func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
 }
 
 func ParseKMZFile(filePath string) (*WPMLMission, error) {
+	//nolint:gosec // G304: File path is provided by user/caller
 	buffer, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("读取KMZfilefailure: %w", err)
@@ -178,7 +180,7 @@ func GenerateKMZJSON(mission *WPMLMission, fileName string) (string, error) {
 		return "", fmt.Errorf("mission不能为空")
 	}
 
-	result := map[string]interface{}{
+	result := map[string]any{
 		"file_name":  fileName,
 		"created_at": time.Now().Format(time.RFC3339),
 		"template":   nil,
@@ -206,6 +208,6 @@ func readZipFile(file *zip.File) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 	return io.ReadAll(reader)
 }

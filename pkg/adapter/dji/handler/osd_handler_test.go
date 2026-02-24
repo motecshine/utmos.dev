@@ -96,7 +96,7 @@ func TestOSDHandler_Handle_AircraftOSD(t *testing.T) {
 	assert.Equal(t, "thing/product/DOCK-SN-001/osd", sm.ProtocolMeta.OriginalTopic)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -140,7 +140,7 @@ func TestOSDHandler_Handle_DockOSD(t *testing.T) {
 	require.NotNil(t, sm)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -180,7 +180,7 @@ func TestOSDHandler_Handle_RCOSD(t *testing.T) {
 	require.NotNil(t, sm)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 

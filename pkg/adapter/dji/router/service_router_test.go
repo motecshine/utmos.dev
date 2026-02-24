@@ -102,12 +102,12 @@ func TestServiceRouter_RouteService_WithData(t *testing.T) {
 
 	handler := func(_ context.Context, data json.RawMessage) (*ServiceResponse, error) {
 		// Parse and echo back the data
-		var input map[string]interface{}
+		var input map[string]any
 		if err := json.Unmarshal(data, &input); err != nil {
 			return nil, err
 		}
 
-		output, _ := json.Marshal(map[string]interface{}{
+		output, _ := json.Marshal(map[string]any{
 			"received": input,
 		})
 
@@ -129,11 +129,11 @@ func TestServiceRouter_RouteService_WithData(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 0, resp.Result)
 
-	var output map[string]interface{}
+	var output map[string]any
 	err = json.Unmarshal(resp.Output, &output)
 	require.NoError(t, err)
 
-	received := output["received"].(map[string]interface{})
+	received := output["received"].(map[string]any)
 	assert.Equal(t, "hello", received["message"])
 }
 

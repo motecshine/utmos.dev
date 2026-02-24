@@ -8,9 +8,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/utmos/utmos/internal/downlink"
+	"github.com/utmos/utmos/internal/downlink/retry"
+	"github.com/utmos/utmos/internal/downlink/router"
 	"github.com/utmos/utmos/internal/shared/config"
-	"github.com/utmos/utmos/internal/shared/logger"
 	"github.com/utmos/utmos/internal/shared/server"
+	"github.com/utmos/utmos/pkg/logger"
+	djidownlink "github.com/utmos/utmos/pkg/adapter/dji/downlink"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
@@ -56,6 +60,35 @@ func main() {
 	subscriber := rabbitmq.NewSubscriber(rmqClient)
 	publisher := rabbitmq.NewPublisher(rmqClient)
 
+	// Initialize downlink service
+	downlinkConfig := &downlink.Config{
+		RetryConfig: &retry.Config{
+			MaxRetries:       3,
+			InitialDelay:     time.Second,
+			MaxDelay:         30 * time.Second,
+			Multiplier:       2.0,
+			EnableDeadLetter: true,
+		},
+		RouterConfig: &router.Config{
+			DefaultRoutingKey: router.RoutingKeyGatewayDownlink,
+			EnableMetrics:     true,
+		},
+		EnableRetry:         true,
+		EnableRouting:       true,
+		RetryWorkerInterval: 5 * time.Second,
+	}
+
+	downlinkService := downlink.NewService(downlinkConfig, publisher, log.WithService(serviceName))
+
+	// Register DJI dispatcher
+	djiDispatcher := djidownlink.NewDispatcherAdapter(publisher, log.WithService(serviceName))
+	downlinkService.RegisterAdapterDispatcher(djiDispatcher)
+
+	// Start downlink service
+	if err := downlinkService.Start(context.Background()); err != nil {
+		log.WithService(serviceName).Fatalf("failed to start downlink service: %v", err)
+	}
+
 	// Setup Gin router for health checks
 	if cfg.Logger.Level != "debug" {
 		gin.SetMode(gin.ReleaseMode)
@@ -68,7 +101,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
 	router.GET("/ready", func(c *gin.Context) {
-		if rmqClient.IsConnected() {
+		if rmqClient.IsConnected() && downlinkService.IsRunning() {
 			c.JSON(http.StatusOK, gin.H{"status": "ready"})
 			return
 		}
@@ -93,6 +126,10 @@ func main() {
 		return srv.Shutdown(ctx)
 	})
 	shutdown.Register(func(_ context.Context) error {
+		log.WithService(serviceName).Info("Stopping downlink service")
+		return downlinkService.Stop()
+	})
+	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
 		subscriber.UnsubscribeAll()
 		return nil
@@ -114,9 +151,9 @@ func main() {
 		}
 	}()
 
-	// Log publisher availability (will be used for message routing to gateway)
-	_ = publisher
-	log.WithService(serviceName).Info("Downlink message processor ready")
+	// Log service status
+	vendors := downlinkService.GetRegisteredVendors()
+	log.WithService(serviceName).Infof("Downlink service ready with vendors: %v", vendors)
 
 	// Wait for shutdown signal
 	if err := shutdown.Wait(); err != nil {

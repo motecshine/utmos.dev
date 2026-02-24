@@ -40,7 +40,7 @@ func (h *ServiceHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.
 		if isReply {
 			return BuildReplyData(msg, topic, cfg.ReplyType)
 		}
-		extraFields := map[string]interface{}{
+		extraFields := map[string]any{
 			"timeout_ms": h.timeout.Milliseconds(),
 		}
 		return BuildRequestData(msg, topic, cfg.MessageType, extraFields)

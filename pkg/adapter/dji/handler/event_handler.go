@@ -10,6 +10,7 @@ import (
 )
 
 // EventHandler handles Event messages.
+//nolint:dupl // Structure similar to RequestHandler but types differ
 type EventHandler struct {
 	router *router.EventRouter
 	cfg    MessageConfig

@@ -98,7 +98,7 @@ func TestEventHandler_Handle_EventRequest(t *testing.T) {
 	assert.Equal(t, "hms", sm.ProtocolMeta.Method)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -136,7 +136,7 @@ func TestEventHandler_Handle_EventReply(t *testing.T) {
 	assert.Equal(t, dji.ActionEventReply, sm.Action)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -170,7 +170,7 @@ func TestEventHandler_Handle_NeedReply(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -219,7 +219,7 @@ func TestEventHandler_Handle_HMSEvent(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -257,7 +257,7 @@ func TestEventHandler_Handle_FileUploadCallback(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 

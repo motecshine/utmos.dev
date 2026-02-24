@@ -98,7 +98,7 @@ func TestDRCHandler_Handle_DRCUp(t *testing.T) {
 	assert.Equal(t, "drone_control", sm.ProtocolMeta.Method)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -134,7 +134,7 @@ func TestDRCHandler_Handle_DRCDown(t *testing.T) {
 	assert.Equal(t, dji.ActionDRCEvent, sm.Action)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -166,7 +166,7 @@ func TestDRCHandler_Handle_Heartbeat(t *testing.T) {
 	require.NotNil(t, sm)
 
 	// Verify data contains heartbeat info
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 

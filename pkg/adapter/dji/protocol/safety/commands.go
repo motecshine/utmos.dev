@@ -18,7 +18,7 @@ type FlightAreaFile struct {
 type FlightAreasUpdateCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewFlightAreasUpdateRequest creates a new flight areas update request

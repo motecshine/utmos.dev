@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/utmos/utmos/internal/shared/logger"
+	"github.com/utmos/utmos/pkg/logger"
 )
 
 // Logger wraps the shared logger with DJI-specific fields.

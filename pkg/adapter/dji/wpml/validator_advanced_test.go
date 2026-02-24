@@ -12,7 +12,7 @@ func TestWPMLValidator_ValidateVar(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		value     interface{}
+		value     any
 		tag       string
 		shouldErr bool
 	}{
@@ -184,7 +184,7 @@ func TestWPMLValidator_GetValidationErrors(t *testing.T) {
 }
 
 func TestInitGlobalValidator(t *testing.T) {
-	InitGlobalValidator()
+	_ = InitGlobalValidator()
 	// Test that global validator functions work
 
 	waylines := createValidWaylines("Global Test")
@@ -194,7 +194,7 @@ func TestInitGlobalValidator(t *testing.T) {
 }
 
 func TestValidateActionGlobal(t *testing.T) {
-	InitGlobalValidator()
+	_ = InitGlobalValidator()
 
 	action := &TakePhotoAction{
 		PayloadPositionIndex:      PayloadPosition0,
@@ -207,7 +207,7 @@ func TestValidateActionGlobal(t *testing.T) {
 }
 
 func TestValidateWaylinesDocumentGlobal(t *testing.T) {
-	InitGlobalValidator()
+	_ = InitGlobalValidator()
 
 	// Create a simple valid document using existing working structures
 	waylines := createValidWaylines("Test Mission")

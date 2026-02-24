@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,8 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/utmos/utmos/internal/shared/config"
-	"github.com/utmos/utmos/internal/shared/logger"
 	"github.com/utmos/utmos/internal/shared/server"
+	"github.com/utmos/utmos/internal/uplink"
+	"github.com/utmos/utmos/internal/uplink/router"
+	"github.com/utmos/utmos/internal/uplink/storage"
+	djiuplink "github.com/utmos/utmos/pkg/adapter/dji/uplink"
+	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
@@ -56,32 +61,102 @@ func main() {
 	subscriber := rabbitmq.NewSubscriber(rmqClient)
 	publisher := rabbitmq.NewPublisher(rmqClient)
 
+	// Create uplink service configuration
+	influxConfig := &storage.Config{
+		URL:           cfg.Database.InfluxDB.URL,
+		Token:         cfg.Database.InfluxDB.Token,
+		Org:           cfg.Database.InfluxDB.Org,
+		Bucket:        cfg.Database.InfluxDB.Bucket,
+		BatchSize:     1000,
+		FlushInterval: time.Second,
+	}
+
+	routerConfig := &router.Config{
+		Exchange:         cfg.RabbitMQ.ExchangeName,
+		EnableWSRouting:  true,
+		EnableAPIRouting: true,
+	}
+
+	svcConfig := &uplink.ServiceConfig{
+		QueueName: "iot.uplink.messages",
+		RoutingKeys: []string{
+			"iot.dji.#",
+			"iot.raw.*.uplink",
+		},
+		Influx:        influxConfig,
+		Router:        routerConfig,
+		EnableStorage: true,
+		EnableRouting: true,
+	}
+
+	// Create uplink service
+	logEntry := log.WithService(serviceName)
+	uplinkSvc := uplink.NewService(svcConfig, subscriber, publisher, logEntry)
+
+	// Register DJI processor
+	djiProcessor := djiuplink.NewProcessorAdapter(logEntry)
+	uplinkSvc.RegisterProcessor(djiProcessor)
+
 	// Setup Gin router for health checks
 	if cfg.Logger.Level != "debug" {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	router := gin.New()
-	router.Use(gin.Recovery())
+	ginRouter := gin.New()
+	ginRouter.Use(gin.Recovery())
 
 	// Health check endpoints
-	router.GET("/health", func(c *gin.Context) {
+	ginRouter.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
-	router.GET("/ready", func(c *gin.Context) {
-		if rmqClient.IsConnected() {
-			c.JSON(http.StatusOK, gin.H{"status": "ready"})
+	ginRouter.GET("/ready", func(c *gin.Context) {
+		rmqReady := rmqClient.IsConnected()
+		svcRunning := uplinkSvc.IsRunning()
+
+		if rmqReady && svcRunning {
+			stats := uplinkSvc.GetStats()
+			c.JSON(http.StatusOK, gin.H{
+				"status":            "ready",
+				"rabbitmq":          "connected",
+				"service":           "running",
+				"registered_vendors": stats.RegisteredVendors,
+				"storage_enabled":   stats.StorageEnabled,
+				"routing_enabled":   stats.RoutingEnabled,
+			})
 			return
 		}
-		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "not ready"})
+
+		status := gin.H{
+			"status":   "not ready",
+			"rabbitmq": "disconnected",
+			"service":  "stopped",
+		}
+		if rmqReady {
+			status["rabbitmq"] = "connected"
+		}
+		if svcRunning {
+			status["service"] = "running"
+		}
+		c.JSON(http.StatusServiceUnavailable, status)
 	})
 
 	// Metrics endpoint
-	router.GET(cfg.Metrics.Path, metrics.Handler(metricsCollector))
+	ginRouter.GET(cfg.Metrics.Path, metrics.Handler(metricsCollector))
+
+	// Stats endpoint
+	ginRouter.GET("/stats", func(c *gin.Context) {
+		stats := uplinkSvc.GetStats()
+		c.JSON(http.StatusOK, gin.H{
+			"running":            stats.Running,
+			"registered_vendors": stats.RegisteredVendors,
+			"storage_enabled":    stats.StorageEnabled,
+			"routing_enabled":    stats.RoutingEnabled,
+		})
+	})
 
 	// Create HTTP server for health checks
 	srv := &http.Server{
 		Addr:         fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),
-		Handler:      router,
+		Handler:      ginRouter,
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
@@ -91,6 +166,10 @@ func main() {
 	shutdown.Register(func(ctx context.Context) error {
 		log.WithService(serviceName).Info("Shutting down HTTP server")
 		return srv.Shutdown(ctx)
+	})
+	shutdown.Register(func(ctx context.Context) error {
+		log.WithService(serviceName).Info("Stopping uplink service")
+		return uplinkSvc.Stop()
 	})
 	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
@@ -109,14 +188,19 @@ func main() {
 	// Start HTTP server for health checks
 	go func() {
 		log.WithService(serviceName).Infof("Health check server listening on %s:%d", cfg.Server.Host, cfg.Server.Port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.WithService(serviceName).Fatalf("failed to start server: %v", err)
 		}
 	}()
 
-	// Log publisher availability (will be used for message routing)
-	_ = publisher
-	log.WithService(serviceName).Info("Uplink message processor ready")
+	// Start uplink service
+	ctx := context.Background()
+	if err := uplinkSvc.Start(ctx); err != nil {
+		log.WithService(serviceName).Warnf("failed to start uplink service: %v", err)
+		log.WithService(serviceName).Info("Uplink running in degraded mode")
+	} else {
+		log.WithService(serviceName).Info("Uplink service started - processing messages")
+	}
 
 	// Wait for shutdown signal
 	if err := shutdown.Wait(); err != nil {

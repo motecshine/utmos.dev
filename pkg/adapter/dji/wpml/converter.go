@@ -341,18 +341,34 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 	param := &ActionActuatorFuncParam{}
 
 	switch actionReq.Type {
+	case ActionTypeTakePhoto, ActionTypeStartRecord, ActionTypeStopRecord:
+		convertCameraActions(actionReq, param)
+	case ActionTypeGimbalRotate, ActionTypeGimbalEvenlyRotate, ActionTypeGimbalAngleLock, ActionTypeGimbalAngleUnlock:
+		convertGimbalActions(actionReq, param)
+	case ActionTypeAccurateShoot, ActionTypeOrientedShoot, ActionTypePanoShot:
+		convertAdvancedShootActions(actionReq, param)
+	case ActionTypeHover, ActionTypeZoom, ActionTypeFocus, ActionTypeRotateYaw:
+		convertBasicActions(actionReq, param)
+	case ActionTypeCustomDirName, ActionTypeRecordPointCloud:
+		convertUtilityActions(actionReq, param)
+	case ActionTypeStartSmartOblique, ActionTypeStartTimeLapse, ActionTypeStopTimeLapse:
+		convertTimeLapseActions(actionReq, param)
+	case ActionTypeSetFocusType, ActionTypeTargetDetection:
+		convertDetectionActions(actionReq, param)
+	}
+
+	return param
+}
+
+func convertCameraActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
 	case ActionTypeTakePhoto:
 		if takePhotoAction, ok := actionReq.Action.(*TakePhotoAction); ok {
 			posIndex := int(takePhotoAction.PayloadPositionIndex)
 			param.PayloadPositionIndex = &posIndex
 			param.PayloadLensIndex = takePhotoAction.PayloadLensIndex
 			param.FileSuffix = &takePhotoAction.FileSuffix
-
-			useGlobal := 0
-			if takePhotoAction.UseGlobalPayloadLensIndex {
-				useGlobal = 1
-			}
-			param.UseGlobalPayloadLensIndex = &useGlobal
+			param.UseGlobalPayloadLensIndex = boolToIntPtr(takePhotoAction.UseGlobalPayloadLensIndex)
 		}
 	case ActionTypeStartRecord:
 		if startRecordAction, ok := actionReq.Action.(*StartRecordAction); ok {
@@ -360,12 +376,7 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.PayloadPositionIndex = &posIndex
 			param.FileSuffix = &startRecordAction.FileSuffix
 			param.PayloadLensIndex = startRecordAction.PayloadLensIndex
-
-			useGlobal := 0
-			if startRecordAction.UseGlobalPayloadLensIndex {
-				useGlobal = 1
-			}
-			param.UseGlobalPayloadLensIndex = &useGlobal
+			param.UseGlobalPayloadLensIndex = boolToIntPtr(startRecordAction.UseGlobalPayloadLensIndex)
 		}
 	case ActionTypeStopRecord:
 		if stopRecordAction, ok := actionReq.Action.(*StopRecordAction); ok {
@@ -373,84 +384,25 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.PayloadPositionIndex = &posIndex
 			param.PayloadLensIndex = stopRecordAction.PayloadLensIndex
 		}
-	case ActionTypeHover:
-		if hoverAction, ok := actionReq.Action.(*HoverAction); ok {
-			param.HoverTime = &hoverAction.HoverTime
-		}
-	case ActionTypeZoom:
-		if zoomAction, ok := actionReq.Action.(*ZoomAction); ok {
-			posIndex := int(zoomAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-			param.FocalLength = &zoomAction.FocalLength
-		}
-	case ActionTypeFocus:
-		if focusAction, ok := actionReq.Action.(*FocusAction); ok {
-			posIndex := int(focusAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+	}
+}
 
-			pointFocus := 0
-			if focusAction.IsPointFocus {
-				pointFocus = 1
-			}
-			param.IsPointFocus = &pointFocus
-
-			param.FocusX = &focusAction.FocusX
-			param.FocusY = &focusAction.FocusY
-
-			infiniteFocus := 0
-			if focusAction.IsInfiniteFocus {
-				infiniteFocus = 1
-			}
-			param.IsInfiniteFocus = &infiniteFocus
-
-			param.FocusRegionWidth = focusAction.FocusRegionWidth
-			param.FocusRegionHeight = focusAction.FocusRegionHeight
-		}
+func convertGimbalActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
 	case ActionTypeGimbalRotate:
 		if gimbalRotateAction, ok := actionReq.Action.(*GimbalRotateAction); ok {
 			posIndex := int(gimbalRotateAction.PayloadPositionIndex)
 			param.PayloadPositionIndex = &posIndex
 			param.GimbalHeadingYawBase = &gimbalRotateAction.GimbalHeadingYawBase
 			param.GimbalRotateMode = &gimbalRotateAction.GimbalRotateMode
-
-			pitchEnable := 0
-			if gimbalRotateAction.GimbalPitchRotateEnable {
-				pitchEnable = 1
-			}
-			param.GimbalPitchRotateEnable = &pitchEnable
+			param.GimbalPitchRotateEnable = boolToIntPtr(gimbalRotateAction.GimbalPitchRotateEnable)
 			param.GimbalPitchRotateAngle = &gimbalRotateAction.GimbalPitchRotateAngle
-
-			rollEnable := 0
-			if gimbalRotateAction.GimbalRollRotateEnable {
-				rollEnable = 1
-			}
-			param.GimbalRollRotateEnable = &rollEnable
+			param.GimbalRollRotateEnable = boolToIntPtr(gimbalRotateAction.GimbalRollRotateEnable)
 			param.GimbalRollRotateAngle = &gimbalRotateAction.GimbalRollRotateAngle
-
-			yawEnable := 0
-			if gimbalRotateAction.GimbalYawRotateEnable {
-				yawEnable = 1
-			}
-			param.GimbalYawRotateEnable = &yawEnable
+			param.GimbalYawRotateEnable = boolToIntPtr(gimbalRotateAction.GimbalYawRotateEnable)
 			param.GimbalYawRotateAngle = &gimbalRotateAction.GimbalYawRotateAngle
-
-			timeEnable := 0
-			if gimbalRotateAction.GimbalRotateTimeEnable {
-				timeEnable = 1
-			}
-			param.GimbalRotateTimeEnable = &timeEnable
+			param.GimbalRotateTimeEnable = boolToIntPtr(gimbalRotateAction.GimbalRotateTimeEnable)
 			param.GimbalRotateTime = &gimbalRotateAction.GimbalRotateTime
-		}
-	case ActionTypeRotateYaw:
-		if rotateYawAction, ok := actionReq.Action.(*RotateYawAction); ok {
-			param.AircraftHeading = &rotateYawAction.AircraftHeading
-			param.AircraftPathMode = rotateYawAction.AircraftPathMode
-		}
-	case ActionTypeCustomDirName:
-		if customDirNameAction, ok := actionReq.Action.(*CustomDirNameAction); ok {
-			posIndex := int(customDirNameAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-			param.DirectoryName = &customDirNameAction.DirectoryName
 		}
 	case ActionTypeGimbalEvenlyRotate:
 		if gimbalEvenlyRotateAction, ok := actionReq.Action.(*GimbalEvenlyRotateAction); ok {
@@ -458,6 +410,21 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.PayloadPositionIndex = &posIndex
 			param.GimbalPitchRotateAngle = &gimbalEvenlyRotateAction.GimbalPitchRotateAngle
 		}
+	case ActionTypeGimbalAngleLock:
+		if gimbalAngleLockAction, ok := actionReq.Action.(*GimbalAngleLockAction); ok {
+			posIndex := int(gimbalAngleLockAction.PayloadPositionIndex)
+			param.PayloadPositionIndex = &posIndex
+		}
+	case ActionTypeGimbalAngleUnlock:
+		if gimbalAngleUnlockAction, ok := actionReq.Action.(*GimbalAngleUnlockAction); ok {
+			posIndex := int(gimbalAngleUnlockAction.PayloadPositionIndex)
+			param.PayloadPositionIndex = &posIndex
+		}
+	}
+}
+
+func convertAdvancedShootActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
 	case ActionTypeAccurateShoot:
 		if accurateShootAction, ok := actionReq.Action.(*AccurateShootAction); ok {
 			posIndex := int(accurateShootAction.PayloadPositionIndex)
@@ -476,18 +443,8 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.AFPos = &accurateShootAction.AFPos
 			param.GimbalPort = &accurateShootAction.GimbalPort
 			param.PayloadLensIndex = accurateShootAction.PayloadLensIndex
-
-			accurateFrameValid := 0
-			if accurateShootAction.AccurateFrameValid {
-				accurateFrameValid = 1
-			}
-			param.AccurateFrameValid = &accurateFrameValid
-
-			useGlobal := 0
-			if accurateShootAction.UseGlobalPayloadLensIndex {
-				useGlobal = 1
-			}
-			param.UseGlobalPayloadLensIndex = &useGlobal
+			param.AccurateFrameValid = boolToIntPtr(accurateShootAction.AccurateFrameValid)
+			param.UseGlobalPayloadLensIndex = boolToIntPtr(accurateShootAction.UseGlobalPayloadLensIndex)
 		}
 	case ActionTypeOrientedShoot:
 		if orientedShootAction, ok := actionReq.Action.(*OrientedShootAction); ok {
@@ -518,18 +475,8 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.OrientedCameraISO = &orientedShootAction.OrientedCameraISO
 			param.OrientedPhotoMode = &orientedShootAction.OrientedPhotoMode
 			param.PayloadLensIndex = orientedShootAction.PayloadLensIndex
-
-			accurateFrameValid := 0
-			if orientedShootAction.AccurateFrameValid {
-				accurateFrameValid = 1
-			}
-			param.AccurateFrameValid = &accurateFrameValid
-
-			useGlobal := 0
-			if orientedShootAction.UseGlobalPayloadLensIndex {
-				useGlobal = 1
-			}
-			param.UseGlobalPayloadLensIndex = &useGlobal
+			param.AccurateFrameValid = boolToIntPtr(orientedShootAction.AccurateFrameValid)
+			param.UseGlobalPayloadLensIndex = boolToIntPtr(orientedShootAction.UseGlobalPayloadLensIndex)
 		}
 	case ActionTypePanoShot:
 		if panoShotAction, ok := actionReq.Action.(*PanoShotAction); ok {
@@ -537,12 +484,49 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.PayloadPositionIndex = &posIndex
 			param.PanoShotSubMode = &panoShotAction.PanoShotSubMode
 			param.PayloadLensIndex = panoShotAction.PayloadLensIndex
+			param.UseGlobalPayloadLensIndex = boolToIntPtr(panoShotAction.UseGlobalPayloadLensIndex)
+		}
+	}
+}
 
-			useGlobal := 0
-			if panoShotAction.UseGlobalPayloadLensIndex {
-				useGlobal = 1
-			}
-			param.UseGlobalPayloadLensIndex = &useGlobal
+func convertBasicActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
+	case ActionTypeHover:
+		if hoverAction, ok := actionReq.Action.(*HoverAction); ok {
+			param.HoverTime = &hoverAction.HoverTime
+		}
+	case ActionTypeZoom:
+		if zoomAction, ok := actionReq.Action.(*ZoomAction); ok {
+			posIndex := int(zoomAction.PayloadPositionIndex)
+			param.PayloadPositionIndex = &posIndex
+			param.FocalLength = &zoomAction.FocalLength
+		}
+	case ActionTypeFocus:
+		if focusAction, ok := actionReq.Action.(*FocusAction); ok {
+			posIndex := int(focusAction.PayloadPositionIndex)
+			param.PayloadPositionIndex = &posIndex
+			param.IsPointFocus = boolToIntPtr(focusAction.IsPointFocus)
+			param.FocusX = &focusAction.FocusX
+			param.FocusY = &focusAction.FocusY
+			param.IsInfiniteFocus = boolToIntPtr(focusAction.IsInfiniteFocus)
+			param.FocusRegionWidth = focusAction.FocusRegionWidth
+			param.FocusRegionHeight = focusAction.FocusRegionHeight
+		}
+	case ActionTypeRotateYaw:
+		if rotateYawAction, ok := actionReq.Action.(*RotateYawAction); ok {
+			param.AircraftHeading = &rotateYawAction.AircraftHeading
+			param.AircraftPathMode = rotateYawAction.AircraftPathMode
+		}
+	}
+}
+
+func convertUtilityActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
+	case ActionTypeCustomDirName:
+		if customDirNameAction, ok := actionReq.Action.(*CustomDirNameAction); ok {
+			posIndex := int(customDirNameAction.PayloadPositionIndex)
+			param.PayloadPositionIndex = &posIndex
+			param.DirectoryName = &customDirNameAction.DirectoryName
 		}
 	case ActionTypeRecordPointCloud:
 		if recordPointCloudAction, ok := actionReq.Action.(*RecordPointCloudAction); ok {
@@ -550,16 +534,11 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.PayloadPositionIndex = &posIndex
 			param.RecordPointCloudOperate = &recordPointCloudAction.RecordPointCloudOperate
 		}
-	case ActionTypeGimbalAngleLock:
-		if gimbalAngleLockAction, ok := actionReq.Action.(*GimbalAngleLockAction); ok {
-			posIndex := int(gimbalAngleLockAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
-	case ActionTypeGimbalAngleUnlock:
-		if gimbalAngleUnlockAction, ok := actionReq.Action.(*GimbalAngleUnlockAction); ok {
-			posIndex := int(gimbalAngleUnlockAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
+	}
+}
+
+func convertTimeLapseActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
 	case ActionTypeStartSmartOblique:
 		if startSmartObliqueAction, ok := actionReq.Action.(*StartSmartObliqueAction); ok {
 			posIndex := int(startSmartObliqueAction.PayloadPositionIndex)
@@ -575,6 +554,11 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			posIndex := int(stopTimeLapseAction.PayloadPositionIndex)
 			param.PayloadPositionIndex = &posIndex
 		}
+	}
+}
+
+func convertDetectionActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	switch actionReq.Type {
 	case ActionTypeSetFocusType:
 		if setFocusTypeAction, ok := actionReq.Action.(*SetFocusTypeAction); ok {
 			posIndex := int(setFocusTypeAction.PayloadPositionIndex)
@@ -586,8 +570,14 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 			param.PayloadPositionIndex = &posIndex
 		}
 	}
+}
 
-	return param
+func boolToIntPtr(b bool) *int {
+	val := 0
+	if b {
+		val = 1
+	}
+	return &val
 }
 
 func convertGlobalHeadingParam(waylines *Waylines) *GlobalWaypointHeadingParam {

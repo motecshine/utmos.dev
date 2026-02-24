@@ -84,7 +84,7 @@ func TestStateHandler_Handle_PropertyChange(t *testing.T) {
 	assert.Equal(t, "thing/product/GATEWAY-SN-001/state", sm.ProtocolMeta.OriginalTopic)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -92,12 +92,12 @@ func TestStateHandler_Handle_PropertyChange(t *testing.T) {
 	assert.Equal(t, "DEVICE-SN-001", data["device_sn"])
 
 	// Verify properties
-	props := data["properties"].(map[string]interface{})
+	props := data["properties"].(map[string]any)
 	assert.Equal(t, float64(1), props["mode_code"])
 	assert.Equal(t, "01.00.0001", props["firmware_version"])
 
 	// Verify changed properties list
-	changedProps := data["changed_properties"].([]interface{})
+	changedProps := data["changed_properties"].([]any)
 	assert.Len(t, changedProps, 2)
 }
 
@@ -130,11 +130,11 @@ func TestStateHandler_Handle_MultipleProperties(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
-	changedProps := data["changed_properties"].([]interface{})
+	changedProps := data["changed_properties"].([]any)
 	assert.Len(t, changedProps, 4)
 }
 
@@ -159,11 +159,11 @@ func TestStateHandler_Handle_EmptyData(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
-	changedProps := data["changed_properties"].([]interface{})
+	changedProps := data["changed_properties"].([]any)
 	assert.Len(t, changedProps, 0)
 }
 

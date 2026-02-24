@@ -10,7 +10,7 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 type FlightAuthorityGrabCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewFlightAuthorityGrabRequest creates a new flight authority grab request
@@ -89,7 +89,7 @@ func (c *DRCModeEnterCommand) Data() any      { return c.DataValue }
 type DRCModeExitCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDRCModeExitRequest creates a new DRC mode exit request
@@ -186,7 +186,7 @@ func (c *FlyToPointCommand) Data() any      { return c.DataValue }
 type FlyToPointStopCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewFlyToPointStopRequest creates a new fly to point stop request
@@ -285,7 +285,7 @@ func (c *StickControlCommand) Data() any      { return c.DataValue }
 type DroneEmergencyStopCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDroneEmergencyStopRequest creates a new drone emergency stop request

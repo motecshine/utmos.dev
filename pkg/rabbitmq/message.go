@@ -83,16 +83,16 @@ func (m *StandardMessage) Validate() error {
 		return errors.New("BID is required")
 	}
 	if m.Timestamp == 0 {
-		return errors.New("Timestamp is required")
+		return errors.New("timestamp is required")
 	}
 	if m.Service == "" {
-		return errors.New("Service is required")
+		return errors.New("service is required")
 	}
 	if m.Action == "" {
-		return errors.New("Action is required")
+		return errors.New("action is required")
 	}
 	if m.DeviceSN == "" {
-		return errors.New("DeviceSN is required")
+		return errors.New("device SN is required")
 	}
 	return nil
 }

@@ -182,7 +182,7 @@ Exchange: iot.topic (topic exchange)
 #### iot-gateway (P1)
 
 - **FR-001**: 必须实现 MQTT 客户端连接 VerneMQ
-- **FR-002**: 必须实现设备认证（用户名/密码或证书）
+- **FR-002**: 必须实现设备认证（用户名/密码）
 - **FR-003**: 必须实现 MQTT 消息到 RabbitMQ 的转发
 - **FR-004**: 必须实现 RabbitMQ 消息到 MQTT 的转发
 - **FR-005**: 必须实现设备连接状态管理
@@ -247,3 +247,4 @@ Exchange: iot.topic (topic exchange)
 - Q: 本 Spec 与 003 的关系？ → A: 003 实现了 DJI 协议适配器，本 Spec 实现核心服务的业务逻辑，两者配合完成完整数据流
 - Q: MQTT 客户端库选择？ → A: 使用 paho.mqtt.golang，这是 Eclipse 官方维护的 Go MQTT 客户端
 - Q: WebSocket 库选择？ → A: 使用 gorilla/websocket，这是 Go 生态最成熟的 WebSocket 库
+- Q: FR-002 认证方式选择？ → A: 004 只实现用户名/密码认证，证书认证延后到 005 或后续迭代

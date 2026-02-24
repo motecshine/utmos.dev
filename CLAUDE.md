@@ -95,4 +95,5 @@ See `.specify/memory/constitution.md` for complete architectural principles. Key
 - Microservice Architecture (5 services, RabbitMQ communication)
 
 ## Recent Changes
+- 003-dji-protocol-implementation: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 003-dji-protocol-implementation: Added Go 1.22+

@@ -17,7 +17,7 @@ func TestNewRoutingKey(t *testing.T) {
 	}{
 		{
 			name:     "DJI property report",
-			vendor:   VendorDJI,
+			vendor:   "dji",
 			service:  "gateway",
 			action:   ActionPropertyReport,
 			expected: "iot.dji.gateway.property.report",
@@ -31,7 +31,7 @@ func TestNewRoutingKey(t *testing.T) {
 		},
 		{
 			name:     "Tuya service call",
-			vendor:   VendorTuya,
+			vendor:   "tuya",
 			service:  "downlink",
 			action:   ActionServiceCall,
 			expected: "iot.tuya.downlink.service.call",
@@ -193,19 +193,19 @@ func TestNewRawRoutingKey(t *testing.T) {
 	}{
 		{
 			name:      "DJI uplink",
-			vendor:    VendorDJI,
+			vendor:    "dji",
 			direction: DirectionUplink,
 			expected:  "iot.raw.dji.uplink",
 		},
 		{
 			name:      "DJI downlink",
-			vendor:    VendorDJI,
+			vendor:    "dji",
 			direction: DirectionDownlink,
 			expected:  "iot.raw.dji.downlink",
 		},
 		{
 			name:      "Tuya uplink",
-			vendor:    VendorTuya,
+			vendor:    "tuya",
 			direction: DirectionUplink,
 			expected:  "iot.raw.tuya.uplink",
 		},

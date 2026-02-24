@@ -20,7 +20,7 @@ func TestOSDParser_ParseAircraftOSD(t *testing.T) {
 		name    string
 		data    string
 		wantErr bool
-		check   func(t *testing.T, osd interface{})
+		check   func(t *testing.T, osd any)
 	}{
 		{
 			name: "full aircraft OSD",
@@ -41,7 +41,7 @@ func TestOSDParser_ParseAircraftOSD(t *testing.T) {
 				}
 			}`,
 			wantErr: false,
-			check: func(_ *testing.T, osd interface{}) {
+			check: func(_ *testing.T, osd any) {
 				a := osd.(*struct {
 					ModeCode        *int
 					Longitude       *float64

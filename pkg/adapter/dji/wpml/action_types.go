@@ -154,7 +154,7 @@ func (ar *ActionRequest) ToJSON() ([]byte, error) {
 	return json.Marshal(ar)
 }
 
-func (ar *ActionRequest) GetConcreteAction() interface{} {
+func (ar *ActionRequest) GetConcreteAction() any {
 	return ar.Action
 }
 

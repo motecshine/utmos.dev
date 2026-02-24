@@ -8,9 +8,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/utmos/utmos/internal/gateway"
+	"github.com/utmos/utmos/internal/gateway/bridge"
+	"github.com/utmos/utmos/internal/gateway/mqtt"
 	"github.com/utmos/utmos/internal/shared/config"
-	"github.com/utmos/utmos/internal/shared/logger"
 	"github.com/utmos/utmos/internal/shared/server"
+	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
@@ -56,10 +59,37 @@ func main() {
 	subscriber := rabbitmq.NewSubscriber(rmqClient)
 	publisher := rabbitmq.NewPublisher(rmqClient)
 
-	// NOTE: MQTT client connection to VerneMQ will be implemented in a future feature.
-	// This is the only service allowed to connect to MQTT Broker per constitution.
-	// This skeleton provides the RabbitMQ bridge infrastructure; MQTT integration is pending.
-	log.WithService(serviceName).Info("Gateway skeleton ready - MQTT client integration pending (feature: 002-mqtt-integration)")
+	// Create gateway service configuration
+	mqttConfig := &mqtt.Config{
+		Broker:           cfg.MQTT.Broker,
+		Port:             cfg.MQTT.Port,
+		ClientID:         cfg.MQTT.ClientID,
+		Username:         cfg.MQTT.Username,
+		Password:         cfg.MQTT.Password,
+		CleanSession:     cfg.MQTT.CleanSession,
+		AutoReconnect:    cfg.MQTT.AutoReconnect,
+		ConnectTimeout:   cfg.MQTT.ConnectTimeout,
+		KeepAlive:        cfg.MQTT.KeepAlive,
+		PingTimeout:      cfg.MQTT.PingTimeout,
+		MaxReconnectWait: cfg.MQTT.MaxReconnectWait,
+		QoS:              byte(cfg.MQTT.QoS),
+	}
+
+	svcConfig := &gateway.ServiceConfig{
+		MQTT:            mqttConfig,
+		UplinkBridge:    bridge.DefaultUplinkBridgeConfig(),
+		DownlinkBridge:  bridge.DefaultDownlinkBridgeConfig(),
+		CleanupInterval: 5 * time.Minute,
+		MaxStaleAge:     24 * time.Hour,
+		SubscribeTopics: []string{
+			"thing/product/+/+/#",
+			"sys/product/+/#",
+		},
+	}
+
+	// Create gateway service
+	logEntry := log.WithService(serviceName)
+	gatewaySvc := gateway.NewService(svcConfig, publisher, subscriber, logEntry)
 
 	// Setup Gin router for health checks
 	if cfg.Logger.Level != "debug" {
@@ -73,17 +103,58 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
 	router.GET("/ready", func(c *gin.Context) {
-		// Check RabbitMQ connection
-		// NOTE: MQTT connection check will be added when MQTT client is implemented (feature: 002-mqtt-integration)
-		if rmqClient.IsConnected() {
-			c.JSON(http.StatusOK, gin.H{"status": "ready"})
+		// Check RabbitMQ and MQTT connections
+		rmqReady := rmqClient.IsConnected()
+		mqttReady := gatewaySvc.IsMQTTConnected()
+
+		if rmqReady && mqttReady {
+			c.JSON(http.StatusOK, gin.H{
+				"status":         "ready",
+				"rabbitmq":       "connected",
+				"mqtt":           "connected",
+				"online_devices": gatewaySvc.GetOnlineDeviceCount(),
+			})
 			return
 		}
-		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "not ready"})
+
+		status := gin.H{
+			"status":   "not ready",
+			"rabbitmq": "disconnected",
+			"mqtt":     "disconnected",
+		}
+		if rmqReady {
+			status["rabbitmq"] = "connected"
+		}
+		if mqttReady {
+			status["mqtt"] = "connected"
+		}
+		c.JSON(http.StatusServiceUnavailable, status)
 	})
 
 	// Metrics endpoint
 	router.GET(cfg.Metrics.Path, metrics.Handler(metricsCollector))
+
+	// Device status endpoint
+	router.GET("/devices/online", func(c *gin.Context) {
+		connManager := gatewaySvc.GetConnectionManager()
+		devices := connManager.GetOnlineDevices()
+
+		deviceList := make([]gin.H, 0, len(devices))
+		for _, d := range devices {
+			deviceList = append(deviceList, gin.H{
+				"device_sn":    d.DeviceSN,
+				"client_id":    d.ClientID,
+				"ip_address":   d.IPAddress,
+				"connected_at": d.ConnectedAt,
+				"last_seen_at": d.LastSeenAt,
+			})
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count":   len(devices),
+			"devices": deviceList,
+		})
+	})
 
 	// Create HTTP server for health checks
 	srv := &http.Server{
@@ -99,7 +170,10 @@ func main() {
 		log.WithService(serviceName).Info("Shutting down HTTP server")
 		return srv.Shutdown(ctx)
 	})
-	// NOTE: MQTT client shutdown will be registered here when implemented (feature: 002-mqtt-integration)
+	shutdown.Register(func(ctx context.Context) error {
+		log.WithService(serviceName).Info("Stopping gateway service")
+		return gatewaySvc.Stop()
+	})
 	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
 		subscriber.UnsubscribeAll()
@@ -122,9 +196,14 @@ func main() {
 		}
 	}()
 
-	// Log component availability
-	_ = publisher
-	log.WithService(serviceName).Info("Gateway service ready - MQTT ↔ RabbitMQ bridge")
+	// Start gateway service (connects to MQTT broker)
+	ctx := context.Background()
+	if err := gatewaySvc.Start(ctx); err != nil {
+		log.WithService(serviceName).Warnf("failed to start gateway service: %v", err)
+		log.WithService(serviceName).Info("Gateway running in degraded mode - MQTT not connected")
+	} else {
+		log.WithService(serviceName).Info("Gateway service started - MQTT ↔ RabbitMQ bridge active")
+	}
 
 	// Wait for shutdown signal
 	if err := shutdown.Wait(); err != nil {

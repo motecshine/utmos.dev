@@ -48,7 +48,7 @@ func TestCreateKmz(t *testing.T) {
 	// Create temp directory for test
 	tmpDir, err := os.MkdirTemp("", "wpml_test_*")
 	require.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	kmzPath := filepath.Join(tmpDir, "test_mission.kmz")
 
@@ -205,7 +205,7 @@ func TestCreateKmzErrors(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				// Clean up
-				os.Remove(tt.kmzPath)
+				_ = os.Remove(tt.kmzPath)
 			}
 		})
 	}

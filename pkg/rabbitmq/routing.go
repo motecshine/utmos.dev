@@ -10,11 +10,12 @@ import (
 // Routing key prefix
 const RoutingKeyPrefix = "iot"
 
-// Predefined vendor constants
+// VendorGeneric Predefined vendor constants
+// Note: Vendor-specific constants (e.g., "dji", "tuya") should be defined
+// in their respective adapter packages (pkg/adapter/{vendor}/), not here.
+// This package only provides generic/common constants.
 const (
-	VendorDJI     = "dji"
 	VendorGeneric = "generic"
-	VendorTuya    = "tuya"
 )
 
 // Predefined service constants

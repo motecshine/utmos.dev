@@ -75,7 +75,7 @@ func (h *OSDHandler) GetTopicType() dji.TopicType {
 
 // buildOSDData converts parsed OSD to a data map for StandardMessage.
 func (h *OSDHandler) buildOSDData(osd *integration.ParsedOSD, topic *dji.TopicInfo) (json.RawMessage, error) {
-	result := map[string]interface{}{
+	result := map[string]any{
 		"osd_type":   string(osd.Type),
 		"device_sn":  topic.DeviceSN,
 		"gateway_sn": topic.GatewaySN,
@@ -94,7 +94,7 @@ func (h *OSDHandler) buildOSDData(osd *integration.ParsedOSD, topic *dji.TopicIn
 }
 
 // extractDockFields extracts key fields from DockOSD.
-func (h *OSDHandler) extractDockFields(osd *integration.ParsedOSD, result map[string]interface{}) {
+func (h *OSDHandler) extractDockFields(osd *integration.ParsedOSD, result map[string]any) {
 	if osd.Dock == nil {
 		return
 	}
@@ -107,7 +107,7 @@ func (h *OSDHandler) extractDockFields(osd *integration.ParsedOSD, result map[st
 }
 
 // extractRCFields extracts key fields from RCOSD.
-func (h *OSDHandler) extractRCFields(osd *integration.ParsedOSD, result map[string]interface{}) {
+func (h *OSDHandler) extractRCFields(osd *integration.ParsedOSD, result map[string]any) {
 	if osd.RC == nil {
 		return
 	}
@@ -118,7 +118,7 @@ func (h *OSDHandler) extractRCFields(osd *integration.ParsedOSD, result map[stri
 }
 
 // extractAircraftFields extracts key fields from AircraftOSD.
-func (h *OSDHandler) extractAircraftFields(osd *integration.ParsedOSD, result map[string]interface{}) {
+func (h *OSDHandler) extractAircraftFields(osd *integration.ParsedOSD, result map[string]any) {
 	if osd.Aircraft == nil {
 		return
 	}
@@ -136,7 +136,7 @@ func (h *OSDHandler) extractAircraftFields(osd *integration.ParsedOSD, result ma
 }
 
 // setIfNotNil sets a value in the map if the pointer is not nil.
-func setIfNotNil[T any](m map[string]interface{}, key string, ptr *T) {
+func setIfNotNil[T any](m map[string]any, key string, ptr *T) {
 	if ptr != nil {
 		m[key] = *ptr
 	}

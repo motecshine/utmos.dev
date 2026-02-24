@@ -92,7 +92,7 @@ func TestStatusHandler_Handle_OnlineStatus(t *testing.T) {
 	assert.Equal(t, "sys/product/DOCK-SN-001/status", sm.ProtocolMeta.OriginalTopic)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -101,13 +101,13 @@ func TestStatusHandler_Handle_OnlineStatus(t *testing.T) {
 	assert.Equal(t, true, data["online"])
 
 	// Verify topology
-	topology := data["topology"].(map[string]interface{})
+	topology := data["topology"].(map[string]any)
 	assert.Equal(t, "DOCK-SN-001", topology["gateway_sn"])
 	assert.Equal(t, "dock", topology["gateway_type"])
 
-	subDevices := topology["sub_devices"].([]interface{})
+	subDevices := topology["sub_devices"].([]any)
 	assert.Len(t, subDevices, 1)
-	subDevice := subDevices[0].(map[string]interface{})
+	subDevice := subDevices[0].(map[string]any)
 	assert.Equal(t, "AIRCRAFT-SN-001", subDevice["device_sn"])
 	assert.Equal(t, true, subDevice["online"])
 }
@@ -138,7 +138,7 @@ func TestStatusHandler_Handle_OfflineStatus(t *testing.T) {
 
 	assert.Equal(t, dji.ActionDeviceOffline, sm.Action)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -226,12 +226,12 @@ func TestStatusHandler_Handle_DeviceTopology(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
-	topology := data["topology"].(map[string]interface{})
-	subDevices := topology["sub_devices"].([]interface{})
+	topology := data["topology"].(map[string]any)
+	subDevices := topology["sub_devices"].([]any)
 	assert.Len(t, subDevices, 2)
 }
 

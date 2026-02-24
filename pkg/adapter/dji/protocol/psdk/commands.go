@@ -224,7 +224,7 @@ func (c *SpeakerPlayVolumeSetCommand) Data() any      { return c.DataValue }
 // CustomDataTransmissionToPSDKData represents the custom data transmission to PSDK data
 type CustomDataTransmissionToPSDKData struct {
 	PayloadIndex string      `json:"payload_index"` // Payload index
-	DataValue    interface{} `json:"data"`          // Custom data
+	DataValue    any `json:"data"`          // Custom data
 }
 
 // CustomDataTransmissionToPSDKRequest represents the custom data transmission to PSDK request
@@ -248,7 +248,7 @@ func (c *CustomDataTransmissionToPSDKCommand) Data() any      { return c.DataVal
 
 // CustomDataTransmissionToESDKData represents the custom data transmission to ESDK data
 type CustomDataTransmissionToESDKData struct {
-	Data interface{} `json:"data"` // Custom data
+	Data any `json:"data"` // Custom data
 }
 
 // CustomDataTransmissionToESDKRequest represents the custom data transmission to ESDK request

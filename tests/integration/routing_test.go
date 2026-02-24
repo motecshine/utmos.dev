@@ -18,10 +18,10 @@ func TestRoutingKeyFormat(t *testing.T) {
 		expected string
 	}{
 		// DJI vendor
-		{"DJI property report", rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.dji.device.property.report"},
-		{"DJI device online", rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOnline, "iot.dji.device.device.online"},
-		{"DJI device offline", rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOffline, "iot.dji.device.device.offline"},
-		{"DJI event report", rabbitmq.VendorDJI, rabbitmq.ServiceEvent, rabbitmq.ActionEventReport, "iot.dji.event.event.report"},
+		{"DJI property report", "dji", rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.dji.device.property.report"},
+		{"DJI device online", "dji", rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOnline, "iot.dji.device.device.online"},
+		{"DJI device offline", "dji", rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOffline, "iot.dji.device.device.offline"},
+		{"DJI event report", "dji", rabbitmq.ServiceEvent, rabbitmq.ActionEventReport, "iot.dji.event.event.report"},
 
 		// Generic vendor
 		{"Generic property report", rabbitmq.VendorGeneric, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.generic.device.property.report"},
@@ -29,8 +29,8 @@ func TestRoutingKeyFormat(t *testing.T) {
 		{"Generic service reply", rabbitmq.VendorGeneric, rabbitmq.ServiceService, rabbitmq.ActionServiceReply, "iot.generic.service.service.reply"},
 
 		// Tuya vendor
-		{"Tuya property report", rabbitmq.VendorTuya, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.tuya.device.property.report"},
-		{"Tuya event report", rabbitmq.VendorTuya, rabbitmq.ServiceEvent, rabbitmq.ActionEventReport, "iot.tuya.event.event.report"},
+		{"Tuya property report", "tuya", rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.tuya.device.property.report"},
+		{"Tuya event report", "tuya", rabbitmq.ServiceEvent, rabbitmq.ActionEventReport, "iot.tuya.event.event.report"},
 	}
 
 	for _, tt := range tests {
@@ -92,9 +92,9 @@ func TestRoutingKeyWildcards(t *testing.T) {
 // TestVendorConstants tests vendor constant definitions
 func TestVendorConstants(t *testing.T) {
 	vendors := []string{
-		rabbitmq.VendorDJI,
+		"dji",
 		rabbitmq.VendorGeneric,
-		rabbitmq.VendorTuya,
+		"tuya",
 	}
 
 	for _, v := range vendors {
@@ -193,9 +193,9 @@ func TestRoutingKeyParsingErrors(t *testing.T) {
 
 // TestRoutingKeyEquality tests routing key equality
 func TestRoutingKeyEquality(t *testing.T) {
-	rk1 := rabbitmq.NewRoutingKey(rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport)
-	rk2 := rabbitmq.NewRoutingKey(rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport)
-	rk3 := rabbitmq.NewRoutingKey(rabbitmq.VendorTuya, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport)
+	rk1 := rabbitmq.NewRoutingKey("dji", rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport)
+	rk2 := rabbitmq.NewRoutingKey("dji", rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport)
+	rk3 := rabbitmq.NewRoutingKey("tuya", rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport)
 
 	if rk1.String() != rk2.String() {
 		t.Error("identical routing keys should have same string representation")

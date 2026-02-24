@@ -17,8 +17,9 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/utmos/utmos/internal/shared/config"
-	"github.com/utmos/utmos/internal/shared/logger"
 	"github.com/utmos/utmos/pkg/adapter"
+	pkgconfig "github.com/utmos/utmos/pkg/config"
+	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
@@ -82,7 +83,11 @@ func main() {
 	if err := rmqClient.Connect(ctx); err != nil {
 		log.WithError(err).Fatal("Failed to connect to RabbitMQ")
 	}
-	defer rmqClient.Close()
+	defer func() {
+		if err := rmqClient.Close(); err != nil {
+			log.WithError(err).Error("Failed to close RabbitMQ client")
+		}
+	}()
 
 	// Declare exchange
 	if err := rmqClient.DeclareExchange(cfg.RabbitMQ.ExchangeName, cfg.RabbitMQ.ExchangeType); err != nil {
@@ -172,7 +177,7 @@ func setupRouter(_ *logger.Logger, rmqClient *rabbitmq.Client) *gin.Engine {
 	return router
 }
 
-func processUplinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *config.RabbitMQConfig) {
+func processUplinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig) {
 	log.Info("Starting uplink message processor")
 
 	// Declare and bind queue for raw DJI uplink messages
@@ -225,7 +230,7 @@ func processUplinkMessages(ctx context.Context, log *logger.Logger, rmqClient *r
 	}
 }
 
-func processUplinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *config.RabbitMQConfig, msg amqp.Delivery) {
+func processUplinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig, msg amqp.Delivery) {
 	start := time.Now()
 
 	// Extract topic from message headers
@@ -312,7 +317,7 @@ func processUplinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAda
 	}).Debug("Processed uplink message")
 }
 
-func processDownlinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *config.RabbitMQConfig) {
+func processDownlinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig) {
 	log.Info("Starting downlink message processor")
 
 	// Declare and bind queue for standard messages for DJI devices (service calls)
@@ -365,7 +370,7 @@ func processDownlinkMessages(ctx context.Context, log *logger.Logger, rmqClient 
 	}
 }
 
-func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *config.RabbitMQConfig, msg amqp.Delivery) {
+func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig, msg amqp.Delivery) {
 	start := time.Now()
 
 	// Parse standard message

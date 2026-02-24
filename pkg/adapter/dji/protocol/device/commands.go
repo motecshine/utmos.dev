@@ -6,7 +6,7 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 type CoverOpenCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewCoverOpenCommand creates a new cover open command
@@ -32,7 +32,7 @@ func (c *CoverOpenCommand) Data() any {
 type CoverCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewCoverCloseCommand creates a new cover close command
@@ -58,7 +58,7 @@ func (c *CoverCloseCommand) Data() any {
 type CoverForceCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewCoverForceCloseCommand creates a new force close cover command
@@ -84,7 +84,7 @@ func (c *CoverForceCloseCommand) Data() any {
 type DroneOpenCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDroneOpenCommand creates a new drone power on command
@@ -110,7 +110,7 @@ func (c *DroneOpenCommand) Data() any {
 type DroneCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDroneCloseCommand creates a new drone power off command
@@ -136,7 +136,7 @@ func (c *DroneCloseCommand) Data() any {
 type ChargeOpenCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewChargeOpenCommand creates a new start charging command
@@ -162,7 +162,7 @@ func (c *ChargeOpenCommand) Data() any {
 type ChargeCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewChargeCloseCommand creates a new stop charging command
@@ -188,7 +188,7 @@ func (c *ChargeCloseCommand) Data() any {
 type DeviceRebootCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDeviceRebootCommand creates a new device reboot command
@@ -214,7 +214,7 @@ func (c *DeviceRebootCommand) Data() any {
 type DeviceFormatCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDeviceFormatCommand creates a new device format command
@@ -240,7 +240,7 @@ func (c *DeviceFormatCommand) Data() any {
 type DroneFormatCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDroneFormatCommand creates a new drone format command
@@ -266,7 +266,7 @@ func (c *DroneFormatCommand) Data() any {
 type PutterOpenCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewPutterOpenCommand creates a new pusher open command
@@ -292,7 +292,7 @@ func (c *PutterOpenCommand) Data() any {
 type PutterCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewPutterCloseCommand creates a new pusher close command
@@ -318,7 +318,7 @@ func (c *PutterCloseCommand) Data() any {
 type DebugModeOpenCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDebugModeOpenCommand creates a new debug mode enable command
@@ -344,7 +344,7 @@ func (c *DebugModeOpenCommand) Data() any {
 type DebugModeCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewDebugModeCloseCommand creates a new debug mode disable command
@@ -370,7 +370,7 @@ func (c *DebugModeCloseCommand) Data() any {
 type SupplementLightOpenCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewSupplementLightOpenCommand creates a new supplement light enable command
@@ -396,7 +396,7 @@ func (c *SupplementLightOpenCommand) Data() any {
 type SupplementLightCloseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewSupplementLightCloseCommand creates a new supplement light disable command

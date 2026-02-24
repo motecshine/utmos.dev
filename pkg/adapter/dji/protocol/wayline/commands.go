@@ -70,7 +70,7 @@ func (c *ExecuteCommand) GetHeader() *common.Header { return &c.Header }
 type PauseCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewPauseCommand creates a new flight task pause command
@@ -90,7 +90,7 @@ func (c *PauseCommand) GetHeader() *common.Header { return &c.Header }
 type RecoveryCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewRecoveryCommand creates a new flight task recovery command
@@ -130,7 +130,7 @@ func (c *UndoCommand) GetHeader() *common.Header { return &c.Header }
 type ReturnHomeCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewReturnHomeCommand creates a new return to home command
@@ -150,7 +150,7 @@ func (c *ReturnHomeCommand) GetHeader() *common.Header { return &c.Header }
 type CancelReturnHomeCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewCancelReturnHomeCommand creates a new cancel return to home command
@@ -170,7 +170,7 @@ func (c *CancelReturnHomeCommand) GetHeader() *common.Header { return &c.Header 
 type AbortFlightSetupCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewAbortFlightSetupCommand creates a new abort flight setup command

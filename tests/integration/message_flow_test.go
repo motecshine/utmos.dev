@@ -37,10 +37,10 @@ func TestRoutingKeyGeneration(t *testing.T) {
 		action   string
 		expected string
 	}{
-		{rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.dji.device.property.report"},
+		{"dji", rabbitmq.ServiceDevice, rabbitmq.ActionPropertyReport, "iot.dji.device.property.report"},
 		{rabbitmq.VendorGeneric, rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOnline, "iot.generic.device.device.online"},
-		{rabbitmq.VendorTuya, rabbitmq.ServiceService, rabbitmq.ActionServiceCall, "iot.tuya.service.service.call"},
-		{rabbitmq.VendorDJI, rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOffline, "iot.dji.device.device.offline"},
+		{"tuya", rabbitmq.ServiceService, rabbitmq.ActionServiceCall, "iot.tuya.service.service.call"},
+		{"dji", rabbitmq.ServiceDevice, rabbitmq.ActionDeviceOffline, "iot.dji.device.device.offline"},
 		{rabbitmq.VendorGeneric, rabbitmq.ServiceEvent, rabbitmq.ActionEventReport, "iot.generic.event.event.report"},
 	}
 
@@ -176,7 +176,7 @@ func TestTraceContextRoundTrip(t *testing.T) {
 
 // TestMultiVendorRouting tests routing for multiple vendors
 func TestMultiVendorRouting(t *testing.T) {
-	vendors := []string{rabbitmq.VendorDJI, rabbitmq.VendorGeneric, rabbitmq.VendorTuya}
+	vendors := []string{"dji", rabbitmq.VendorGeneric, "tuya"}
 	services := []string{rabbitmq.ServiceDevice, rabbitmq.ServiceEvent, rabbitmq.ServiceService}
 	actions := []string{rabbitmq.ActionPropertyReport, rabbitmq.ActionEventReport, rabbitmq.ActionServiceCall}
 

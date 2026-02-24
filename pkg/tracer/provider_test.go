@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/pkg/config"
 )
 
 func TestNewProvider(t *testing.T) {

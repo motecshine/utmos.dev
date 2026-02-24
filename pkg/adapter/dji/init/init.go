@@ -106,18 +106,22 @@ func InitializeAdapter(a *dji.Adapter) error {
 }
 
 // NewInitializedAdapter creates a new DJI adapter with all handlers initialized.
-// Panics if initialization fails.
+// This function panics if initialization fails and should only be used during
+// program initialization (e.g., in init() or main()).
+// For error handling, use dji.NewAdapter() followed by InitializeAdapter().
 func NewInitializedAdapter() *dji.Adapter {
 	a := dji.NewAdapter()
 	if err := InitializeAdapter(a); err != nil {
-		panic(fmt.Sprintf("failed to initialize DJI adapter: %v", err))
+		panic(fmt.Errorf("NewInitializedAdapter: %w", err))
 	}
 	return a
 }
 
 // MustInitializeAdapter initializes the adapter and panics on error.
+// This should only be used during program initialization (e.g., in init() or main()).
+// For runtime initialization with error handling, use InitializeAdapter().
 func MustInitializeAdapter(a *dji.Adapter) {
 	if err := InitializeAdapter(a); err != nil {
-		panic(fmt.Sprintf("failed to initialize DJI adapter: %v", err))
+		panic(fmt.Errorf("MustInitializeAdapter: %w", err))
 	}
 }

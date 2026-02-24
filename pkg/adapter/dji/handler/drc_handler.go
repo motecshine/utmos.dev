@@ -42,7 +42,7 @@ func (h *DRCHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.Topi
 		if isReply {
 			return h.buildDRCEventData(msg, topic)
 		}
-		extraFields := map[string]interface{}{
+		extraFields := map[string]any{
 			"heartbeat_timeout_ms": h.heartbeatTimeout.Milliseconds(),
 		}
 		return BuildRequestData(msg, topic, cfg.MessageType, extraFields)
@@ -63,7 +63,7 @@ func (h *DRCHandler) GetTopicType() dji.TopicType {
 // buildDRCEventData builds data for DRC event (down).
 // DRC events don't have need_reply field, so we use a custom builder.
 func (h *DRCHandler) buildDRCEventData(msg *dji.Message, topic *dji.TopicInfo) (json.RawMessage, error) {
-	result := map[string]interface{}{
+	result := map[string]any{
 		"device_sn":    topic.DeviceSN,
 		"gateway_sn":   topic.GatewaySN,
 		"message_type": "drc_event",
@@ -71,7 +71,7 @@ func (h *DRCHandler) buildDRCEventData(msg *dji.Message, topic *dji.TopicInfo) (
 	}
 
 	if len(msg.Data) > 0 {
-		var data interface{}
+		var data any
 		if err := json.Unmarshal(msg.Data, &data); err == nil {
 			result["data"] = data
 		} else {

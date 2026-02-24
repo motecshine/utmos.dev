@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/pkg/config"
 )
 
 func TestNewClient(t *testing.T) {
@@ -75,7 +75,7 @@ func TestClientConnectTimeout(t *testing.T) {
 	err := client.Connect(ctx)
 	if err == nil {
 		t.Error("expected connection to fail")
-		client.Close()
+		_ = client.Close()
 	}
 }
 
@@ -228,6 +228,6 @@ func TestClientConnectContextCanceled(t *testing.T) {
 	err := client.Connect(ctx)
 	if err == nil {
 		t.Error("expected error when context is canceled")
-		client.Close()
+		_ = client.Close()
 	}
 }

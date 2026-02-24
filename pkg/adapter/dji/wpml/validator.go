@@ -154,15 +154,15 @@ func (w *WPMLValidator) validateRequiredForPayload(_ validator.FieldLevel) bool 
 	return true
 }
 
-func (w *WPMLValidator) ValidateStruct(s interface{}) error {
+func (w *WPMLValidator) ValidateStruct(s any) error {
 	return w.validator.Struct(s)
 }
 
-func (w *WPMLValidator) ValidateVar(field interface{}, tag string) error {
+func (w *WPMLValidator) ValidateVar(field any, tag string) error {
 	return w.validator.Var(field, tag)
 }
 
-func (w *WPMLValidator) ValidateAction(action interface{}) error {
+func (w *WPMLValidator) ValidateAction(action any) error {
 	if action == nil {
 		return ErrActionCannotBeNil
 	}
@@ -208,7 +208,7 @@ func (w *WPMLValidator) ValidateTemplateDocument(template *TemplateDocument) err
 	return w.ValidateStruct(template)
 }
 
-func (w *WPMLValidator) ValidateWithContext(s interface{}, droneModel DroneModel, payloadModel PayloadModel) error {
+func (w *WPMLValidator) ValidateWithContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
 	if err := w.ValidateStruct(s); err != nil {
 		return err
 	}
@@ -216,7 +216,7 @@ func (w *WPMLValidator) ValidateWithContext(s interface{}, droneModel DroneModel
 	return w.validateWithMachineContext(s, droneModel, payloadModel)
 }
 
-func (w *WPMLValidator) validateWithMachineContext(s interface{}, droneModel DroneModel, payloadModel PayloadModel) error {
+func (w *WPMLValidator) validateWithMachineContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
 	val := reflect.ValueOf(s)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -398,13 +398,16 @@ func InitGlobalValidator() error {
 	return err
 }
 
+// MustInitGlobalValidator initializes the global validator and panics on error.
+// This should only be used during program initialization (e.g., in init() or main()).
+// For runtime initialization with error handling, use InitGlobalValidator().
 func MustInitGlobalValidator() {
 	if err := InitGlobalValidator(); err != nil {
-		panic(err)
+		panic(fmt.Errorf("MustInitGlobalValidator: %w", err))
 	}
 }
 
-func Validate(s interface{}) error {
+func Validate(s any) error {
 	if globalValidator == nil {
 		if err := InitGlobalValidator(); err != nil {
 			return err
@@ -413,7 +416,7 @@ func Validate(s interface{}) error {
 	return globalValidator.ValidateStruct(s)
 }
 
-func ValidateActionGlobal(action interface{}) error {
+func ValidateActionGlobal(action any) error {
 	if globalValidator == nil {
 		if err := InitGlobalValidator(); err != nil {
 			return err

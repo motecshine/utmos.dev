@@ -9,8 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/utmos/utmos/internal/shared/config"
-	"github.com/utmos/utmos/internal/shared/logger"
 	"github.com/utmos/utmos/internal/shared/server"
+	"github.com/utmos/utmos/pkg/logger"
+	"github.com/utmos/utmos/internal/ws"
+	"github.com/utmos/utmos/internal/ws/hub"
+	"github.com/utmos/utmos/internal/ws/push"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
@@ -45,8 +48,41 @@ func main() {
 		log.WithService(serviceName).Warnf("failed to connect to RabbitMQ: %v", err)
 	}
 
+	// Setup Exchange
+	if rmqClient.IsConnected() {
+		if err := rmqClient.SetupExchange(); err != nil {
+			log.WithService(serviceName).Warnf("failed to setup exchange: %v", err)
+		}
+	}
+
 	// Initialize RabbitMQ subscriber
 	subscriber := rabbitmq.NewSubscriber(rmqClient)
+
+	// Create WebSocket service configuration
+	wsConfig := &ws.ServiceConfig{
+		HubConfig: &hub.Config{
+			MaxConnections: 10000,
+			WriteTimeout:   10 * time.Second,
+			ReadTimeout:    60 * time.Second,
+			PingInterval:   30 * time.Second,
+			PongTimeout:    30 * time.Second,
+		},
+		ClientConfig: hub.DefaultClientConfig(),
+		PusherConfig: &push.Config{
+			WorkerCount: 4,
+			QueueSize:   10000,
+		},
+		AllowedOrigins: []string{"*"},
+	}
+
+	// Create WebSocket service
+	wsSvc := ws.NewService(wsConfig, log.WithService(serviceName))
+	wsSvc.SetSubscriber(subscriber)
+
+	// Start WebSocket service
+	if err := wsSvc.Start(context.Background()); err != nil {
+		log.WithService(serviceName).Fatalf("failed to start WebSocket service: %v", err)
+	}
 
 	// Setup Gin router
 	if cfg.Logger.Level != "debug" {
@@ -61,7 +97,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
 	router.GET("/ready", func(c *gin.Context) {
-		if rmqClient.IsConnected() {
+		if wsSvc.IsRunning() {
 			c.JSON(http.StatusOK, gin.H{"status": "ready"})
 			return
 		}
@@ -71,14 +107,15 @@ func main() {
 	// Metrics endpoint
 	router.GET(cfg.Metrics.Path, metrics.Handler(metricsCollector))
 
+	// Stats endpoint
+	router.GET("/stats", func(c *gin.Context) {
+		stats := wsSvc.GetStats()
+		c.JSON(http.StatusOK, stats)
+	})
+
 	// WebSocket endpoint
-	// NOTE: WebSocket upgrade and connection management will be implemented in a future feature.
-	// This skeleton provides the endpoint structure and infrastructure integration (tracing, metrics, RabbitMQ).
 	router.GET("/ws", func(c *gin.Context) {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"message": "WebSocket endpoint - implementation pending",
-			"feature": "002-websocket-implementation",
-		})
+		wsSvc.HandleWebSocket(c.Writer, c.Request)
 	})
 
 	// Create HTTP server
@@ -94,6 +131,10 @@ func main() {
 	shutdown.Register(func(ctx context.Context) error {
 		log.WithService(serviceName).Info("Shutting down HTTP server")
 		return srv.Shutdown(ctx)
+	})
+	shutdown.Register(func(_ context.Context) error {
+		log.WithService(serviceName).Info("Stopping WebSocket service")
+		return wsSvc.Stop()
 	})
 	shutdown.Register(func(_ context.Context) error {
 		log.WithService(serviceName).Info("Stopping RabbitMQ subscriber")
@@ -116,6 +157,9 @@ func main() {
 			log.WithService(serviceName).Fatalf("failed to start server: %v", err)
 		}
 	}()
+
+	// Log startup info
+	log.WithService(serviceName).Info("WebSocket service ready")
 
 	// Wait for shutdown signal
 	if err := shutdown.Wait(); err != nil {

@@ -6,7 +6,7 @@ import (
 
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/utmos/utmos/internal/shared/config"
+	pkgconfig "github.com/utmos/utmos/pkg/config"
 	"github.com/utmos/utmos/pkg/tracer"
 )
 
@@ -14,12 +14,12 @@ import (
 func TestTracerProviderCreation(t *testing.T) {
 	tests := []struct {
 		name    string
-		cfg     *config.TracerConfig
+		cfg     *pkgconfig.TracerConfig
 		wantErr bool
 	}{
 		{
 			name: "enabled tracer",
-			cfg: &config.TracerConfig{
+			cfg: &pkgconfig.TracerConfig{
 				Enabled:      true,
 				ServiceName:  "test-service",
 				Endpoint:     "http://localhost:4318",
@@ -29,7 +29,7 @@ func TestTracerProviderCreation(t *testing.T) {
 		},
 		{
 			name: "disabled tracer",
-			cfg: &config.TracerConfig{
+			cfg: &pkgconfig.TracerConfig{
 				Enabled:     false,
 				ServiceName: "test-service",
 			},
@@ -37,7 +37,7 @@ func TestTracerProviderCreation(t *testing.T) {
 		},
 		{
 			name: "empty service name",
-			cfg: &config.TracerConfig{
+			cfg: &pkgconfig.TracerConfig{
 				Enabled:     true,
 				ServiceName: "",
 				Endpoint:    "http://localhost:4318",
@@ -92,7 +92,7 @@ func TestTraceContextPropagation(t *testing.T) {
 
 // TestTracerNoopWhenDisabled tests that disabled tracer returns noop
 func TestTracerNoopWhenDisabled(t *testing.T) {
-	cfg := &config.TracerConfig{
+	cfg := &pkgconfig.TracerConfig{
 		Enabled:     false,
 		ServiceName: "test-service",
 	}
@@ -119,7 +119,7 @@ func TestTracerNoopWhenDisabled(t *testing.T) {
 
 // TestTracerSpanCreation tests span creation and attributes
 func TestTracerSpanCreation(t *testing.T) {
-	cfg := &config.TracerConfig{
+	cfg := &pkgconfig.TracerConfig{
 		Enabled:      true,
 		ServiceName:  "test-service",
 		Endpoint:     "http://localhost:4318",
@@ -130,7 +130,7 @@ func TestTracerSpanCreation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
-	defer provider.Shutdown(context.Background())
+	defer func() { _ = provider.Shutdown(context.Background()) }()
 
 	tr := provider.Tracer("test-component")
 
@@ -158,7 +158,7 @@ func TestTracerSpanCreation(t *testing.T) {
 
 // TestMessageHeaderTracing tests trace context in message headers
 func TestMessageHeaderTracing(t *testing.T) {
-	cfg := &config.TracerConfig{
+	cfg := &pkgconfig.TracerConfig{
 		Enabled:      true,
 		ServiceName:  "test-service",
 		Endpoint:     "http://localhost:4318",
@@ -169,7 +169,7 @@ func TestMessageHeaderTracing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create provider: %v", err)
 	}
-	defer provider.Shutdown(context.Background())
+	defer func() { _ = provider.Shutdown(context.Background()) }()
 
 	tr := provider.Tracer("test")
 	ctx, span := tr.Start(context.Background(), "publish-message")

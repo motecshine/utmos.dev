@@ -129,7 +129,8 @@ func TestPerformance_Latency(t *testing.T) {
 
 	const iterations = 1000
 
-	topic := "thing/product/gateway-001/osd"
+	const topicName = "thing/product/gateway-001/osd"
+	topic := topicName
 	payload := []byte(`{
 		"tid": "tid-perf",
 		"bid": "bid-perf",
@@ -214,7 +215,8 @@ func TestPerformance_Concurrent(t *testing.T) {
 		iterations  = 100
 	)
 
-	topic := "thing/product/gateway-001/osd"
+	const topicName = "thing/product/gateway-001/osd"
+	topic := topicName
 	payload := []byte(`{
 		"tid": "tid-concurrent",
 		"bid": "bid-concurrent",
@@ -284,7 +286,8 @@ func TestPerformance_Memory(t *testing.T) {
 
 	const iterations = 10000
 
-	topic := "thing/product/gateway-001/osd"
+	const topicName = "thing/product/gateway-001/osd"
+	topic := topicName
 	payload := []byte(`{
 		"tid": "tid-mem",
 		"bid": "bid-mem",

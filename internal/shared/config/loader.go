@@ -11,6 +11,7 @@ import (
 
 // Load loads configuration from a YAML file with environment variable substitution.
 func Load(path string) (*Config, error) {
+	//nolint:gosec // G304: Configuration file path is provided by caller
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
@@ -41,6 +42,7 @@ func applyDefaults(cfg *Config) {
 	applyServerDefaults(cfg)
 	applyDatabaseDefaults(cfg)
 	applyRabbitMQDefaults(cfg)
+	applyMQTTDefaults(cfg)
 	applyTracerDefaults(cfg)
 	applyMetricsDefaults(cfg)
 	applyLoggerDefaults(cfg)
@@ -115,6 +117,36 @@ func applyRabbitMQDefaults(cfg *Config) {
 	if cfg.RabbitMQ.Retry.Multiplier == 0 {
 		cfg.RabbitMQ.Retry.Multiplier = 2.0
 	}
+}
+
+func applyMQTTDefaults(cfg *Config) {
+	if cfg.MQTT.Broker == "" {
+		cfg.MQTT.Broker = "localhost"
+	}
+	if cfg.MQTT.Port == 0 {
+		cfg.MQTT.Port = 1883
+	}
+	if cfg.MQTT.ClientID == "" {
+		cfg.MQTT.ClientID = "iot-gateway"
+	}
+	if cfg.MQTT.ConnectTimeout == 0 {
+		cfg.MQTT.ConnectTimeout = 30 * time.Second
+	}
+	if cfg.MQTT.KeepAlive == 0 {
+		cfg.MQTT.KeepAlive = 60 * time.Second
+	}
+	if cfg.MQTT.PingTimeout == 0 {
+		cfg.MQTT.PingTimeout = 10 * time.Second
+	}
+	if cfg.MQTT.MaxReconnectWait == 0 {
+		cfg.MQTT.MaxReconnectWait = 5 * time.Minute
+	}
+	if cfg.MQTT.QoS == 0 {
+		cfg.MQTT.QoS = 1
+	}
+	// AutoReconnect defaults to true if not explicitly set
+	// Note: bool defaults to false, so we set it explicitly
+	cfg.MQTT.AutoReconnect = true
 }
 
 func applyTracerDefaults(cfg *Config) {

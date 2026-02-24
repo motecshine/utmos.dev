@@ -10,7 +10,7 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 type AirportBindStatusRequest struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewAirportBindStatusRequest creates a new airport bind status request
@@ -29,7 +29,7 @@ func (r *AirportBindStatusRequest) Data() any      { return r.DataValue }
 type AirportOrganizationGetRequest struct {
 	common.Header
 	MethodName string      `json:"method"`
-	DataValue  interface{} `json:"data"`
+	DataValue  any `json:"data"`
 }
 
 // NewAirportOrganizationGetRequest creates a new airport organization get request

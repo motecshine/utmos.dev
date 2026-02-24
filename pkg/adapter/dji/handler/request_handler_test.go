@@ -89,7 +89,7 @@ func TestRequestHandler_Handle_Request(t *testing.T) {
 	assert.Equal(t, "config_get", sm.ProtocolMeta.Method)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -128,7 +128,7 @@ func TestRequestHandler_Handle_Reply(t *testing.T) {
 	assert.Equal(t, dji.ActionDeviceRequestReply, sm.Action)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 

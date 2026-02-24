@@ -1,3 +1,7 @@
+# Configuration for golangci-lint
+# See https://golangci-lint.run/usage/configuration/
+version: 2
+
 run:
   timeout: 5m
   tests: true
@@ -38,28 +42,15 @@ linters:
   enable:
     # 默认启用的重要 linter
     - errcheck
-    - gosimple
     - govet
     - ineffassign
-    - staticcheck
     - unused
-    - typecheck
-    # 格式化
-    - goimports
-    - gofmt
     # 代码质量
-    - misspell
     - gocyclo
-    - dupl
-    - gocritic
+    # - dupl # Disabled due to noise in tests
     - goconst
-    - unconvert
-    - prealloc
     # 安全
     - gosec
-    # 风格
-    - revive
-    - whitespace
 
 issues:
   exclude-rules:

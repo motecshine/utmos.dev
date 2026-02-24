@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"gorm.io/driver/sqlite"
@@ -242,7 +243,7 @@ func TestDeviceRepository_List(t *testing.T) {
 	// Create multiple devices
 	for i := 0; i < 5; i++ {
 		device := &models.Device{
-			DeviceSN:   "list-test-" + string(rune('a'+i)),
+			DeviceSN:   fmt.Sprintf("list-test-%c", 'a'+i),
 			DeviceName: "List Test Device",
 			DeviceType: "sensor",
 			Vendor:     "generic",

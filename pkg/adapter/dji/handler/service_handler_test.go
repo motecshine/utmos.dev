@@ -92,7 +92,7 @@ func TestServiceHandler_Handle_ServiceRequest(t *testing.T) {
 	assert.Equal(t, "cover_open", sm.ProtocolMeta.Method)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -132,7 +132,7 @@ func TestServiceHandler_Handle_ServiceReply(t *testing.T) {
 	assert.Equal(t, dji.ActionServiceReply, sm.Action)
 
 	// Verify data
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -167,7 +167,7 @@ func TestServiceHandler_Handle_ServiceReplyWithError(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 
@@ -199,7 +199,7 @@ func TestServiceHandler_Handle_NeedReply(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, sm)
 
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(sm.Data, &data)
 	require.NoError(t, err)
 

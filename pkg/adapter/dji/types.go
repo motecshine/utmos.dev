@@ -9,7 +9,8 @@ import (
 
 // Re-export constants from rabbitmq package for convenience.
 const (
-	VendorDJI            = rabbitmq.VendorDJI
+	// VendorDJI is the vendor identifier for DJI devices.
+	VendorDJI            = "dji"
 	ActionPropertyReport = rabbitmq.ActionPropertyReport
 	ActionPropertySet    = rabbitmq.ActionPropertySet
 	ActionEventReport    = rabbitmq.ActionEventReport

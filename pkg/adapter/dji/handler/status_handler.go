@@ -94,7 +94,7 @@ func (h *StatusHandler) parseStatusData(data json.RawMessage) (bool, *DeviceTopo
 		return false, nil, fmt.Errorf("empty status data")
 	}
 
-	var raw map[string]interface{}
+	var raw map[string]any
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return false, nil, fmt.Errorf("failed to parse status JSON: %w", err)
 	}
@@ -119,9 +119,9 @@ func (h *StatusHandler) parseStatusData(data json.RawMessage) (bool, *DeviceTopo
 	}
 
 	// Extract sub-devices
-	if subDevices, ok := raw["sub_devices"].([]interface{}); ok {
+	if subDevices, ok := raw["sub_devices"].([]any); ok {
 		for _, sd := range subDevices {
-			if sdMap, ok := sd.(map[string]interface{}); ok {
+			if sdMap, ok := sd.(map[string]any); ok {
 				subDevice := SubDeviceInfo{}
 				if sn, ok := sdMap["device_sn"].(string); ok {
 					subDevice.DeviceSN = sn
@@ -144,7 +144,7 @@ func (h *StatusHandler) parseStatusData(data json.RawMessage) (bool, *DeviceTopo
 
 // buildStatusData converts status data to a data map for StandardMessage.
 func (h *StatusHandler) buildStatusData(isOnline bool, topology *DeviceTopology, topic *dji.TopicInfo) (json.RawMessage, error) {
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
 	result["device_sn"] = topic.DeviceSN
 	result["gateway_sn"] = topic.GatewaySN
