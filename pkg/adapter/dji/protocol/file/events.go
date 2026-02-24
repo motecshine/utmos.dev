@@ -18,8 +18,13 @@ type HighestPriorityUploadFlighttaskMediaEvent struct {
 	DataValue  HighestPriorityUploadFlighttaskMediaData `json:"data"`
 }
 
+// Method returns the method name.
 func (e *HighestPriorityUploadFlighttaskMediaEvent) Method() string { return e.MethodName }
-func (e *HighestPriorityUploadFlighttaskMediaEvent) Data() any      { return e.DataValue }
+
+// Data returns the command/event data.
+func (e *HighestPriorityUploadFlighttaskMediaEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *HighestPriorityUploadFlighttaskMediaEvent) GetHeader() *common.Header {
 	return &e.Header
 }
@@ -77,6 +82,11 @@ type FileUploadCallbackEvent struct {
 	DataValue  FileUploadCallbackData `json:"data"`
 }
 
-func (e *FileUploadCallbackEvent) Method() string            { return e.MethodName }
-func (e *FileUploadCallbackEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *FileUploadCallbackEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *FileUploadCallbackEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *FileUploadCallbackEvent) GetHeader() *common.Header { return &e.Header }

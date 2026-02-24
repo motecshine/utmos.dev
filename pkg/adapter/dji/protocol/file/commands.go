@@ -16,14 +16,14 @@ type UploadFlighttaskMediaPrioritizeData struct {
 	FlightID string `json:"flight_id"` // Flight task ID
 }
 
-// UploadFlighttaskMediaPrioritizeRequest represents the upload flight task media prioritize request
+// UploadFlighttaskMediaPrioritizeCommand represents the upload flight task media prioritize request
 type UploadFlighttaskMediaPrioritizeCommand struct {
 	common.Header
 	MethodName string                              `json:"method"`
 	DataValue  UploadFlighttaskMediaPrioritizeData `json:"data"`
 }
 
-// NewUploadFlighttaskMediaPrioritizeRequest creates a new upload flight task media prioritize request
+// NewUploadFlighttaskMediaPrioritizeCommand creates a new upload flight task media prioritize request
 func NewUploadFlighttaskMediaPrioritizeCommand(data UploadFlighttaskMediaPrioritizeData) *UploadFlighttaskMediaPrioritizeCommand {
 	return &UploadFlighttaskMediaPrioritizeCommand{
 		Header:     common.NewHeader(),
@@ -32,8 +32,11 @@ func NewUploadFlighttaskMediaPrioritizeCommand(data UploadFlighttaskMediaPriorit
 	}
 }
 
+// Method returns the method name.
 func (c *UploadFlighttaskMediaPrioritizeCommand) Method() string { return c.MethodName }
-func (c *UploadFlighttaskMediaPrioritizeCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *UploadFlighttaskMediaPrioritizeCommand) Data() any { return c.DataValue }
 
 // ===============================
 // Log File Management Commands (Services)
@@ -46,14 +49,14 @@ type FileUploadListData struct {
 	ModuleList []string `json:"module_list"` // 文件所属过滤列表: "0"=飞行器, "3"=机场
 }
 
-// FileUploadListRequest represents the file upload list request
+// FileUploadListCommand represents the file upload list request
 type FileUploadListCommand struct {
 	common.Header
 	MethodName string             `json:"method"`
 	DataValue  FileUploadListData `json:"data"`
 }
 
-// NewFileUploadListRequest creates a new file upload list request
+// NewFileUploadListCommand creates a new file upload list request
 func NewFileUploadListCommand(data FileUploadListData) *FileUploadListCommand {
 	return &FileUploadListCommand{
 		Header:     common.NewHeader(),
@@ -62,8 +65,11 @@ func NewFileUploadListCommand(data FileUploadListData) *FileUploadListCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *FileUploadListCommand) Method() string { return c.MethodName }
-func (c *FileUploadListCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FileUploadListCommand) Data() any { return c.DataValue }
 
 // Credentials represents the cloud storage credentials
 type Credentials struct {
@@ -96,14 +102,14 @@ type FileUploadStartData struct {
 	Params      FileUploadStartParams `json:"params"`
 }
 
-// FileUploadStartRequest represents the file upload start request
+// FileUploadStartCommand represents the file upload start request
 type FileUploadStartCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  FileUploadStartData `json:"data"`
 }
 
-// NewFileUploadStartRequest creates a new file upload start request
+// NewFileUploadStartCommand creates a new file upload start request
 func NewFileUploadStartCommand(data FileUploadStartData) *FileUploadStartCommand {
 	return &FileUploadStartCommand{
 		Header:     common.NewHeader(),
@@ -112,8 +118,11 @@ func NewFileUploadStartCommand(data FileUploadStartData) *FileUploadStartCommand
 	}
 }
 
+// Method returns the method name.
 func (c *FileUploadStartCommand) Method() string { return c.MethodName }
-func (c *FileUploadStartCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FileUploadStartCommand) Data() any { return c.DataValue }
 
 // FileUploadUpdateData represents the file upload update data
 // 上传状态更新
@@ -122,14 +131,14 @@ type FileUploadUpdateData struct {
 	ModuleList []string `json:"module_list"` // 日志所属模块列表: "0"=飞行器, "3"=机场
 }
 
-// FileUploadUpdateRequest represents the file upload update request
+// FileUploadUpdateCommand represents the file upload update request
 type FileUploadUpdateCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
 	DataValue  FileUploadUpdateData `json:"data"`
 }
 
-// NewFileUploadUpdateRequest creates a new file upload update request
+// NewFileUploadUpdateCommand creates a new file upload update request
 func NewFileUploadUpdateCommand(data FileUploadUpdateData) *FileUploadUpdateCommand {
 	return &FileUploadUpdateCommand{
 		Header:     common.NewHeader(),
@@ -138,8 +147,11 @@ func NewFileUploadUpdateCommand(data FileUploadUpdateData) *FileUploadUpdateComm
 	}
 }
 
+// Method returns the method name.
 func (c *FileUploadUpdateCommand) Method() string { return c.MethodName }
-func (c *FileUploadUpdateCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FileUploadUpdateCommand) Data() any { return c.DataValue }
 
 // ===============================
 // Service Reply Structures (services_reply)

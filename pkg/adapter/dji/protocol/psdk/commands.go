@@ -13,14 +13,14 @@ type PsdkWidgetValueSetData struct {
 	Value     int `json:"value"`      // Widget value (defined by developer)
 }
 
-// PsdkWidgetValueSetRequest represents the PSDK widget value set request
+// PsdkWidgetValueSetCommand represents the PSDK widget value set request
 type PsdkWidgetValueSetCommand struct {
 	common.Header
 	MethodName string                 `json:"method"`
 	DataValue  PsdkWidgetValueSetData `json:"data"`
 }
 
-// NewPsdkWidgetValueSetRequest creates a new PSDK widget value set request
+// NewPsdkWidgetValueSetCommand creates a new PSDK widget value set request
 func NewPsdkWidgetValueSetCommand(data PsdkWidgetValueSetData) *PsdkWidgetValueSetCommand {
 	return &PsdkWidgetValueSetCommand{
 		Header:     common.NewHeader(),
@@ -29,8 +29,11 @@ func NewPsdkWidgetValueSetCommand(data PsdkWidgetValueSetData) *PsdkWidgetValueS
 	}
 }
 
+// Method returns the method name.
 func (c *PsdkWidgetValueSetCommand) Method() string { return c.MethodName }
-func (c *PsdkWidgetValueSetCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *PsdkWidgetValueSetCommand) Data() any { return c.DataValue }
 
 // PsdkInputBoxTextSetData represents the PSDK input box text set data
 type PsdkInputBoxTextSetData struct {
@@ -38,14 +41,14 @@ type PsdkInputBoxTextSetData struct {
 	Value     string `json:"value"`      // Text content (max 128 bytes)
 }
 
-// PsdkInputBoxTextSetRequest represents the PSDK input box text set request
+// PsdkInputBoxTextSetCommand represents the PSDK input box text set request
 type PsdkInputBoxTextSetCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
 	DataValue  PsdkInputBoxTextSetData `json:"data"`
 }
 
-// NewPsdkInputBoxTextSetRequest creates a new PSDK input box text set request
+// NewPsdkInputBoxTextSetCommand creates a new PSDK input box text set request
 func NewPsdkInputBoxTextSetCommand(data PsdkInputBoxTextSetData) *PsdkInputBoxTextSetCommand {
 	return &PsdkInputBoxTextSetCommand{
 		Header:     common.NewHeader(),
@@ -54,8 +57,11 @@ func NewPsdkInputBoxTextSetCommand(data PsdkInputBoxTextSetData) *PsdkInputBoxTe
 	}
 }
 
+// Method returns the method name.
 func (c *PsdkInputBoxTextSetCommand) Method() string { return c.MethodName }
-func (c *PsdkInputBoxTextSetCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *PsdkInputBoxTextSetCommand) Data() any { return c.DataValue }
 
 // AudioFile represents audio file information for speaker
 type AudioFile struct {
@@ -71,14 +77,14 @@ type SpeakerAudioPlayStartData struct {
 	File      AudioFile `json:"file"`       // Audio file information
 }
 
-// SpeakerAudioPlayStartRequest represents the speaker audio play start request
+// SpeakerAudioPlayStartCommand represents the speaker audio play start request
 type SpeakerAudioPlayStartCommand struct {
 	common.Header
 	MethodName string                    `json:"method"`
 	DataValue  SpeakerAudioPlayStartData `json:"data"`
 }
 
-// NewSpeakerAudioPlayStartRequest creates a new speaker audio play start request
+// NewSpeakerAudioPlayStartCommand creates a new speaker audio play start request
 func NewSpeakerAudioPlayStartCommand(data SpeakerAudioPlayStartData) *SpeakerAudioPlayStartCommand {
 	return &SpeakerAudioPlayStartCommand{
 		Header:     common.NewHeader(),
@@ -87,8 +93,11 @@ func NewSpeakerAudioPlayStartCommand(data SpeakerAudioPlayStartData) *SpeakerAud
 	}
 }
 
+// Method returns the method name.
 func (c *SpeakerAudioPlayStartCommand) Method() string { return c.MethodName }
-func (c *SpeakerAudioPlayStartCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *SpeakerAudioPlayStartCommand) Data() any { return c.DataValue }
 
 // TTSContent represents TTS text content for speaker
 type TTSContent struct {
@@ -103,14 +112,14 @@ type SpeakerTtsPlayStartData struct {
 	TTS       TTSContent `json:"tts"`        // TTS text information
 }
 
-// SpeakerTtsPlayStartRequest represents the speaker TTS play start request
+// SpeakerTtsPlayStartCommand represents the speaker TTS play start request
 type SpeakerTtsPlayStartCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
 	DataValue  SpeakerTtsPlayStartData `json:"data"`
 }
 
-// NewSpeakerTtsPlayStartRequest creates a new speaker TTS play start request
+// NewSpeakerTtsPlayStartCommand creates a new speaker TTS play start request
 func NewSpeakerTtsPlayStartCommand(data SpeakerTtsPlayStartData) *SpeakerTtsPlayStartCommand {
 	return &SpeakerTtsPlayStartCommand{
 		Header:     common.NewHeader(),
@@ -119,22 +128,25 @@ func NewSpeakerTtsPlayStartCommand(data SpeakerTtsPlayStartData) *SpeakerTtsPlay
 	}
 }
 
+// Method returns the method name.
 func (c *SpeakerTtsPlayStartCommand) Method() string { return c.MethodName }
-func (c *SpeakerTtsPlayStartCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *SpeakerTtsPlayStartCommand) Data() any { return c.DataValue }
 
 // SpeakerReplayData represents the speaker replay data
 type SpeakerReplayData struct {
 	PsdkIndex int `json:"psdk_index"` // PSDK payload device index (min: 0)
 }
 
-// SpeakerReplayRequest represents the speaker replay request
+// SpeakerReplayCommand represents the speaker replay request
 type SpeakerReplayCommand struct {
 	common.Header
 	MethodName string            `json:"method"`
 	DataValue  SpeakerReplayData `json:"data"`
 }
 
-// NewSpeakerReplayRequest creates a new speaker replay request
+// NewSpeakerReplayCommand creates a new speaker replay request
 func NewSpeakerReplayCommand(data SpeakerReplayData) *SpeakerReplayCommand {
 	return &SpeakerReplayCommand{
 		Header:     common.NewHeader(),
@@ -143,22 +155,25 @@ func NewSpeakerReplayCommand(data SpeakerReplayData) *SpeakerReplayCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *SpeakerReplayCommand) Method() string { return c.MethodName }
-func (c *SpeakerReplayCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *SpeakerReplayCommand) Data() any { return c.DataValue }
 
 // SpeakerPlayStopData represents the speaker play stop data
 type SpeakerPlayStopData struct {
 	PsdkIndex int `json:"psdk_index"` // PSDK payload device index (min: 0)
 }
 
-// SpeakerPlayStopRequest represents the speaker play stop request
+// SpeakerPlayStopCommand represents the speaker play stop request
 type SpeakerPlayStopCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  SpeakerPlayStopData `json:"data"`
 }
 
-// NewSpeakerPlayStopRequest creates a new speaker play stop request
+// NewSpeakerPlayStopCommand creates a new speaker play stop request
 func NewSpeakerPlayStopCommand(data SpeakerPlayStopData) *SpeakerPlayStopCommand {
 	return &SpeakerPlayStopCommand{
 		Header:     common.NewHeader(),
@@ -167,8 +182,11 @@ func NewSpeakerPlayStopCommand(data SpeakerPlayStopData) *SpeakerPlayStopCommand
 	}
 }
 
+// Method returns the method name.
 func (c *SpeakerPlayStopCommand) Method() string { return c.MethodName }
-func (c *SpeakerPlayStopCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *SpeakerPlayStopCommand) Data() any { return c.DataValue }
 
 // SpeakerPlayModeSetData represents the speaker play mode set data
 type SpeakerPlayModeSetData struct {
@@ -176,14 +194,14 @@ type SpeakerPlayModeSetData struct {
 	PlayMode  int `json:"play_mode"`  // Play mode: 0=single play, 1=loop (single track)
 }
 
-// SpeakerPlayModeSetRequest represents the speaker play mode set request
+// SpeakerPlayModeSetCommand represents the speaker play mode set request
 type SpeakerPlayModeSetCommand struct {
 	common.Header
 	MethodName string                 `json:"method"`
 	DataValue  SpeakerPlayModeSetData `json:"data"`
 }
 
-// NewSpeakerPlayModeSetRequest creates a new speaker play mode set request
+// NewSpeakerPlayModeSetCommand creates a new speaker play mode set request
 func NewSpeakerPlayModeSetCommand(data SpeakerPlayModeSetData) *SpeakerPlayModeSetCommand {
 	return &SpeakerPlayModeSetCommand{
 		Header:     common.NewHeader(),
@@ -192,8 +210,11 @@ func NewSpeakerPlayModeSetCommand(data SpeakerPlayModeSetData) *SpeakerPlayModeS
 	}
 }
 
+// Method returns the method name.
 func (c *SpeakerPlayModeSetCommand) Method() string { return c.MethodName }
-func (c *SpeakerPlayModeSetCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *SpeakerPlayModeSetCommand) Data() any { return c.DataValue }
 
 // SpeakerPlayVolumeSetData represents the speaker play volume set data
 type SpeakerPlayVolumeSetData struct {
@@ -202,14 +223,14 @@ type SpeakerPlayVolumeSetData struct {
 	PlayVolume int `json:"play_volume"` // Speaker volume (0-100)
 }
 
-// SpeakerPlayVolumeSetRequest represents the speaker play volume set request
+// SpeakerPlayVolumeSetCommand represents the speaker play volume set request
 type SpeakerPlayVolumeSetCommand struct {
 	common.Header
 	MethodName string                   `json:"method"`
 	DataValue  SpeakerPlayVolumeSetData `json:"data"`
 }
 
-// NewSpeakerPlayVolumeSetRequest creates a new speaker play volume set request
+// NewSpeakerPlayVolumeSetCommand creates a new speaker play volume set request
 func NewSpeakerPlayVolumeSetCommand(data SpeakerPlayVolumeSetData) *SpeakerPlayVolumeSetCommand {
 	return &SpeakerPlayVolumeSetCommand{
 		Header:     common.NewHeader(),
@@ -218,8 +239,11 @@ func NewSpeakerPlayVolumeSetCommand(data SpeakerPlayVolumeSetData) *SpeakerPlayV
 	}
 }
 
+// Method returns the method name.
 func (c *SpeakerPlayVolumeSetCommand) Method() string { return c.MethodName }
-func (c *SpeakerPlayVolumeSetCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *SpeakerPlayVolumeSetCommand) Data() any { return c.DataValue }
 
 // CustomDataTransmissionToPSDKData represents the custom data transmission to PSDK data
 type CustomDataTransmissionToPSDKData struct {
@@ -227,14 +251,14 @@ type CustomDataTransmissionToPSDKData struct {
 	DataValue    any `json:"data"`          // Custom data
 }
 
-// CustomDataTransmissionToPSDKRequest represents the custom data transmission to PSDK request
+// CustomDataTransmissionToPSDKCommand represents the custom data transmission to PSDK request
 type CustomDataTransmissionToPSDKCommand struct {
 	common.Header
 	MethodName string                           `json:"method"`
 	DataValue  CustomDataTransmissionToPSDKData `json:"data"`
 }
 
-// NewCustomDataTransmissionToPSDKRequest creates a new custom data transmission to PSDK request
+// NewCustomDataTransmissionToPSDKCommand creates a new custom data transmission to PSDK request
 func NewCustomDataTransmissionToPSDKCommand(data CustomDataTransmissionToPSDKData) *CustomDataTransmissionToPSDKCommand {
 	return &CustomDataTransmissionToPSDKCommand{
 		Header:     common.NewHeader(),
@@ -243,22 +267,25 @@ func NewCustomDataTransmissionToPSDKCommand(data CustomDataTransmissionToPSDKDat
 	}
 }
 
+// Method returns the method name.
 func (c *CustomDataTransmissionToPSDKCommand) Method() string { return c.MethodName }
-func (c *CustomDataTransmissionToPSDKCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *CustomDataTransmissionToPSDKCommand) Data() any { return c.DataValue }
 
 // CustomDataTransmissionToESDKData represents the custom data transmission to ESDK data
 type CustomDataTransmissionToESDKData struct {
 	Data any `json:"data"` // Custom data
 }
 
-// CustomDataTransmissionToESDKRequest represents the custom data transmission to ESDK request
+// CustomDataTransmissionToESDKCommand represents the custom data transmission to ESDK request
 type CustomDataTransmissionToESDKCommand struct {
 	common.Header
 	MethodName string                           `json:"method"`
 	DataValue  CustomDataTransmissionToESDKData `json:"data"`
 }
 
-// NewCustomDataTransmissionToESDKRequest creates a new custom data transmission to ESDK request
+// NewCustomDataTransmissionToESDKCommand creates a new custom data transmission to ESDK request
 func NewCustomDataTransmissionToESDKCommand(data CustomDataTransmissionToESDKData) *CustomDataTransmissionToESDKCommand {
 	return &CustomDataTransmissionToESDKCommand{
 		Header:     common.NewHeader(),
@@ -267,8 +294,11 @@ func NewCustomDataTransmissionToESDKCommand(data CustomDataTransmissionToESDKDat
 	}
 }
 
+// Method returns the method name.
 func (c *CustomDataTransmissionToESDKCommand) Method() string { return c.MethodName }
-func (c *CustomDataTransmissionToESDKCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *CustomDataTransmissionToESDKCommand) Data() any { return c.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (c *CustomDataTransmissionToESDKCommand) GetHeader() *common.Header {

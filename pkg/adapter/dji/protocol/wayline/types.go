@@ -41,6 +41,7 @@ type PrepareData struct {
 	RthMode               int                   `json:"rth_mode"`
 }
 
+// File represents a wayline file entry.
 type File struct {
 	Fingerprint string `json:"fingerprint"`
 	URL         string `json:"url"`

@@ -58,12 +58,14 @@ type FlightTaskResourceGetResponseData struct {
 	Output FlightTaskResourceGetOutputData `json:"output"`
 }
 
+// FlightTaskResourceGetResponse represents the flight task resource get response.
 type FlightTaskResourceGetResponse struct {
 	common.Header
 	MethodName string                            `json:"method"`
 	DataValue  FlightTaskResourceGetResponseData `json:"output"`
 }
 
+// NewFlightTaskResourceGetResponse creates a new FlightTaskResourceGetResponse.
 func NewFlightTaskResourceGetResponse(data FlightTaskResourceGetResponseData) *FlightTaskResourceGetResponse {
 	return &FlightTaskResourceGetResponse{
 		Header:     common.NewHeader(),

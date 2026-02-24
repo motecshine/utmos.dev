@@ -31,8 +31,13 @@ type CoverOpenProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *CoverOpenProgressEvent) Method() string            { return e.MethodName }
-func (e *CoverOpenProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *CoverOpenProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *CoverOpenProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *CoverOpenProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // CoverCloseProgressEvent represents the cover close progress event
@@ -42,8 +47,13 @@ type CoverCloseProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *CoverCloseProgressEvent) Method() string            { return e.MethodName }
-func (e *CoverCloseProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *CoverCloseProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *CoverCloseProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *CoverCloseProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // CoverForceCloseProgressEvent represents the cover force close progress event
@@ -53,8 +63,13 @@ type CoverForceCloseProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *CoverForceCloseProgressEvent) Method() string            { return e.MethodName }
-func (e *CoverForceCloseProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *CoverForceCloseProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *CoverForceCloseProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *CoverForceCloseProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DroneOpenProgressEvent represents the drone power on progress event
@@ -64,8 +79,13 @@ type DroneOpenProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *DroneOpenProgressEvent) Method() string            { return e.MethodName }
-func (e *DroneOpenProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *DroneOpenProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *DroneOpenProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *DroneOpenProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DroneCloseProgressEvent represents the drone power off progress event
@@ -75,8 +95,13 @@ type DroneCloseProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *DroneCloseProgressEvent) Method() string            { return e.MethodName }
-func (e *DroneCloseProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *DroneCloseProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *DroneCloseProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *DroneCloseProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // ChargeOpenProgressEvent represents the charge start progress event
@@ -86,8 +111,13 @@ type ChargeOpenProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *ChargeOpenProgressEvent) Method() string            { return e.MethodName }
-func (e *ChargeOpenProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *ChargeOpenProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *ChargeOpenProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *ChargeOpenProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // ChargeCloseProgressEvent represents the charge stop progress event
@@ -97,8 +127,13 @@ type ChargeCloseProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *ChargeCloseProgressEvent) Method() string            { return e.MethodName }
-func (e *ChargeCloseProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *ChargeCloseProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *ChargeCloseProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *ChargeCloseProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DeviceRebootProgressEvent represents the device reboot progress event
@@ -108,8 +143,13 @@ type DeviceRebootProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *DeviceRebootProgressEvent) Method() string            { return e.MethodName }
-func (e *DeviceRebootProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *DeviceRebootProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *DeviceRebootProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *DeviceRebootProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DeviceFormatProgressEvent represents the dock data format progress event
@@ -119,8 +159,13 @@ type DeviceFormatProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *DeviceFormatProgressEvent) Method() string            { return e.MethodName }
-func (e *DeviceFormatProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *DeviceFormatProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *DeviceFormatProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *DeviceFormatProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DroneFormatProgressEvent represents the drone data format progress event
@@ -130,8 +175,13 @@ type DroneFormatProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *DroneFormatProgressEvent) Method() string            { return e.MethodName }
-func (e *DroneFormatProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *DroneFormatProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *DroneFormatProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *DroneFormatProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // PutterOpenProgressEvent represents the putter open progress event
@@ -141,8 +191,13 @@ type PutterOpenProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *PutterOpenProgressEvent) Method() string            { return e.MethodName }
-func (e *PutterOpenProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *PutterOpenProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *PutterOpenProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *PutterOpenProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // PutterCloseProgressEvent represents the putter close progress event
@@ -152,6 +207,11 @@ type PutterCloseProgressEvent struct {
 	DataValue  DeviceProgressData `json:"data"`
 }
 
-func (e *PutterCloseProgressEvent) Method() string            { return e.MethodName }
-func (e *PutterCloseProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *PutterCloseProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *PutterCloseProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *PutterCloseProgressEvent) GetHeader() *common.Header { return &e.Header }

@@ -13,8 +13,13 @@ type FlightSetupExceptionEvent struct {
 	DataValue  FlightSetupExceptionNotifyData `json:"data"`
 }
 
-func (e *FlightSetupExceptionEvent) Method() string            { return e.MethodName }
-func (e *FlightSetupExceptionEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *FlightSetupExceptionEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *FlightSetupExceptionEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *FlightSetupExceptionEvent) GetHeader() *common.Header { return &e.Header }
 
 // ExitHomingEvent represents the device exit homing notification event
@@ -24,8 +29,13 @@ type ExitHomingEvent struct {
 	DataValue  ExitHomingNotifyData `json:"data"`
 }
 
-func (e *ExitHomingEvent) Method() string            { return e.MethodName }
-func (e *ExitHomingEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *ExitHomingEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *ExitHomingEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *ExitHomingEvent) GetHeader() *common.Header { return &e.Header }
 
 // ProgressEvent represents the flight task progress event
@@ -35,8 +45,13 @@ type ProgressEvent struct {
 	DataValue  ProgressData `json:"data"`
 }
 
-func (e *ProgressEvent) Method() string            { return e.MethodName }
-func (e *ProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *ProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *ProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *ProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // ReadyEvent represents the task ready notification event
@@ -46,8 +61,13 @@ type ReadyEvent struct {
 	DataValue  ReadyData `json:"data"`
 }
 
-func (e *ReadyEvent) Method() string            { return e.MethodName }
-func (e *ReadyEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *ReadyEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *ReadyEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *ReadyEvent) GetHeader() *common.Header { return &e.Header }
 
 // ReturnHomeInfoEvent represents the return home information event
@@ -57,8 +77,13 @@ type ReturnHomeInfoEvent struct {
 	DataValue  ReturnHomeInfoData `json:"data"`
 }
 
-func (e *ReturnHomeInfoEvent) Method() string            { return e.MethodName }
-func (e *ReturnHomeInfoEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *ReturnHomeInfoEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *ReturnHomeInfoEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *ReturnHomeInfoEvent) GetHeader() *common.Header { return &e.Header }
 
 // ===============================

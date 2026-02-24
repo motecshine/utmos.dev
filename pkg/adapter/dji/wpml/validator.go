@@ -9,10 +9,12 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// WPMLValidator provides validation for WPML structures using custom validation rules.
 type WPMLValidator struct {
 	validator *validator.Validate
 }
 
+// NewWPMLValidator creates a new WPMLValidator with all custom validation rules registered.
 func NewWPMLValidator() (*WPMLValidator, error) {
 	validate := validator.New()
 
@@ -155,14 +157,17 @@ func (w *WPMLValidator) validateRequiredForPayload(_ validator.FieldLevel) bool 
 	return true
 }
 
+// ValidateStruct validates all fields of the given struct according to their validation tags.
 func (w *WPMLValidator) ValidateStruct(s any) error {
 	return w.validator.Struct(s)
 }
 
+// ValidateVar validates a single variable against the given validation tag.
 func (w *WPMLValidator) ValidateVar(field any, tag string) error {
 	return w.validator.Var(field, tag)
 }
 
+// ValidateAction validates an action, returning an error if it is nil or fails struct validation.
 func (w *WPMLValidator) ValidateAction(action any) error {
 	if action == nil {
 		return ErrActionCannotBeNil
@@ -171,6 +176,7 @@ func (w *WPMLValidator) ValidateAction(action any) error {
 	return w.ValidateStruct(action)
 }
 
+// ValidateActionGroup validates an action group and all of its contained actions.
 func (w *WPMLValidator) ValidateActionGroup(actionGroup *ActionGroup) error {
 	if actionGroup == nil {
 		return ErrActionGroupCannotBeNil
@@ -189,6 +195,7 @@ func (w *WPMLValidator) ValidateActionGroup(actionGroup *ActionGroup) error {
 	return nil
 }
 
+// ValidateWaylinesDocument validates a WaylinesDocument, returning an error if it is nil or fails validation.
 func (w *WPMLValidator) ValidateWaylinesDocument(waylineDoc *WaylinesDocument) error {
 	if waylineDoc == nil {
 		return ErrWaylineDocumentCannotBeNil
@@ -201,6 +208,7 @@ func (w *WPMLValidator) ValidateWaylinesDocument(waylineDoc *WaylinesDocument) e
 	return nil
 }
 
+// ValidateTemplateDocument validates a TemplateDocument, returning an error if it is nil or fails validation.
 func (w *WPMLValidator) ValidateTemplateDocument(template *TemplateDocument) error {
 	if template == nil {
 		return ErrTemplateCannotBeNil
@@ -209,6 +217,7 @@ func (w *WPMLValidator) ValidateTemplateDocument(template *TemplateDocument) err
 	return w.ValidateStruct(template)
 }
 
+// ValidateWithContext validates a struct with additional drone and payload model context for conditional rules.
 func (w *WPMLValidator) ValidateWithContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
 	if err := w.ValidateStruct(s); err != nil {
 		return err
@@ -351,6 +360,7 @@ func (w *WPMLValidator) matchesPayloadPattern(pattern string, payloadModel Paylo
 	}
 }
 
+// GetValidationErrors extracts and formats validation errors into a list of human-readable strings.
 func (w *WPMLValidator) GetValidationErrors(err error) []string {
 	var errs []string
 
@@ -396,6 +406,7 @@ func (w *WPMLValidator) formatValidationError(e validator.FieldError) string {
 
 var globalValidator *WPMLValidator
 
+// InitGlobalValidator initializes the package-level global WPML validator.
 func InitGlobalValidator() error {
 	var err error
 	globalValidator, err = NewWPMLValidator()
@@ -411,6 +422,7 @@ func MustInitGlobalValidator() {
 	}
 }
 
+// Validate validates the given struct using the global WPML validator, initializing it if necessary.
 func Validate(s any) error {
 	if globalValidator == nil {
 		if err := InitGlobalValidator(); err != nil {
@@ -420,6 +432,7 @@ func Validate(s any) error {
 	return globalValidator.ValidateStruct(s)
 }
 
+// ValidateActionGlobal validates an action using the global WPML validator, initializing it if necessary.
 func ValidateActionGlobal(action any) error {
 	if globalValidator == nil {
 		if err := InitGlobalValidator(); err != nil {
@@ -429,6 +442,7 @@ func ValidateActionGlobal(action any) error {
 	return globalValidator.ValidateAction(action)
 }
 
+// ValidateWaylinesDocumentGlobal validates a WaylinesDocument using the global WPML validator, initializing it if necessary.
 func ValidateWaylinesDocumentGlobal(waylineDoc *WaylinesDocument) error {
 	if globalValidator == nil {
 		if err := InitGlobalValidator(); err != nil {

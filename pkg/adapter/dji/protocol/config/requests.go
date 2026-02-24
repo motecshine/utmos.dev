@@ -37,8 +37,11 @@ func NewConfigRequest(data ConfigData) *ConfigRequest {
 	}
 }
 
+// Method returns the method name.
 func (r *ConfigRequest) Method() string { return r.MethodName }
-func (r *ConfigRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *ConfigRequest) Data() any { return r.DataValue }
 
 // UpdateTopoRequest represents the update topology request
 type UpdateTopoRequest struct {
@@ -47,7 +50,7 @@ type UpdateTopoRequest struct {
 	DataValue  UpdateTopoData `json:"data"`
 }
 
-// TopoData represents common topology update data
+// UpdateTopoData represents common topology update data
 type UpdateTopoData struct {
 	// Gateway device information
 	Domain       string `json:"domain"`        // 网关设备的命名空间
@@ -81,8 +84,11 @@ func NewUpdateTopoRequest(data UpdateTopoData) *UpdateTopoRequest {
 	}
 }
 
+// Method returns the method name.
 func (r *UpdateTopoRequest) Method() string { return r.MethodName }
-func (r *UpdateTopoRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *UpdateTopoRequest) Data() any { return r.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (r *ConfigRequest) GetHeader() *common.Header {

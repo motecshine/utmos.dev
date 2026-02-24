@@ -12,14 +12,14 @@ type PhotoStorageSetData struct {
 	PhotoStorageSettings []string `json:"photo_storage_settings"` // Photo storage types: current, wide, zoom, ir (multiple selection)
 }
 
-// PhotoStorageSetRequest represents the photo storage set request
+// PhotoStorageSetCommand represents the photo storage set request
 type PhotoStorageSetCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  PhotoStorageSetData `json:"data"`
 }
 
-// NewPhotoStorageSetRequest creates a new photo storage set request
+// NewPhotoStorageSetCommand creates a new photo storage set request
 func NewPhotoStorageSetCommand(data PhotoStorageSetData) *PhotoStorageSetCommand {
 	return &PhotoStorageSetCommand{
 		Header:     common.NewHeader(),
@@ -28,8 +28,11 @@ func NewPhotoStorageSetCommand(data PhotoStorageSetData) *PhotoStorageSetCommand
 	}
 }
 
+// Method returns the method name.
 func (c *PhotoStorageSetCommand) Method() string { return c.MethodName }
-func (c *PhotoStorageSetCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *PhotoStorageSetCommand) Data() any { return c.DataValue }
 
 // VideoStorageSetData represents the video storage set data
 type VideoStorageSetData struct {
@@ -37,14 +40,14 @@ type VideoStorageSetData struct {
 	VideoStorageSettings []string `json:"video_storage_settings"` // Video storage types: current, wide, zoom, ir (multiple selection)
 }
 
-// VideoStorageSetRequest represents the video storage set request
+// VideoStorageSetCommand represents the video storage set request
 type VideoStorageSetCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  VideoStorageSetData `json:"data"`
 }
 
-// NewVideoStorageSetRequest creates a new video storage set request
+// NewVideoStorageSetCommand creates a new video storage set request
 func NewVideoStorageSetCommand(data VideoStorageSetData) *VideoStorageSetCommand {
 	return &VideoStorageSetCommand{
 		Header:     common.NewHeader(),
@@ -53,8 +56,11 @@ func NewVideoStorageSetCommand(data VideoStorageSetData) *VideoStorageSetCommand
 	}
 }
 
+// Method returns the method name.
 func (c *VideoStorageSetCommand) Method() string { return c.MethodName }
-func (c *VideoStorageSetCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *VideoStorageSetCommand) Data() any { return c.DataValue }
 
 // StorageConfigGetData represents the storage config get data
 type StorageConfigGetData struct {
@@ -77,8 +83,11 @@ func NewStorageConfigGetRequest(data StorageConfigGetData) *StorageConfigGetRequ
 	}
 }
 
+// Method returns the method name.
 func (r *StorageConfigGetRequest) Method() string { return r.MethodName }
-func (r *StorageConfigGetRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *StorageConfigGetRequest) Data() any { return r.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (c *PhotoStorageSetCommand) GetHeader() *common.Header {

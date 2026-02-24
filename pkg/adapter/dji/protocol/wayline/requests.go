@@ -22,8 +22,13 @@ func NewResourceGetRequest(data ResourceGetData) *ResourceGetRequest {
 	}
 }
 
-func (r *ResourceGetRequest) Method() string            { return r.MethodName }
-func (r *ResourceGetRequest) Data() any                 { return r.DataValue }
+// Method returns the method name.
+func (r *ResourceGetRequest) Method() string { return r.MethodName }
+
+// Data returns the command/event data.
+func (r *ResourceGetRequest) Data() any { return r.DataValue }
+
+// GetHeader returns the event header.
 func (r *ResourceGetRequest) GetHeader() *common.Header { return &r.Header }
 
 // ===============================

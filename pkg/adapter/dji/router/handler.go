@@ -71,10 +71,12 @@ type RegistrationError struct {
 	Err    error
 }
 
+// Error returns the error message.
 func (e *RegistrationError) Error() string {
 	return fmt.Sprintf("failed to register handler for method %q: %v", e.Method, e.Err)
 }
 
+// Unwrap returns the underlying error.
 func (e *RegistrationError) Unwrap() error {
 	return e.Err
 }

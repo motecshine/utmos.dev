@@ -14,14 +14,14 @@ type FlightAreaFile struct {
 	Size     int    `json:"size"`     // File size in bytes
 }
 
-// FlightAreasUpdateRequest represents the flight areas update request (data is null)
+// FlightAreasUpdateCommand represents the flight areas update request (data is null)
 type FlightAreasUpdateCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewFlightAreasUpdateRequest creates a new flight areas update request
+// NewFlightAreasUpdateCommand creates a new flight areas update request
 func NewFlightAreasUpdateCommand() *FlightAreasUpdateCommand {
 	return &FlightAreasUpdateCommand{
 		Header:     common.NewHeader(),
@@ -30,8 +30,11 @@ func NewFlightAreasUpdateCommand() *FlightAreasUpdateCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *FlightAreasUpdateCommand) Method() string { return c.MethodName }
-func (c *FlightAreasUpdateCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FlightAreasUpdateCommand) Data() any { return c.DataValue }
 
 // FlightAreasGetData represents the flight areas get data
 type FlightAreasGetData struct {
@@ -54,8 +57,11 @@ func NewFlightAreasGetRequest(data FlightAreasGetData) *FlightAreasGetRequest {
 	}
 }
 
+// Method returns the method name.
 func (r *FlightAreasGetRequest) Method() string { return r.MethodName }
-func (r *FlightAreasGetRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *FlightAreasGetRequest) Data() any { return r.DataValue }
 
 // UnlockLicenseSwitchData represents the unlock license switch data
 type UnlockLicenseSwitchData struct {
@@ -63,14 +69,14 @@ type UnlockLicenseSwitchData struct {
 	Enable    bool `json:"enable"`     // Enable/disable unlock license
 }
 
-// UnlockLicenseSwitchRequest represents the unlock license switch request
+// UnlockLicenseSwitchCommand represents the unlock license switch request
 type UnlockLicenseSwitchCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
 	DataValue  UnlockLicenseSwitchData `json:"data"`
 }
 
-// NewUnlockLicenseSwitchRequest creates a new unlock license switch request
+// NewUnlockLicenseSwitchCommand creates a new unlock license switch request
 func NewUnlockLicenseSwitchCommand(data UnlockLicenseSwitchData) *UnlockLicenseSwitchCommand {
 	return &UnlockLicenseSwitchCommand{
 		Header:     common.NewHeader(),
@@ -79,8 +85,11 @@ func NewUnlockLicenseSwitchCommand(data UnlockLicenseSwitchData) *UnlockLicenseS
 	}
 }
 
+// Method returns the method name.
 func (c *UnlockLicenseSwitchCommand) Method() string { return c.MethodName }
-func (c *UnlockLicenseSwitchCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *UnlockLicenseSwitchCommand) Data() any { return c.DataValue }
 
 // LicenseFileInfo represents the license file information
 type LicenseFileInfo struct {
@@ -93,14 +102,14 @@ type UnlockLicenseUpdateData struct {
 	File *LicenseFileInfo `json:"file,omitempty"` // Offline license file (optional, use Flysafe server if omitted)
 }
 
-// UnlockLicenseUpdateRequest represents the unlock license update request
+// UnlockLicenseUpdateCommand represents the unlock license update request
 type UnlockLicenseUpdateCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
 	DataValue  UnlockLicenseUpdateData `json:"data"`
 }
 
-// NewUnlockLicenseUpdateRequest creates a new unlock license update request
+// NewUnlockLicenseUpdateCommand creates a new unlock license update request
 func NewUnlockLicenseUpdateCommand(data UnlockLicenseUpdateData) *UnlockLicenseUpdateCommand {
 	return &UnlockLicenseUpdateCommand{
 		Header:     common.NewHeader(),
@@ -109,8 +118,11 @@ func NewUnlockLicenseUpdateCommand(data UnlockLicenseUpdateData) *UnlockLicenseU
 	}
 }
 
+// Method returns the method name.
 func (c *UnlockLicenseUpdateCommand) Method() string { return c.MethodName }
-func (c *UnlockLicenseUpdateCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *UnlockLicenseUpdateCommand) Data() any { return c.DataValue }
 
 // LicenseCommonFields represents the common fields of unlock license
 type LicenseCommonFields struct {
@@ -201,14 +213,14 @@ type FlightAreasGetResponse struct {
 	Files []FlightAreaFile `json:"files"` // Flight area file list
 }
 
-// UnlockLicenseListRequest represents the unlock license list request
+// UnlockLicenseListCommand represents the unlock license list request
 type UnlockLicenseListCommand struct {
 	common.Header
 	MethodName string                `json:"method"`
 	DataValue  UnlockLicenseListData `json:"data"`
 }
 
-// NewUnlockLicenseListRequest creates a new unlock license list request
+// NewUnlockLicenseListCommand creates a new unlock license list request
 func NewUnlockLicenseListCommand(data UnlockLicenseListData) *UnlockLicenseListCommand {
 	return &UnlockLicenseListCommand{
 		Header:     common.NewHeader(),
@@ -217,8 +229,11 @@ func NewUnlockLicenseListCommand(data UnlockLicenseListData) *UnlockLicenseListC
 	}
 }
 
+// Method returns the method name.
 func (c *UnlockLicenseListCommand) Method() string { return c.MethodName }
-func (c *UnlockLicenseListCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *UnlockLicenseListCommand) Data() any { return c.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (r *FlightAreasGetRequest) GetHeader() *common.Header {

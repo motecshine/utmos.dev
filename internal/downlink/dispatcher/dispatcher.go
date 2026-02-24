@@ -18,20 +18,29 @@ import (
 type ServiceCallType string
 
 const (
-	ServiceCallTypeCommand  ServiceCallType = "command"
+	// ServiceCallTypeCommand is the command service call type.
+	ServiceCallTypeCommand ServiceCallType = "command"
+	// ServiceCallTypeProperty is the property service call type.
 	ServiceCallTypeProperty ServiceCallType = "property"
-	ServiceCallTypeConfig   ServiceCallType = "config"
+	// ServiceCallTypeConfig is the config service call type.
+	ServiceCallTypeConfig ServiceCallType = "config"
 )
 
 // ServiceCallStatus represents the status of a service call
 type ServiceCallStatus string
 
 const (
-	ServiceCallStatusPending  ServiceCallStatus = "pending"
-	ServiceCallStatusSent     ServiceCallStatus = "sent"
-	ServiceCallStatusSuccess  ServiceCallStatus = "success"
-	ServiceCallStatusFailed   ServiceCallStatus = "failed"
-	ServiceCallStatusTimeout  ServiceCallStatus = "timeout"
+	// ServiceCallStatusPending indicates the service call is pending.
+	ServiceCallStatusPending ServiceCallStatus = "pending"
+	// ServiceCallStatusSent indicates the service call has been sent.
+	ServiceCallStatusSent ServiceCallStatus = "sent"
+	// ServiceCallStatusSuccess indicates the service call succeeded.
+	ServiceCallStatusSuccess ServiceCallStatus = "success"
+	// ServiceCallStatusFailed indicates the service call failed.
+	ServiceCallStatusFailed ServiceCallStatus = "failed"
+	// ServiceCallStatusTimeout indicates the service call timed out.
+	ServiceCallStatusTimeout ServiceCallStatus = "timeout"
+	// ServiceCallStatusRetrying indicates the service call is being retried.
 	ServiceCallStatusRetrying ServiceCallStatus = "retrying"
 )
 

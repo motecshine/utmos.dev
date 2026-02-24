@@ -2,6 +2,7 @@ package wpml
 
 import "fmt"
 
+// Placemark represents a WPML waypoint placemark with position, speed, heading, and action configurations.
 type Placemark struct {
 	Point                      *Point                      `xml:"Point,omitempty" json:"point,omitempty"`
 	Index                      int                         `xml:"wpml:index" validate:"min=0,max=65535" json:"index"`
@@ -23,10 +24,12 @@ type Placemark struct {
 	WaypointWorkType           *int                        `xml:"wpml:waypointWorkType,omitempty" json:"waypoint_work_type,omitempty"`
 }
 
+// Point represents a geographic point defined by coordinates in "longitude,latitude" format.
 type Point struct {
 	Coordinates string `xml:"coordinates" validate:"required" json:"coordinates"`
 }
 
+// WaypointHeadingParam represents the heading parameters for a specific waypoint.
 type WaypointHeadingParam struct {
 	WaypointHeadingMode        string   `xml:"wpml:waypointHeadingMode" validate:"required" json:"waypoint_heading_mode"`
 	WaypointHeadingAngle       *float64 `xml:"wpml:waypointHeadingAngle,omitempty" json:"waypoint_heading_angle,omitempty"`
@@ -36,16 +39,19 @@ type WaypointHeadingParam struct {
 	WaypointHeadingPoiIndex    *int     `xml:"wpml:waypointHeadingPoiIndex,omitempty" json:"waypoint_heading_poi_index,omitempty"`
 }
 
+// WaypointTurnParam represents the turn parameters for a specific waypoint.
 type WaypointTurnParam struct {
 	WaypointTurnMode        string   `xml:"wpml:waypointTurnMode" validate:"required" json:"waypoint_turn_mode"`
 	WaypointTurnDampingDist *float64 `xml:"wpml:waypointTurnDampingDist,omitempty" json:"waypoint_turn_damping_dist,omitempty"`
 }
 
+// WaypointGimbalHeadingParam represents the gimbal heading parameters for a specific waypoint.
 type WaypointGimbalHeadingParam struct {
 	WaypointGimbalPitchAngle *float64 `xml:"wpml:waypointGimbalPitchAngle,omitempty" json:"waypoint_gimbal_pitch_angle,omitempty"`
 	WaypointGimbalYawAngle   *float64 `xml:"wpml:waypointGimbalYawAngle,omitempty" json:"waypoint_gimbal_yaw_angle,omitempty"`
 }
 
+// ActionGroup represents a group of actions to be executed at a waypoint.
 type ActionGroup struct {
 	ActionGroupID         int           `xml:"wpml:actionGroupId" validate:"required,min=0,max=65535" json:"action_group_id"`
 	ActionGroupStartIndex int           `xml:"wpml:actionGroupStartIndex" validate:"required,min=0,max=65535" json:"action_group_start_index"`
@@ -55,21 +61,25 @@ type ActionGroup struct {
 	Actions               []Action      `xml:"wpml:action" validate:"required,dive" json:"actions"`
 }
 
+// ActionTrigger represents the trigger configuration that determines when an action group executes.
 type ActionTrigger struct {
 	ActionTriggerType  string   `xml:"wpml:actionTriggerType" validate:"required" json:"action_trigger_type"`
 	ActionTriggerParam *float64 `xml:"wpml:actionTriggerParam,omitempty" json:"action_trigger_param,omitempty"`
 }
 
+// Action represents a single waypoint action with its actuator function and parameters.
 type Action struct {
 	ActionID                int                      `xml:"wpml:actionId" validate:"required,min=0,max=65535" json:"action_id"`
 	ActionActuatorFunc      string                   `xml:"wpml:actionActuatorFunc" validate:"required" json:"action_actuator_func"`
 	ActionActuatorFuncParam *ActionActuatorFuncParam `xml:"wpml:actionActuatorFuncParam,omitempty" json:"action_actuator_func_param,omitempty"`
 }
 
+// GetActionType returns the action actuator function type string.
 func (a Action) GetActionType() string {
 	return a.ActionActuatorFunc
 }
 
+// ActionActuatorFuncParam represents the parameters for an action actuator function.
 type ActionActuatorFuncParam struct {
 	GimbalHeadingYawBase      *string            `xml:"wpml:gimbalHeadingYawBase,omitempty" json:"gimbal_heading_yaw_base,omitempty"`
 	GimbalRotateMode          *string            `xml:"wpml:gimbalRotateMode,omitempty" json:"gimbal_rotate_mode,omitempty"`
@@ -122,10 +132,12 @@ type ActionActuatorFuncParam struct {
 	SmartObliquePoint         *SmartObliquePoint `xml:"wpml:smartObliquePoint,omitempty" json:"smart_oblique_point,omitempty"`
 }
 
+// GetActionType returns the action type identifier for ActionActuatorFuncParam.
 func (a ActionActuatorFuncParam) GetActionType() string {
 	return "actions"
 }
 
+// SmartObliquePoint represents a smart oblique photography point with timing and orientation parameters.
 type SmartObliquePoint struct {
 	SmartObliqueRunningTime *int     `xml:"wpml:smartObliqueRunningTime,omitempty" json:"smart_oblique_running_time,omitempty"`
 	SmartObliqueStayTime    *int     `xml:"wpml:smartObliqueStayTime,omitempty" json:"smart_oblique_stay_time,omitempty"`
@@ -134,65 +146,113 @@ type SmartObliquePoint struct {
 	SmartObliqueEulerYaw    *float64 `xml:"wpml:smartObliqueEulerYaw,omitempty" json:"smart_oblique_euler_yaw,omitempty"`
 }
 
+// Action type string constants for identifying waypoint actions.
 const (
-	ActionTypeTakePhoto          = "takePhoto"
-	ActionTypeStartRecord        = "startRecord"
-	ActionTypeStopRecord         = "stopRecord"
-	ActionTypeFocus              = "focus"
-	ActionTypeZoom               = "zoom"
-	ActionTypeCustomDirName      = "customDirName"
-	ActionTypeGimbalRotate       = "gimbalRotate"
-	ActionTypeRotateYaw          = "rotateYaw"
-	ActionTypeHover              = "hover"
+	// ActionTypeTakePhoto is the action type for taking a photo.
+	ActionTypeTakePhoto = "takePhoto"
+	// ActionTypeStartRecord is the action type for starting video recording.
+	ActionTypeStartRecord = "startRecord"
+	// ActionTypeStopRecord is the action type for stopping video recording.
+	ActionTypeStopRecord = "stopRecord"
+	// ActionTypeFocus is the action type for adjusting camera focus.
+	ActionTypeFocus = "focus"
+	// ActionTypeZoom is the action type for adjusting camera zoom.
+	ActionTypeZoom = "zoom"
+	// ActionTypeCustomDirName is the action type for setting a custom directory name.
+	ActionTypeCustomDirName = "customDirName"
+	// ActionTypeGimbalRotate is the action type for rotating the gimbal.
+	ActionTypeGimbalRotate = "gimbalRotate"
+	// ActionTypeRotateYaw is the action type for rotating the aircraft yaw.
+	ActionTypeRotateYaw = "rotateYaw"
+	// ActionTypeHover is the action type for hovering at a waypoint.
+	ActionTypeHover = "hover"
+	// ActionTypeGimbalEvenlyRotate is the action type for evenly rotating the gimbal.
 	ActionTypeGimbalEvenlyRotate = "gimbalEvenlyRotate"
-	ActionTypeAccurateShoot      = "accurateShoot"
-	ActionTypeOrientedShoot      = "orientedShoot"
-	ActionTypePanoShot           = "panoShot"
-	ActionTypeRecordPointCloud   = "recordPointCloud"
-	ActionTypeGimbalAngleLock    = "gimbalAngleLock"
-	ActionTypeGimbalAngleUnlock  = "gimbalAngleUnlock"
-	ActionTypeStartSmartOblique  = "startSmartOblique"
-	ActionTypeStartTimeLapse     = "startTimeLapse"
-	ActionTypeStopTimeLapse      = "stopTimeLapse"
-	ActionTypeSetFocusType       = "setFocusType"
-	ActionTypeTargetDetection    = "targetDetection"
+	// ActionTypeAccurateShoot is the action type for accurate shooting.
+	ActionTypeAccurateShoot = "accurateShoot"
+	// ActionTypeOrientedShoot is the action type for oriented shooting.
+	ActionTypeOrientedShoot = "orientedShoot"
+	// ActionTypePanoShot is the action type for panoramic shooting.
+	ActionTypePanoShot = "panoShot"
+	// ActionTypeRecordPointCloud is the action type for recording point cloud data.
+	ActionTypeRecordPointCloud = "recordPointCloud"
+	// ActionTypeGimbalAngleLock is the action type for locking the gimbal angle.
+	ActionTypeGimbalAngleLock = "gimbalAngleLock"
+	// ActionTypeGimbalAngleUnlock is the action type for unlocking the gimbal angle.
+	ActionTypeGimbalAngleUnlock = "gimbalAngleUnlock"
+	// ActionTypeStartSmartOblique is the action type for starting smart oblique photography.
+	ActionTypeStartSmartOblique = "startSmartOblique"
+	// ActionTypeStartTimeLapse is the action type for starting time-lapse recording.
+	ActionTypeStartTimeLapse = "startTimeLapse"
+	// ActionTypeStopTimeLapse is the action type for stopping time-lapse recording.
+	ActionTypeStopTimeLapse = "stopTimeLapse"
+	// ActionTypeSetFocusType is the action type for setting the focus type.
+	ActionTypeSetFocusType = "setFocusType"
+	// ActionTypeTargetDetection is the action type for target detection.
+	ActionTypeTargetDetection = "targetDetection"
 )
 
+// Trigger type string constants for determining when action groups execute.
 const (
-	TriggerTypeReachPoint            = "reachPoint"
-	TriggerTypePassPoint             = "passPoint"
-	TriggerTypeManual                = "manual"
+	// TriggerTypeReachPoint triggers actions when the drone reaches a waypoint.
+	TriggerTypeReachPoint = "reachPoint"
+	// TriggerTypePassPoint triggers actions when the drone passes a waypoint.
+	TriggerTypePassPoint = "passPoint"
+	// TriggerTypeManual triggers actions manually.
+	TriggerTypeManual = "manual"
+	// TriggerTypeBetweenAdjacentPoints triggers actions between adjacent waypoints.
 	TriggerTypeBetweenAdjacentPoints = "betweenAdjacentPoints"
-	TriggerTypeMultipleTiming        = "multipleTiming"
-	TriggerTypeMultipleDistance      = "multipleDistance"
+	// TriggerTypeMultipleTiming triggers actions at multiple timed intervals.
+	TriggerTypeMultipleTiming = "multipleTiming"
+	// TriggerTypeMultipleDistance triggers actions at multiple distance intervals.
+	TriggerTypeMultipleDistance = "multipleDistance"
 )
 
+// Action group mode constants.
 const (
+	// ActionGroupModeSequence executes actions in sequential order.
 	ActionGroupModeSequence = "sequence"
 )
 
+// Waypoint turn mode constants.
 const (
-	TurnModeCoordinateTurn                           = "coordinateTurn"
+	// TurnModeCoordinateTurn performs a coordinated turn at the waypoint.
+	TurnModeCoordinateTurn = "coordinateTurn"
+	// TurnModeToPointAndStopWithDiscontinuityCurvature flies to the point and stops with discontinuity curvature.
 	TurnModeToPointAndStopWithDiscontinuityCurvature = "toPointAndStopWithDiscontinuityCurvature"
-	TurnModeToPointAndStopWithContinuityCurvature    = "toPointAndStopWithContinuityCurvature"
-	TurnModeToPointAndPassWithContinuityCurvature    = "toPointAndPassWithContinuityCurvature"
+	// TurnModeToPointAndStopWithContinuityCurvature flies to the point and stops with continuity curvature.
+	TurnModeToPointAndStopWithContinuityCurvature = "toPointAndStopWithContinuityCurvature"
+	// TurnModeToPointAndPassWithContinuityCurvature flies to the point and passes with continuity curvature.
+	TurnModeToPointAndPassWithContinuityCurvature = "toPointAndPassWithContinuityCurvature"
 )
 
+// Waypoint heading mode constants.
 const (
-	HeadingModeFollowWayline    = "followWayline"
-	HeadingModeManually         = "manually"
-	HeadingModeFixed            = "fixed"
+	// HeadingModeFollowWayline orients the drone heading along the wayline direction.
+	HeadingModeFollowWayline = "followWayline"
+	// HeadingModeManually allows manual control of the drone heading.
+	HeadingModeManually = "manually"
+	// HeadingModeFixed keeps the drone heading at a fixed angle.
+	HeadingModeFixed = "fixed"
+	// HeadingModeSmoothTransition smoothly transitions the heading between waypoints.
 	HeadingModeSmoothTransition = "smoothTransition"
-	HeadingModeTowardPOI        = "towardPOI"
-	HeadingModeFree             = "free"
+	// HeadingModeTowardPOI orients the drone heading toward a point of interest.
+	HeadingModeTowardPOI = "towardPOI"
+	// HeadingModeFree allows free heading control.
+	HeadingModeFree = "free"
 )
 
+// Heading path mode constants.
 const (
-	HeadingPathModeClockwise        = "clockwise"
+	// HeadingPathModeClockwise rotates the heading clockwise.
+	HeadingPathModeClockwise = "clockwise"
+	// HeadingPathModeCounterClockwise rotates the heading counter-clockwise.
 	HeadingPathModeCounterClockwise = "counterClockwise"
-	HeadingPathModeFollowBadArc     = "followBadArc"
+	// HeadingPathModeFollowBadArc follows a bad arc path for heading transitions.
+	HeadingPathModeFollowBadArc = "followBadArc"
 )
 
+// NewActionGroup creates a new ActionGroup with the given ID and waypoint index range, defaulting to sequence mode.
 func NewActionGroup(id, startIndex, endIndex int) *ActionGroup {
 	return &ActionGroup{
 		ActionGroupID:         id,
@@ -203,10 +263,12 @@ func NewActionGroup(id, startIndex, endIndex int) *ActionGroup {
 	}
 }
 
+// AddAction appends an action to the action group's action list.
 func (ag *ActionGroup) AddAction(action Action) {
 	ag.Actions = append(ag.Actions, action)
 }
 
+// SetTrigger sets the trigger type and optional parameter for the action group.
 func (ag *ActionGroup) SetTrigger(triggerType string, param *float64) {
 	ag.ActionTrigger = ActionTrigger{
 		ActionTriggerType:  triggerType,
@@ -214,6 +276,7 @@ func (ag *ActionGroup) SetTrigger(triggerType string, param *float64) {
 	}
 }
 
+// NewWaypoint creates a new waypoint Placemark at the given longitude, latitude, and index.
 func NewWaypoint(longitude, latitude float64, index int) *Placemark {
 	coordinates := fmt.Sprintf("%.15f,%.15f", longitude, latitude)
 	return &Placemark{
@@ -224,15 +287,18 @@ func NewWaypoint(longitude, latitude float64, index int) *Placemark {
 	}
 }
 
+// SetHeight sets the ellipsoid height and relative height of the waypoint.
 func (p *Placemark) SetHeight(ellipsoidHeight, height float64) {
 	p.EllipsoidHeight = &ellipsoidHeight
 	p.Height = &height
 }
 
+// SetExecuteHeight sets the execution height of the waypoint.
 func (p *Placemark) SetExecuteHeight(height float64) {
 	p.ExecuteHeight = &height
 }
 
+// AddActionGroup appends an action group to the waypoint's action group list.
 func (p *Placemark) AddActionGroup(actionGroup ActionGroup) {
 	p.ActionGroups = append(p.ActionGroups, actionGroup)
 }

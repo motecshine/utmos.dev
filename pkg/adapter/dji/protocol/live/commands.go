@@ -14,7 +14,7 @@ type LiveStartPushData struct {
 	VideoQuality int    `json:"video_quality"` // Video quality: 0=adaptive, 1=smooth, 2=standard, 3=high, 4=super
 }
 
-// LiveStartPushRequest represents the start live push request
+// LiveStartPushCommand represents the start live push request
 type LiveStartPushCommand struct {
 	common.Header
 	MethodName string            `json:"method"`
@@ -45,7 +45,7 @@ type LiveStopPushData struct {
 	VideoID string `json:"video_id"` // Video stream ID
 }
 
-// LiveStopPushRequest represents the stop live push request
+// LiveStopPushCommand represents the stop live push request
 type LiveStopPushCommand struct {
 	common.Header
 	MethodName string           `json:"method"`
@@ -77,7 +77,7 @@ type LiveSetQualityData struct {
 	VideoQuality int    `json:"video_quality"` // Video quality: 0=adaptive, 1=smooth, 2=standard, 3=high, 4=super
 }
 
-// LiveSetQualityRequest represents the set live quality request
+// LiveSetQualityCommand represents the set live quality request
 type LiveSetQualityCommand struct {
 	common.Header
 	MethodName string             `json:"method"`
@@ -109,7 +109,7 @@ type LiveLensChangeData struct {
 	VideoType string `json:"video_type"` // Video type: ir=infrared, normal=default, wide=wide angle, zoom=zoom
 }
 
-// LiveLensChangeRequest represents the live lens change request
+// LiveLensChangeCommand represents the live lens change request
 type LiveLensChangeCommand struct {
 	common.Header
 	MethodName string             `json:"method"`

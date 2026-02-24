@@ -97,17 +97,22 @@ type Position struct {
 type DeviceType int
 
 const (
-	DeviceTypeAircraft DeviceType = 0 // Aircraft
-	DeviceTypeDock     DeviceType = 3 // Dock
-	DeviceTypeRC       DeviceType = 4 // Remote Controller
+	// DeviceTypeAircraft is the aircraft device type.
+	DeviceTypeAircraft DeviceType = 0
+	// DeviceTypeDock is the dock device type.
+	DeviceTypeDock DeviceType = 3
+	// DeviceTypeRC is the remote controller device type.
+	DeviceTypeRC DeviceType = 4
 )
 
 // StorageType represents storage location
 type StorageType int
 
 const (
-	StorageTypeAircraft StorageType = 0 // Aircraft storage
-	StorageTypePayload  StorageType = 1 // Payload storage
+	// StorageTypeAircraft is the aircraft storage type.
+	StorageTypeAircraft StorageType = 0
+	// StorageTypePayload is the payload storage type.
+	StorageTypePayload StorageType = 1
 )
 
 // PlannedPathPoint represents a planned trajectory point

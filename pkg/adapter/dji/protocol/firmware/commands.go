@@ -38,8 +38,11 @@ func NewOTACreateCommand(data OTACreateData) *OTACreateCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *OTACreateCommand) Method() string { return c.MethodName }
-func (c *OTACreateCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *OTACreateCommand) Data() any { return c.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (c *OTACreateCommand) GetHeader() *common.Header {

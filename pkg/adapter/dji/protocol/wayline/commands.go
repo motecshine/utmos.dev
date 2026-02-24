@@ -22,8 +22,13 @@ func NewCreateCommand(data CreateData) *CreateCommand {
 	}
 }
 
-func (c *CreateCommand) Method() string            { return c.MethodName }
-func (c *CreateCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *CreateCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *CreateCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *CreateCommand) GetHeader() *common.Header { return &c.Header }
 
 // PrepareCommand represents the prepare flight task command
@@ -42,8 +47,13 @@ func NewPrepareCommand(data PrepareData) *PrepareCommand {
 	}
 }
 
-func (c *PrepareCommand) Method() string            { return c.MethodName }
-func (c *PrepareCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *PrepareCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *PrepareCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *PrepareCommand) GetHeader() *common.Header { return &c.Header }
 
 // ExecuteCommand represents the execute flight task command
@@ -62,8 +72,13 @@ func NewExecuteCommand(data ExecuteData) *ExecuteCommand {
 	}
 }
 
-func (c *ExecuteCommand) Method() string            { return c.MethodName }
-func (c *ExecuteCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *ExecuteCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *ExecuteCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *ExecuteCommand) GetHeader() *common.Header { return &c.Header }
 
 // PauseCommand represents the pause flight task command
@@ -82,8 +97,13 @@ func NewPauseCommand() *PauseCommand {
 	}
 }
 
-func (c *PauseCommand) Method() string            { return c.MethodName }
-func (c *PauseCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *PauseCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *PauseCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *PauseCommand) GetHeader() *common.Header { return &c.Header }
 
 // RecoveryCommand represents the recovery flight task command
@@ -102,8 +122,13 @@ func NewRecoveryCommand() *RecoveryCommand {
 	}
 }
 
-func (c *RecoveryCommand) Method() string            { return c.MethodName }
-func (c *RecoveryCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *RecoveryCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *RecoveryCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *RecoveryCommand) GetHeader() *common.Header { return &c.Header }
 
 // UndoCommand represents the undo flight task command
@@ -122,8 +147,13 @@ func NewUndoCommand(data UndoData) *UndoCommand {
 	}
 }
 
-func (c *UndoCommand) Method() string            { return c.MethodName }
-func (c *UndoCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *UndoCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *UndoCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *UndoCommand) GetHeader() *common.Header { return &c.Header }
 
 // ReturnHomeCommand represents the return to home command
@@ -142,8 +172,13 @@ func NewReturnHomeCommand() *ReturnHomeCommand {
 	}
 }
 
-func (c *ReturnHomeCommand) Method() string            { return c.MethodName }
-func (c *ReturnHomeCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *ReturnHomeCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *ReturnHomeCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *ReturnHomeCommand) GetHeader() *common.Header { return &c.Header }
 
 // CancelReturnHomeCommand represents the cancel return to home command
@@ -162,8 +197,13 @@ func NewCancelReturnHomeCommand() *CancelReturnHomeCommand {
 	}
 }
 
-func (c *CancelReturnHomeCommand) Method() string            { return c.MethodName }
-func (c *CancelReturnHomeCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *CancelReturnHomeCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *CancelReturnHomeCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *CancelReturnHomeCommand) GetHeader() *common.Header { return &c.Header }
 
 // AbortFlightSetupCommand represents the abort flight setup command (dock1 only)
@@ -182,6 +222,11 @@ func NewAbortFlightSetupCommand() *AbortFlightSetupCommand {
 	}
 }
 
-func (c *AbortFlightSetupCommand) Method() string            { return c.MethodName }
-func (c *AbortFlightSetupCommand) Data() any                 { return c.DataValue }
+// Method returns the method name.
+func (c *AbortFlightSetupCommand) Method() string { return c.MethodName }
+
+// Data returns the command/event data.
+func (c *AbortFlightSetupCommand) Data() any { return c.DataValue }
+
+// GetHeader returns the event header.
 func (c *AbortFlightSetupCommand) GetHeader() *common.Header { return &c.Header }

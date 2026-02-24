@@ -21,8 +21,13 @@ type PsdkUIResourceUploadResultEvent struct {
 	DataValue  PsdkUIResourceUploadResultData `json:"data"`
 }
 
+// Method returns the method name.
 func (e *PsdkUIResourceUploadResultEvent) Method() string { return e.MethodName }
-func (e *PsdkUIResourceUploadResultEvent) Data() any      { return e.DataValue }
+
+// Data returns the command/event data.
+func (e *PsdkUIResourceUploadResultEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *PsdkUIResourceUploadResultEvent) GetHeader() *common.Header {
 	return &e.Header
 }
@@ -40,8 +45,13 @@ type PsdkFloatingWindowTextEvent struct {
 	DataValue  PsdkFloatingWindowTextData `json:"data"`
 }
 
-func (e *PsdkFloatingWindowTextEvent) Method() string            { return e.MethodName }
-func (e *PsdkFloatingWindowTextEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *PsdkFloatingWindowTextEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *PsdkFloatingWindowTextEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *PsdkFloatingWindowTextEvent) GetHeader() *common.Header { return &e.Header }
 
 // SpeakerPlayProgress represents the speaker play progress information
@@ -71,8 +81,13 @@ type SpeakerAudioPlayStartProgressEvent struct {
 	DataValue  SpeakerAudioPlayStartProgressData `json:"data"`
 }
 
+// Method returns the method name.
 func (e *SpeakerAudioPlayStartProgressEvent) Method() string { return e.MethodName }
-func (e *SpeakerAudioPlayStartProgressEvent) Data() any      { return e.DataValue }
+
+// Data returns the command/event data.
+func (e *SpeakerAudioPlayStartProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *SpeakerAudioPlayStartProgressEvent) GetHeader() *common.Header {
 	return &e.Header
 }
@@ -98,8 +113,13 @@ type SpeakerTtsPlayStartProgressEvent struct {
 	DataValue  SpeakerTtsPlayStartProgressData `json:"data"`
 }
 
+// Method returns the method name.
 func (e *SpeakerTtsPlayStartProgressEvent) Method() string { return e.MethodName }
-func (e *SpeakerTtsPlayStartProgressEvent) Data() any      { return e.DataValue }
+
+// Data returns the command/event data.
+func (e *SpeakerTtsPlayStartProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *SpeakerTtsPlayStartProgressEvent) GetHeader() *common.Header {
 	return &e.Header
 }

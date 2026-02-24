@@ -52,6 +52,11 @@ type FileUploadProgressEvent struct {
 	DataValue  FileUploadProgressData `json:"data"`
 }
 
-func (e *FileUploadProgressEvent) Method() string            { return e.MethodName }
-func (e *FileUploadProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *FileUploadProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *FileUploadProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *FileUploadProgressEvent) GetHeader() *common.Header { return &e.Header }

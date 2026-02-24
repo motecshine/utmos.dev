@@ -11,8 +11,11 @@ import (
 type DeviceStatus string
 
 const (
-	DeviceStatusOnline  DeviceStatus = "online"
+	// DeviceStatusOnline indicates the device is online.
+	DeviceStatusOnline DeviceStatus = "online"
+	// DeviceStatusOffline indicates the device is offline.
 	DeviceStatusOffline DeviceStatus = "offline"
+	// DeviceStatusUnknown indicates the device status is unknown.
 	DeviceStatusUnknown DeviceStatus = "unknown"
 )
 

@@ -19,7 +19,7 @@ func NewLogger(log *logger.Logger) *Logger {
 	return &Logger{log: log}
 }
 
-// Default creates a default logger.
+// DefaultLogger creates a default logger.
 func DefaultLogger() *Logger {
 	return &Logger{log: logger.Default()}
 }

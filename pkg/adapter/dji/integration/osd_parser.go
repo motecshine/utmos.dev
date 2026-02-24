@@ -49,9 +49,12 @@ func (p *OSDParser) ParseRCOSD(data json.RawMessage) (*aircraft.RCOSD, error) {
 type OSDType string
 
 const (
+	// OSDTypeAircraft is the aircraft OSD type.
 	OSDTypeAircraft OSDType = "aircraft"
-	OSDTypeDock     OSDType = "dock"
-	OSDTypeRC       OSDType = "rc"
+	// OSDTypeDock is the dock OSD type.
+	OSDTypeDock OSDType = "dock"
+	// OSDTypeRC is the remote controller OSD type.
+	OSDTypeRC OSDType = "rc"
 )
 
 // DetectOSDType attempts to detect the OSD type from raw JSON data.

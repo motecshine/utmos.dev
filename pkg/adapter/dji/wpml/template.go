@@ -6,12 +6,14 @@ import (
 	"github.com/nbio/xml"
 )
 
+// WPMLMission represents a complete WPML mission containing template and waylines documents along with resources.
 type WPMLMission struct {
 	Template  *TemplateDocument
 	Waylines  *WaylinesDocument
 	Resources map[string][]byte
 }
 
+// TemplateDocument represents a WPML template KML document that defines the mission template structure.
 type TemplateDocument struct {
 	XMLName  xml.Name                `xml:"kml" json:"xml_name"`
 	XMLNS    string                  `xml:"xmlns,attr" json:"xmlns"`
@@ -42,6 +44,7 @@ func (d *WaylinesDocument) setDefaultNamespaces() {
 	}
 }
 
+// TemplateDocumentContent represents the inner content of a template document.
 type TemplateDocumentContent struct {
 	Author     string `xml:"wpml:author,omitempty" json:"author,omitempty"`
 	CreateTime int64  `xml:"wpml:createTime,omitempty" json:"create_time,omitempty"`
@@ -52,6 +55,7 @@ type TemplateDocumentContent struct {
 	Folders []TemplateFolder `xml:"Folder" validate:"required,dive" json:"folders"`
 }
 
+// WaylinesDocument represents a WPML waylines document that defines the executable flight path.
 type WaylinesDocument struct {
 	XMLName  xml.Name                `xml:"kml" json:"xml_name"`
 	XMLNS    string                  `xml:"xmlns,attr" json:"xmlns"`
@@ -59,12 +63,14 @@ type WaylinesDocument struct {
 	Document WaylinesDocumentContent `xml:"Document" json:"document"`
 }
 
+// WaylinesDocumentContent represents the inner content of a waylines document.
 type WaylinesDocumentContent struct {
 	Folders []WaylineFolder `xml:"Folder" validate:"required,dive" json:"folders"`
 
 	MissionConfig WaylinesMissionConfig `xml:"wpml:missionConfig" validate:"required" json:"mission_config"`
 }
 
+// WaylinesMissionConfig represents the mission configuration specific to a waylines document.
 type WaylinesMissionConfig struct {
 	FlyToWaylineMode          FlightMode           `xml:"wpml:flyToWaylineMode" validate:"required" json:"fly_to_wayline_mode"`
 	FinishAction              FinishAction         `xml:"wpml:finishAction" validate:"required" json:"finish_action"`
@@ -79,6 +85,7 @@ type WaylinesMissionConfig struct {
 	AutoRerouteInfo           *AutoRerouteInfo     `xml:"wpml:autoRerouteInfo,omitempty" json:"auto_reroute_info,omitempty"`
 }
 
+// TemplateFolder represents a folder within a template document containing waypoints and flight parameters.
 type TemplateFolder struct {
 	TemplateType    TemplateType `xml:"wpml:templateType" validate:"required" json:"template_type"`
 	TemplateID      int          `xml:"wpml:templateId" validate:"min=0,max=65535" json:"template_id"`
@@ -123,6 +130,7 @@ type TemplateFolder struct {
 	Placemarks []Placemark `xml:"Placemark,omitempty" json:"placemarks,omitempty"`
 }
 
+// WaylineFolder represents a folder within a waylines document containing executable waypoints.
 type WaylineFolder struct {
 	TemplateID        int               `xml:"wpml:templateId" validate:"min=0,max=65535" json:"template_id"`
 	WaylineID         int               `xml:"wpml:waylineId" validate:"min=0,max=65535" json:"wayline_id"`
@@ -136,6 +144,7 @@ type WaylineFolder struct {
 	StartActionGroup *ActionGroup `xml:"wpml:startActionGroup,omitempty" json:"start_action_group,omitempty"`
 }
 
+// NewWPMLMission creates a new WPMLMission with default namespaces and current timestamps.
 func NewWPMLMission() *WPMLMission {
 	now := time.Now().UnixMilli()
 
@@ -157,12 +166,14 @@ func NewWPMLMission() *WPMLMission {
 	}
 }
 
+// SetAuthor sets the author field of the mission's template document.
 func (m *WPMLMission) SetAuthor(author string) {
 	if m.Template != nil {
 		m.Template.Document.Author = author
 	}
 }
 
+// UpdateTimestamp updates the template document's update time to the current time.
 func (m *WPMLMission) UpdateTimestamp() {
 	now := time.Now().UnixMilli()
 	if m.Template != nil {
@@ -170,6 +181,7 @@ func (m *WPMLMission) UpdateTimestamp() {
 	}
 }
 
+// SetMissionConfig sets the mission configuration on both the template and waylines documents.
 func (m *WPMLMission) SetMissionConfig(config MissionConfig) {
 	if m.Template != nil {
 		m.Template.Document.MissionConfig = config
@@ -199,6 +211,7 @@ func (m *WPMLMission) SetMissionConfig(config MissionConfig) {
 	}
 }
 
+// AddResource adds a named resource file (such as an image or data file) to the mission.
 func (m *WPMLMission) AddResource(filename string, data []byte) {
 	if m.Resources == nil {
 		m.Resources = make(map[string][]byte)

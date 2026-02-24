@@ -6,6 +6,7 @@ import (
 	"github.com/nbio/xml"
 )
 
+// Document represents a WPML (Waypoint Markup Language) KML document structure.
 type Document struct {
 	XMLName  xml.Name        `xml:"kml" json:"xml_name"`
 	XMLNS    string          `xml:"xmlns,attr" json:"xmlns"`
@@ -13,6 +14,7 @@ type Document struct {
 	Document DocumentContent `xml:"Document" json:"document"`
 }
 
+// DocumentContent represents the inner content of a WPML document.
 type DocumentContent struct {
 	Author        string         `xml:"wpml:author,omitempty" json:"author,omitempty"`
 	CreateTime    int64          `xml:"wpml:createTime,omitempty" json:"create_time,omitempty"`
@@ -21,6 +23,7 @@ type DocumentContent struct {
 	Folders       []Folder       `xml:"Folder,omitempty" json:"folders,omitempty"`
 }
 
+// MissionConfig represents the configuration for a WPML flight mission.
 type MissionConfig struct {
 	FlyToWaylineMode          FlightMode           `xml:"wpml:flyToWaylineMode" validate:"required" json:"fly_to_wayline_mode"`
 	FinishAction              FinishAction         `xml:"wpml:finishAction" validate:"required" json:"finish_action"`
@@ -37,22 +40,26 @@ type MissionConfig struct {
 	AutoRerouteInfo           *AutoRerouteInfo     `xml:"wpml:autoRerouteInfo,omitempty" json:"auto_reroute_info,omitempty"`
 }
 
+// DroneInfo represents the drone hardware information in a mission configuration.
 type DroneInfo struct {
 	DroneEnumValue    int `xml:"wpml:droneEnumValue" validate:"required" json:"drone_enum_value"`
 	DroneSubEnumValue int `xml:"wpml:droneSubEnumValue" validate:"gte=0" json:"drone_sub_enum_value"`
 }
 
+// PayloadInfo represents the payload hardware information in a mission configuration.
 type PayloadInfo struct {
 	PayloadEnumValue     int  `xml:"wpml:payloadEnumValue" validate:"required" json:"payload_enum_value"`
 	PayloadSubEnumValue  *int `xml:"wpml:payloadSubEnumValue,omitempty" json:"payload_sub_enum_value,omitempty"`
 	PayloadPositionIndex int  `xml:"wpml:payloadPositionIndex" validate:"gte=0" json:"payload_position_index"`
 }
 
+// AutoRerouteInfo represents the auto-reroute configuration for mission and transitional flight.
 type AutoRerouteInfo struct {
 	MissionAutoRerouteMode      int `xml:"wpml:missionAutoRerouteMode" validate:"min=0,max=1" json:"mission_auto_reroute_mode"`
 	TransitionalAutoRerouteMode int `xml:"wpml:transitionalAutoRerouteMode" validate:"min=0,max=1" json:"transitional_auto_reroute_mode"`
 }
 
+// Folder represents a WPML folder structure containing waypoints and mission parameters.
 type Folder struct {
 	TemplateType              *TemplateType              `xml:"wpml:templateType,omitempty" json:"template_type,omitempty"`
 	TemplateID                int                        `xml:"wpml:templateId" validate:"min=0,max=65535" json:"template_id"`
@@ -103,6 +110,7 @@ type Folder struct {
 	StartActionGroup *ActionGroup `xml:"wpml:startActionGroup,omitempty" json:"start_action_group,omitempty"`
 }
 
+// WaylineCoordinateSysParam represents the coordinate system parameters for a wayline.
 type WaylineCoordinateSysParam struct {
 	CoordinateMode          CoordinateMode   `xml:"wpml:coordinateMode" validate:"required" json:"coordinate_mode"`
 	HeightMode              HeightMode       `xml:"wpml:heightMode" validate:"required" json:"height_mode"`
@@ -112,6 +120,7 @@ type WaylineCoordinateSysParam struct {
 	SurfaceRelativeHeight   *float64         `xml:"wpml:surfaceRelativeHeight,omitempty" json:"surface_relative_height,omitempty"`
 }
 
+// PayloadParam represents the payload parameters for a wayline folder.
 type PayloadParam struct {
 	PayloadPositionIndex int     `xml:"wpml:payloadPositionIndex" validate:"required" json:"payload_position_index"`
 	FocusMode            *string `xml:"wpml:focusMode,omitempty" json:"focus_mode,omitempty"`
@@ -124,6 +133,7 @@ type PayloadParam struct {
 	ImageFormat          string  `xml:"wpml:imageFormat" validate:"required" json:"image_format"`
 }
 
+// GlobalWaypointHeadingParam represents the global heading parameters applied to all waypoints.
 type GlobalWaypointHeadingParam struct {
 	WaypointHeadingMode     string   `xml:"wpml:waypointHeadingMode" validate:"required" json:"waypoint_heading_mode"`
 	WaypointHeadingAngle    *float64 `xml:"wpml:waypointHeadingAngle,omitempty" json:"waypoint_heading_angle,omitempty"`
@@ -132,6 +142,7 @@ type GlobalWaypointHeadingParam struct {
 	WaypointHeadingPoiIndex *int     `xml:"wpml:waypointHeadingPoiIndex,omitempty" json:"waypoint_heading_poi_index,omitempty"`
 }
 
+// Overlap represents the overlap settings for orthographic and inclined camera/lidar captures.
 type Overlap struct {
 	OrthoLidarOverlapH     *int `xml:"wpml:orthoLidarOverlapH,omitempty" json:"ortho_lidar_overlap_h,omitempty"`
 	OrthoLidarOverlapW     *int `xml:"wpml:orthoLidarOverlapW,omitempty" json:"ortho_lidar_overlap_w,omitempty"`
@@ -143,27 +154,33 @@ type Overlap struct {
 	InclinedCameraOverlapW *int `xml:"wpml:inclinedCameraOverlapW,omitempty" json:"inclined_camera_overlap_w,omitempty"`
 }
 
+// MappingHeadingParam represents the heading parameters for mapping missions.
 type MappingHeadingParam struct {
 	MappingHeadingMode  string `xml:"wpml:mappingHeadingMode" validate:"required" json:"mapping_heading_mode"`
 	MappingHeadingAngle *int   `xml:"wpml:mappingHeadingAngle,omitempty" json:"mapping_heading_angle,omitempty"`
 }
 
+// Polygon represents a polygon geometry used in mapping mission boundaries.
 type Polygon struct {
 	OuterBoundaryIs OuterBoundaryIs `xml:"outerBoundaryIs" json:"outer_boundary_is"`
 }
 
+// OuterBoundaryIs represents the outer boundary definition of a polygon.
 type OuterBoundaryIs struct {
 	LinearRing LinearRing `xml:"LinearRing" json:"linear_ring"`
 }
 
+// LinearRing represents a closed linear ring geometry defined by coordinates.
 type LinearRing struct {
 	Coordinates string `xml:"coordinates" json:"coordinates"`
 }
 
+// LineString represents a line string geometry defined by coordinates.
 type LineString struct {
 	Coordinates string `xml:"coordinates" json:"coordinates"`
 }
 
+// NewDocument creates a new WPML Document with default KML and WPML namespaces and current timestamps.
 func NewDocument() *Document {
 	return &Document{
 		XMLNS:  "http://www.opengis.net/kml/2.2",
@@ -175,10 +192,12 @@ func NewDocument() *Document {
 	}
 }
 
+// SetAuthor sets the author field of the document.
 func (d *Document) SetAuthor(author string) {
 	d.Document.Author = author
 }
 
+// UpdateTimestamp updates the document's update time to the current time.
 func (d *Document) UpdateTimestamp() {
 	d.Document.UpdateTime = time.Now().UnixMilli()
 }

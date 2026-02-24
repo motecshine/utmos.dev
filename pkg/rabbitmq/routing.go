@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Routing key prefix
+// RoutingKeyPrefix is the routing key prefix.
 const RoutingKeyPrefix = "iot"
 
 // VendorGeneric Predefined vendor constants

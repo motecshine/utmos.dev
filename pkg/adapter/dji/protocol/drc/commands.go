@@ -6,14 +6,14 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // DRC (Direct Remote Control) Commands
 // ===============================
 
-// FlightAuthorityGrabRequest represents the flight authority grab request
+// FlightAuthorityGrabCommand represents the flight authority grab request
 type FlightAuthorityGrabCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewFlightAuthorityGrabRequest creates a new flight authority grab request
+// NewFlightAuthorityGrabCommand creates a new flight authority grab request
 func NewFlightAuthorityGrabCommand() *FlightAuthorityGrabCommand {
 	return &FlightAuthorityGrabCommand{
 		Header:     common.NewHeader(),
@@ -22,22 +22,25 @@ func NewFlightAuthorityGrabCommand() *FlightAuthorityGrabCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *FlightAuthorityGrabCommand) Method() string { return c.MethodName }
-func (c *FlightAuthorityGrabCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FlightAuthorityGrabCommand) Data() any { return c.DataValue }
 
 // PayloadAuthorityGrabData represents the payload authority grab data
 type PayloadAuthorityGrabData struct {
 	PayloadIndex string `json:"payload_index"` // Payload index (camera enumeration value)
 }
 
-// PayloadAuthorityGrabRequest represents the payload authority grab request
+// PayloadAuthorityGrabCommand represents the payload authority grab request
 type PayloadAuthorityGrabCommand struct {
 	common.Header
 	MethodName string                   `json:"method"`
 	DataValue  PayloadAuthorityGrabData `json:"data"`
 }
 
-// NewPayloadAuthorityGrabRequest creates a new payload authority grab request
+// NewPayloadAuthorityGrabCommand creates a new payload authority grab request
 func NewPayloadAuthorityGrabCommand(data PayloadAuthorityGrabData) *PayloadAuthorityGrabCommand {
 	return &PayloadAuthorityGrabCommand{
 		Header:     common.NewHeader(),
@@ -46,8 +49,11 @@ func NewPayloadAuthorityGrabCommand(data PayloadAuthorityGrabData) *PayloadAutho
 	}
 }
 
+// Method returns the method name.
 func (c *PayloadAuthorityGrabCommand) Method() string { return c.MethodName }
-func (c *PayloadAuthorityGrabCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *PayloadAuthorityGrabCommand) Data() any { return c.DataValue }
 
 // MQTTBroker represents MQTT broker connection info
 type MQTTBroker struct {
@@ -66,14 +72,14 @@ type DRCModeEnterData struct {
 	HSIFrequency int        `json:"hsi_frequency"` // HSI frequency (1-30 Hz)
 }
 
-// DRCModeEnterRequest represents the DRC mode enter request
+// DRCModeEnterCommand represents the DRC mode enter request
 type DRCModeEnterCommand struct {
 	common.Header
 	MethodName string           `json:"method"`
 	DataValue  DRCModeEnterData `json:"data"`
 }
 
-// NewDRCModeEnterRequest creates a new DRC mode enter request
+// NewDRCModeEnterCommand creates a new DRC mode enter request
 func NewDRCModeEnterCommand(data DRCModeEnterData) *DRCModeEnterCommand {
 	return &DRCModeEnterCommand{
 		Header:     common.NewHeader(),
@@ -82,17 +88,20 @@ func NewDRCModeEnterCommand(data DRCModeEnterData) *DRCModeEnterCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *DRCModeEnterCommand) Method() string { return c.MethodName }
-func (c *DRCModeEnterCommand) Data() any      { return c.DataValue }
 
-// DRCModeExitRequest represents the DRC mode exit request
+// Data returns the command/event data.
+func (c *DRCModeEnterCommand) Data() any { return c.DataValue }
+
+// DRCModeExitCommand represents the DRC mode exit request
 type DRCModeExitCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewDRCModeExitRequest creates a new DRC mode exit request
+// NewDRCModeExitCommand creates a new DRC mode exit request
 func NewDRCModeExitCommand() *DRCModeExitCommand {
 	return &DRCModeExitCommand{
 		Header:     common.NewHeader(),
@@ -101,8 +110,11 @@ func NewDRCModeExitCommand() *DRCModeExitCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *DRCModeExitCommand) Method() string { return c.MethodName }
-func (c *DRCModeExitCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *DRCModeExitCommand) Data() any { return c.DataValue }
 
 // TakeoffToPointData represents the takeoff to point data
 type TakeoffToPointData struct {
@@ -137,14 +149,14 @@ type PointTarget struct {
 	Height    float64 `json:"height"`    // Height (meters, relative to takeoff point)
 }
 
-// TakeoffToPointRequest represents the takeoff to point request
+// TakeoffToPointCommand represents the takeoff to point request
 type TakeoffToPointCommand struct {
 	common.Header
 	MethodName string             `json:"method"`
 	DataValue  TakeoffToPointData `json:"data"`
 }
 
-// NewTakeoffToPointRequest creates a new takeoff to point request
+// NewTakeoffToPointCommand creates a new takeoff to point request
 func NewTakeoffToPointCommand(data TakeoffToPointData) *TakeoffToPointCommand {
 	return &TakeoffToPointCommand{
 		Header:     common.NewHeader(),
@@ -153,8 +165,11 @@ func NewTakeoffToPointCommand(data TakeoffToPointData) *TakeoffToPointCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *TakeoffToPointCommand) Method() string { return c.MethodName }
-func (c *TakeoffToPointCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *TakeoffToPointCommand) Data() any { return c.DataValue }
 
 // FlyToPointData represents the fly to point data
 type FlyToPointData struct {
@@ -163,14 +178,14 @@ type FlyToPointData struct {
 	Points   []PointTarget `json:"points"`    // Target points (supports only 1 point)
 }
 
-// FlyToPointRequest represents the fly to point request
+// FlyToPointCommand represents the fly to point request
 type FlyToPointCommand struct {
 	common.Header
 	MethodName string         `json:"method"`
 	DataValue  FlyToPointData `json:"data"`
 }
 
-// NewFlyToPointRequest creates a new fly to point request
+// NewFlyToPointCommand creates a new fly to point request
 func NewFlyToPointCommand(data FlyToPointData) *FlyToPointCommand {
 	return &FlyToPointCommand{
 		Header:     common.NewHeader(),
@@ -179,17 +194,20 @@ func NewFlyToPointCommand(data FlyToPointData) *FlyToPointCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *FlyToPointCommand) Method() string { return c.MethodName }
-func (c *FlyToPointCommand) Data() any      { return c.DataValue }
 
-// FlyToPointStopRequest represents the fly to point stop request
+// Data returns the command/event data.
+func (c *FlyToPointCommand) Data() any { return c.DataValue }
+
+// FlyToPointStopCommand represents the fly to point stop request
 type FlyToPointStopCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewFlyToPointStopRequest creates a new fly to point stop request
+// NewFlyToPointStopCommand creates a new fly to point stop request
 func NewFlyToPointStopCommand() *FlyToPointStopCommand {
 	return &FlyToPointStopCommand{
 		Header:     common.NewHeader(),
@@ -198,8 +216,11 @@ func NewFlyToPointStopCommand() *FlyToPointStopCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *FlyToPointStopCommand) Method() string { return c.MethodName }
-func (c *FlyToPointStopCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FlyToPointStopCommand) Data() any { return c.DataValue }
 
 // FlyToPointUpdateData represents the fly to point update data
 type FlyToPointUpdateData struct {
@@ -207,14 +228,14 @@ type FlyToPointUpdateData struct {
 	Points   []PointTarget `json:"points"`    // Updated target points (supports only 1 point)
 }
 
-// FlyToPointUpdateRequest represents the fly to point update request
+// FlyToPointUpdateCommand represents the fly to point update request
 type FlyToPointUpdateCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
 	DataValue  FlyToPointUpdateData `json:"data"`
 }
 
-// NewFlyToPointUpdateRequest creates a new fly to point update request
+// NewFlyToPointUpdateCommand creates a new fly to point update request
 func NewFlyToPointUpdateCommand(data FlyToPointUpdateData) *FlyToPointUpdateCommand {
 	return &FlyToPointUpdateCommand{
 		Header:     common.NewHeader(),
@@ -223,8 +244,11 @@ func NewFlyToPointUpdateCommand(data FlyToPointUpdateData) *FlyToPointUpdateComm
 	}
 }
 
+// Method returns the method name.
 func (c *FlyToPointUpdateCommand) Method() string { return c.MethodName }
-func (c *FlyToPointUpdateCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *FlyToPointUpdateCommand) Data() any { return c.DataValue }
 
 // DroneControlData represents the drone control data
 type DroneControlData struct {
@@ -235,14 +259,14 @@ type DroneControlData struct {
 	W   float64 `json:"w"`   // Angular velocity (-90 to 90 degrees/s)
 }
 
-// DroneControlRequest represents the drone control request
+// DroneControlCommand represents the drone control request
 type DroneControlCommand struct {
 	common.Header
 	MethodName string           `json:"method"`
 	DataValue  DroneControlData `json:"data"`
 }
 
-// NewDroneControlRequest creates a new drone control request
+// NewDroneControlCommand creates a new drone control request
 func NewDroneControlCommand(data DroneControlData) *DroneControlCommand {
 	return &DroneControlCommand{
 		Header:     common.NewHeader(),
@@ -251,8 +275,11 @@ func NewDroneControlCommand(data DroneControlData) *DroneControlCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *DroneControlCommand) Method() string { return c.MethodName }
-func (c *DroneControlCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *DroneControlCommand) Data() any { return c.DataValue }
 
 // StickControlData represents the stick control data
 type StickControlData struct {
@@ -262,14 +289,14 @@ type StickControlData struct {
 	Yaw      int `json:"yaw"`      // 偏航通道 364-1684 1024为中值（无动作），数值增大表示顺时针旋转，减小表示逆时针旋转。
 }
 
-// StickControlRequest represents the stick control request
+// StickControlCommand represents the stick control request
 type StickControlCommand struct {
 	common.Header
 	MethodName string           `json:"method"`
 	DataValue  StickControlData `json:"data"`
 }
 
-// NewStickControlRequest creates a new stick control request
+// NewStickControlCommand creates a new stick control request
 func NewStickControlCommand(data StickControlData) *StickControlCommand {
 	return &StickControlCommand{
 		Header:     common.NewHeader(),
@@ -278,17 +305,20 @@ func NewStickControlCommand(data StickControlData) *StickControlCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *StickControlCommand) Method() string { return c.MethodName }
-func (c *StickControlCommand) Data() any      { return c.DataValue }
 
-// DroneEmergencyStopRequest represents the drone emergency stop request
+// Data returns the command/event data.
+func (c *StickControlCommand) Data() any { return c.DataValue }
+
+// DroneEmergencyStopCommand represents the drone emergency stop request
 type DroneEmergencyStopCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewDroneEmergencyStopRequest creates a new drone emergency stop request
+// NewDroneEmergencyStopCommand creates a new drone emergency stop request
 func NewDroneEmergencyStopCommand() *DroneEmergencyStopCommand {
 	return &DroneEmergencyStopCommand{
 		Header:     common.NewHeader(),
@@ -297,8 +327,11 @@ func NewDroneEmergencyStopCommand() *DroneEmergencyStopCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *DroneEmergencyStopCommand) Method() string { return c.MethodName }
-func (c *DroneEmergencyStopCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *DroneEmergencyStopCommand) Data() any { return c.DataValue }
 
 // HeartBeatData represents the heart beat data
 type HeartBeatData struct {
@@ -306,14 +339,14 @@ type HeartBeatData struct {
 	Timestamp int64 `json:"timestamp"` // Heart beat timestamp (milliseconds)
 }
 
-// HeartBeatRequest represents the heart beat request
+// HeartBeatCommand represents the heart beat request
 type HeartBeatCommand struct {
 	common.Header
 	MethodName string        `json:"method"`
 	DataValue  HeartBeatData `json:"data"`
 }
 
-// NewHeartBeatRequest creates a new heart beat request
+// NewHeartBeatCommand creates a new heart beat request
 func NewHeartBeatCommand(data HeartBeatData) *HeartBeatCommand {
 	return &HeartBeatCommand{
 		Header:     common.NewHeader(),
@@ -322,8 +355,11 @@ func NewHeartBeatCommand(data HeartBeatData) *HeartBeatCommand {
 	}
 }
 
+// Method returns the method name.
 func (c *HeartBeatCommand) Method() string { return c.MethodName }
-func (c *HeartBeatCommand) Data() any      { return c.DataValue }
+
+// Data returns the command/event data.
+func (c *HeartBeatCommand) Data() any { return c.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (c *DRCModeEnterCommand) GetHeader() *common.Header {
@@ -340,6 +376,7 @@ func (c *DroneControlCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
+// GetHeader returns the event header.
 func (c *StickControlCommand) GetHeader() *common.Header {
 	return &c.Header
 }

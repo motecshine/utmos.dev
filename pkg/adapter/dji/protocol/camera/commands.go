@@ -12,14 +12,14 @@ type CameraModeSwitchData struct {
 	CameraMode   int    `json:"camera_mode"`   // Camera mode: 0=photo, 1=video
 }
 
-// CameraModeSwitchRequest represents the camera mode switch request
+// CameraModeSwitchCommand represents the camera mode switch request
 type CameraModeSwitchCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
 	DataValue  CameraModeSwitchData `json:"data"`
 }
 
-// NewCameraModeSwitchRequest creates a new camera mode switch request
+// NewCameraModeSwitchCommand creates a new camera mode switch request
 func NewCameraModeSwitchCommand(data CameraModeSwitchData) *CameraModeSwitchCommand {
 	return &CameraModeSwitchCommand{
 		Header:     common.NewHeader(),
@@ -48,14 +48,14 @@ type CameraPhotoTakeData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraPhotoTakeRequest represents the camera photo take request
+// CameraPhotoTakeCommand represents the camera photo take request
 type CameraPhotoTakeCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  CameraPhotoTakeData `json:"data"`
 }
 
-// NewCameraPhotoTakeRequest creates a new camera photo take request
+// NewCameraPhotoTakeCommand creates a new camera photo take request
 func NewCameraPhotoTakeCommand(data CameraPhotoTakeData) *CameraPhotoTakeCommand {
 	return &CameraPhotoTakeCommand{
 		Header:     common.NewHeader(),
@@ -79,14 +79,14 @@ type CameraPhotoStopData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraPhotoStopRequest represents the camera photo stop request
+// CameraPhotoStopCommand represents the camera photo stop request
 type CameraPhotoStopCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  CameraPhotoStopData `json:"data"`
 }
 
-// NewCameraPhotoStopRequest creates a new camera photo stop request
+// NewCameraPhotoStopCommand creates a new camera photo stop request
 func NewCameraPhotoStopCommand(data CameraPhotoStopData) *CameraPhotoStopCommand {
 	return &CameraPhotoStopCommand{
 		Header:     common.NewHeader(),
@@ -110,14 +110,14 @@ type CameraRecordingStartData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraRecordingStartRequest represents the camera recording start request
+// CameraRecordingStartCommand represents the camera recording start request
 type CameraRecordingStartCommand struct {
 	common.Header
 	MethodName string                   `json:"method"`
 	DataValue  CameraRecordingStartData `json:"data"`
 }
 
-// NewCameraRecordingStartRequest creates a new camera recording start request
+// NewCameraRecordingStartCommand creates a new camera recording start request
 func NewCameraRecordingStartCommand(data CameraRecordingStartData) *CameraRecordingStartCommand {
 	return &CameraRecordingStartCommand{
 		Header:     common.NewHeader(),
@@ -141,14 +141,14 @@ type CameraRecordingStopData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraRecordingStopRequest represents the camera recording stop request
+// CameraRecordingStopCommand represents the camera recording stop request
 type CameraRecordingStopCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
 	DataValue  CameraRecordingStopData `json:"data"`
 }
 
-// NewCameraRecordingStopRequest creates a new camera recording stop request
+// NewCameraRecordingStopCommand creates a new camera recording stop request
 func NewCameraRecordingStopCommand(data CameraRecordingStopData) *CameraRecordingStopCommand {
 	return &CameraRecordingStopCommand{
 		Header:     common.NewHeader(),
@@ -175,7 +175,7 @@ type CameraScreenDragData struct {
 	YawSpeed     float64 `json:"yaw_speed"`     // Gimbal yaw speed (rad/s, only effective when not locked)
 }
 
-// CameraScreenDragRequest represents the camera screen drag request
+// CameraScreenDragCommand represents the camera screen drag request
 type CameraScreenDragCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
@@ -280,14 +280,14 @@ type CameraFrameZoomData struct {
 	Height       float64 `json:"height"`        // Frame height (0-1)
 }
 
-// CameraFrameZoomRequest represents the camera frame zoom request
+// CameraFrameZoomCommand represents the camera frame zoom request
 type CameraFrameZoomCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
 	DataValue  CameraFrameZoomData `json:"data"`
 }
 
-// CameraFrameZoomRequest creates a new camera frame zoom request
+// NewCameraFrameZoomCommand creates a new camera frame zoom request
 func NewCameraFrameZoomCommand(data CameraFrameZoomData) *CameraFrameZoomCommand {
 	return &CameraFrameZoomCommand{
 		Header:     common.NewHeader(),

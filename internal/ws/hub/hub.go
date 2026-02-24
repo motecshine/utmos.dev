@@ -97,13 +97,20 @@ type Message struct {
 type MessageType string
 
 const (
-	MessageTypeEvent     MessageType = "event"
+	// MessageTypeEvent is the event message type.
+	MessageTypeEvent MessageType = "event"
+	// MessageTypeSubscribe is the subscribe message type.
 	MessageTypeSubscribe MessageType = "subscribe"
+	// MessageTypeUnsubscribe is the unsubscribe message type.
 	MessageTypeUnsubscribe MessageType = "unsubscribe"
-	MessageTypePing      MessageType = "ping"
-	MessageTypePong      MessageType = "pong"
-	MessageTypeError     MessageType = "error"
-	MessageTypeAck       MessageType = "ack"
+	// MessageTypePing is the ping message type.
+	MessageTypePing MessageType = "ping"
+	// MessageTypePong is the pong message type.
+	MessageTypePong MessageType = "pong"
+	// MessageTypeError is the error message type.
+	MessageTypeError MessageType = "error"
+	// MessageTypeAck is the ack message type.
+	MessageTypeAck MessageType = "ack"
 )
 
 // NewHub creates a new WebSocket hub

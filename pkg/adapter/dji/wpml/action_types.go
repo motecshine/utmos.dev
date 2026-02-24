@@ -6,11 +6,13 @@ import (
 	"reflect"
 )
 
+// ActionRequest represents a wrapper for a typed WPML action, pairing an action type string with its concrete action.
 type ActionRequest struct {
 	Type   string          `json:"type" validate:"required,action_type"`
 	Action ActionInterface `json:"action"`
 }
 
+// UnmarshalJSON unmarshals JSON data into an ActionRequest, resolving the concrete action type from the type field.
 func (ar *ActionRequest) UnmarshalJSON(data []byte) error {
 	var temp struct {
 		Type   string          `json:"type"`
@@ -44,6 +46,7 @@ func (ar *ActionRequest) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// MarshalJSON marshals the ActionRequest to JSON, including the type and action fields.
 func (ar *ActionRequest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Type   string          `json:"type"`
@@ -103,6 +106,7 @@ func createActionByType(actionType string) (ActionInterface, error) {
 	}
 }
 
+// GetActionType returns the action type string, delegating to the underlying action if present.
 func (ar *ActionRequest) GetActionType() string {
 	if ar.Action != nil {
 		return ar.Action.GetActionType()
@@ -110,6 +114,7 @@ func (ar *ActionRequest) GetActionType() string {
 	return ar.Type
 }
 
+// Validate validates that the action request has a non-nil action and that the type field matches the action's type.
 func (ar *ActionRequest) Validate() error {
 	if ar.Action == nil {
 		return ErrActionIsNil
@@ -123,6 +128,7 @@ func (ar *ActionRequest) Validate() error {
 	return nil
 }
 
+// NewActionRequest creates a new ActionRequest from the given action, automatically setting the type field.
 func NewActionRequest(action ActionInterface) *ActionRequest {
 	return &ActionRequest{
 		Type:   action.GetActionType(),
@@ -130,6 +136,7 @@ func NewActionRequest(action ActionInterface) *ActionRequest {
 	}
 }
 
+// TypedActionRequest creates a new ActionRequest from a typed action using generics.
 func TypedActionRequest[T ActionInterface](action T) *ActionRequest {
 	return &ActionRequest{
 		Type:   action.GetActionType(),
@@ -137,6 +144,7 @@ func TypedActionRequest[T ActionInterface](action T) *ActionRequest {
 	}
 }
 
+// ActionRequestFromJSON creates an ActionRequest by unmarshaling JSON data and validating the result.
 func ActionRequestFromJSON(jsonData []byte) (*ActionRequest, error) {
 	var actionRequest ActionRequest
 	if err := json.Unmarshal(jsonData, &actionRequest); err != nil {
@@ -150,14 +158,17 @@ func ActionRequestFromJSON(jsonData []byte) (*ActionRequest, error) {
 	return &actionRequest, nil
 }
 
+// ToJSON marshals the ActionRequest to JSON bytes.
 func (ar *ActionRequest) ToJSON() ([]byte, error) {
 	return json.Marshal(ar)
 }
 
+// GetConcreteAction returns the underlying concrete action as an any type.
 func (ar *ActionRequest) GetConcreteAction() any {
 	return ar.Action
 }
 
+// GetTypedAction extracts and returns the action as the specified concrete type T, or an error if the types do not match.
 func GetTypedAction[T ActionInterface](ar *ActionRequest) (T, error) {
 	var zero T
 	if ar.Action == nil {

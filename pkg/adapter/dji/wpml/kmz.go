@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// CreateKmz creates a KMZ file at the specified path from a WPMLMission.
 func CreateKmz(mission *WPMLMission, kmzPath string) error {
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
@@ -30,6 +31,7 @@ func CreateKmz(mission *WPMLMission, kmzPath string) error {
 	return nil
 }
 
+// CreateKmzBuffer creates a KMZ file as an in-memory buffer from a WPMLMission.
 func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
 	if mission == nil {
 		return nil, ErrMissionCannotBeEmpty
@@ -77,6 +79,7 @@ func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
 	return buffer, nil
 }
 
+// CreateKmzBufferFromWaylines creates a KMZ buffer by converting a Waylines schema to a WPMLMission first.
 func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
 	mission, err := ConvertWaylinesToWPMLMission(waylines)
 	if err != nil {
@@ -86,6 +89,7 @@ func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
 	return CreateKmzBuffer(mission)
 }
 
+// GetKmzInfo returns metadata about the KMZ file generated from a WPMLMission, including file sizes.
 func GetKmzInfo(mission *WPMLMission) (map[string]any, error) {
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
@@ -115,6 +119,7 @@ func GetKmzInfo(mission *WPMLMission) (map[string]any, error) {
 	return info, nil
 }
 
+// ParseKMZBuffer parses a KMZ file from a byte buffer and returns a WPMLMission.
 func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
 	zipReader, err := zip.NewReader(bytes.NewReader(buffer), int64(len(buffer)))
 	if err != nil {
@@ -165,6 +170,7 @@ func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
 	}, nil
 }
 
+// ParseKMZFile reads and parses a KMZ file from the filesystem and returns a WPMLMission.
 func ParseKMZFile(filePath string) (*WPMLMission, error) {
 	buffer, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
@@ -173,6 +179,7 @@ func ParseKMZFile(filePath string) (*WPMLMission, error) {
 	return ParseKMZBuffer(buffer)
 }
 
+// GenerateKMZJSON generates a JSON representation of the WPMLMission with the given filename and creation timestamp.
 func GenerateKMZJSON(mission *WPMLMission, fileName string) (string, error) {
 	if mission == nil {
 		return "", fmt.Errorf("mission不能为空")

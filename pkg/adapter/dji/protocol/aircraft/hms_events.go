@@ -35,6 +35,11 @@ type HMSEvent struct {
 	DataValue  HMSData `json:"data"`
 }
 
-func (e *HMSEvent) Method() string            { return e.MethodName }
-func (e *HMSEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *HMSEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *HMSEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *HMSEvent) GetHeader() *common.Header { return &e.Header }

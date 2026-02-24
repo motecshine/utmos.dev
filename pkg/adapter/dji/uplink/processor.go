@@ -17,10 +17,14 @@ import (
 type MessageType string
 
 const (
+	// MessageTypeProperty is the property message type.
 	MessageTypeProperty MessageType = "property"
-	MessageTypeEvent    MessageType = "event"
-	MessageTypeService  MessageType = "service"
-	MessageTypeStatus   MessageType = "status"
+	// MessageTypeEvent is the event message type.
+	MessageTypeEvent MessageType = "event"
+	// MessageTypeService is the service message type.
+	MessageTypeService MessageType = "service"
+	// MessageTypeStatus is the status message type.
+	MessageTypeStatus MessageType = "status"
 )
 
 // ProcessedMessage represents a message after processing

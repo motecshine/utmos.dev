@@ -31,8 +31,13 @@ type FlyToPointProgressEvent struct {
 	DataValue  FlyToPointProgressData `json:"data"`
 }
 
-func (e *FlyToPointProgressEvent) Method() string            { return e.MethodName }
-func (e *FlyToPointProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *FlyToPointProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *FlyToPointProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *FlyToPointProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // TakeoffToPointProgressData represents the one-key takeoff progress data
@@ -54,8 +59,13 @@ type TakeoffToPointProgressEvent struct {
 	DataValue  TakeoffToPointProgressData `json:"data"`
 }
 
-func (e *TakeoffToPointProgressEvent) Method() string            { return e.MethodName }
-func (e *TakeoffToPointProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *TakeoffToPointProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *TakeoffToPointProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *TakeoffToPointProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DRCStatusNotifyData represents the DRC link status notification data
@@ -71,8 +81,13 @@ type DRCStatusNotifyEvent struct {
 	DataValue  DRCStatusNotifyData `json:"data"`
 }
 
-func (e *DRCStatusNotifyEvent) Method() string            { return e.MethodName }
-func (e *DRCStatusNotifyEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *DRCStatusNotifyEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *DRCStatusNotifyEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *DRCStatusNotifyEvent) GetHeader() *common.Header { return &e.Header }
 
 // JoystickInvalidNotifyData represents the joystick control invalid reason data
@@ -87,8 +102,13 @@ type JoystickInvalidNotifyEvent struct {
 	DataValue  JoystickInvalidNotifyData `json:"data"`
 }
 
-func (e *JoystickInvalidNotifyEvent) Method() string            { return e.MethodName }
-func (e *JoystickInvalidNotifyEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *JoystickInvalidNotifyEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *JoystickInvalidNotifyEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *JoystickInvalidNotifyEvent) GetHeader() *common.Header { return &e.Header }
 
 // POIStatusNotifyData represents the POI (Point of Interest) circling status data
@@ -107,8 +127,13 @@ type POIStatusNotifyEvent struct {
 	DataValue  POIStatusNotifyData `json:"data"`
 }
 
-func (e *POIStatusNotifyEvent) Method() string            { return e.MethodName }
-func (e *POIStatusNotifyEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *POIStatusNotifyEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *POIStatusNotifyEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *POIStatusNotifyEvent) GetHeader() *common.Header { return &e.Header }
 
 // HSIInfoPushData represents the horizontal situation indicator (obstacle avoidance) data
@@ -126,8 +151,13 @@ type HSIInfoPushEvent struct {
 	DataValue  HSIInfoPushData `json:"data"`
 }
 
-func (e *HSIInfoPushEvent) Method() string            { return e.MethodName }
-func (e *HSIInfoPushEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *HSIInfoPushEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *HSIInfoPushEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *HSIInfoPushEvent) GetHeader() *common.Header { return &e.Header }
 
 // CameraPhotoTakeProgressData represents the camera photo taking progress data
@@ -145,6 +175,11 @@ type CameraPhotoTakeProgressEvent struct {
 	DataValue  CameraPhotoTakeProgressData `json:"data"`
 }
 
-func (e *CameraPhotoTakeProgressEvent) Method() string            { return e.MethodName }
-func (e *CameraPhotoTakeProgressEvent) Data() any                 { return e.DataValue }
+// Method returns the method name.
+func (e *CameraPhotoTakeProgressEvent) Method() string { return e.MethodName }
+
+// Data returns the command/event data.
+func (e *CameraPhotoTakeProgressEvent) Data() any { return e.DataValue }
+
+// GetHeader returns the event header.
 func (e *CameraPhotoTakeProgressEvent) GetHeader() *common.Header { return &e.Header }

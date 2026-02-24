@@ -22,8 +22,11 @@ func NewAirportBindStatusRequest() *AirportBindStatusRequest {
 	}
 }
 
+// Method returns the method name.
 func (r *AirportBindStatusRequest) Method() string { return r.MethodName }
-func (r *AirportBindStatusRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *AirportBindStatusRequest) Data() any { return r.DataValue }
 
 // AirportOrganizationGetRequest represents the airport organization get request
 type AirportOrganizationGetRequest struct {
@@ -41,8 +44,11 @@ func NewAirportOrganizationGetRequest() *AirportOrganizationGetRequest {
 	}
 }
 
+// Method returns the method name.
 func (r *AirportOrganizationGetRequest) Method() string { return r.MethodName }
-func (r *AirportOrganizationGetRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *AirportOrganizationGetRequest) Data() any { return r.DataValue }
 
 // AirportOrganizationBindData represents the airport organization bind data
 type AirportOrganizationBindData struct {
@@ -66,8 +72,11 @@ func NewAirportOrganizationBindRequest(data AirportOrganizationBindData) *Airpor
 	}
 }
 
+// Method returns the method name.
 func (r *AirportOrganizationBindRequest) Method() string { return r.MethodName }
-func (r *AirportOrganizationBindRequest) Data() any      { return r.DataValue }
+
+// Data returns the command/event data.
+func (r *AirportOrganizationBindRequest) Data() any { return r.DataValue }
 
 // GetHeader implements Command.GetHeader
 func (r *AirportBindStatusRequest) GetHeader() *common.Header {

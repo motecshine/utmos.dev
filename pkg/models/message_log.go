@@ -10,7 +10,9 @@ import (
 type MessageDirection string
 
 const (
-	MessageDirectionUplink   MessageDirection = "uplink"
+	// MessageDirectionUplink is the uplink message direction.
+	MessageDirectionUplink MessageDirection = "uplink"
+	// MessageDirectionDownlink is the downlink message direction.
 	MessageDirectionDownlink MessageDirection = "downlink"
 )
 
@@ -18,8 +20,11 @@ const (
 type MessageStatus string
 
 const (
+	// MessageStatusSuccess indicates the message was processed successfully.
 	MessageStatusSuccess MessageStatus = "success"
-	MessageStatusFailed  MessageStatus = "failed"
+	// MessageStatusFailed indicates the message processing failed.
+	MessageStatusFailed MessageStatus = "failed"
+	// MessageStatusPending indicates the message is pending processing.
 	MessageStatusPending MessageStatus = "pending"
 )
 

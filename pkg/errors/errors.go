@@ -10,28 +10,40 @@ import (
 type ErrorCode int
 
 const (
-	// General errors (1000-1999)
-	ErrInternal         ErrorCode = 1000
+	// ErrInternal indicates an internal server error (1000).
+	ErrInternal ErrorCode = 1000
+	// ErrInvalidParameter indicates an invalid parameter (1001).
 	ErrInvalidParameter ErrorCode = 1001
-	ErrNotFound         ErrorCode = 1002
-	ErrAlreadyExists    ErrorCode = 1003
-	ErrUnauthorized     ErrorCode = 1004
-	ErrForbidden        ErrorCode = 1005
+	// ErrNotFound indicates a resource was not found (1002).
+	ErrNotFound ErrorCode = 1002
+	// ErrAlreadyExists indicates a resource already exists (1003).
+	ErrAlreadyExists ErrorCode = 1003
+	// ErrUnauthorized indicates an unauthorized request (1004).
+	ErrUnauthorized ErrorCode = 1004
+	// ErrForbidden indicates a forbidden request (1005).
+	ErrForbidden ErrorCode = 1005
 
-	// Device errors (2000-2999)
+	// ErrDeviceNotFound indicates a device was not found (2000).
 	ErrDeviceNotFound ErrorCode = 2000
-	ErrDeviceOffline  ErrorCode = 2001
+	// ErrDeviceOffline indicates a device is offline (2001).
+	ErrDeviceOffline ErrorCode = 2001
+	// ErrDeviceNotReady indicates a device is not ready (2002).
 	ErrDeviceNotReady ErrorCode = 2002
 
-	// Message errors (3000-3999)
-	ErrInvalidMessage      ErrorCode = 3000
-	ErrInvalidRoutingKey   ErrorCode = 3001
-	ErrMessageTimeout      ErrorCode = 3002
+	// ErrInvalidMessage indicates an invalid message format (3000).
+	ErrInvalidMessage ErrorCode = 3000
+	// ErrInvalidRoutingKey indicates an invalid routing key (3001).
+	ErrInvalidRoutingKey ErrorCode = 3001
+	// ErrMessageTimeout indicates a message timeout (3002).
+	ErrMessageTimeout ErrorCode = 3002
+	// ErrTraceContextMissing indicates a missing trace context (3003).
 	ErrTraceContextMissing ErrorCode = 3003
 
-	// Connection errors (4000-4999)
+	// ErrRabbitMQConnection indicates a RabbitMQ connection error (4000).
 	ErrRabbitMQConnection ErrorCode = 4000
+	// ErrDatabaseConnection indicates a database connection error (4001).
 	ErrDatabaseConnection ErrorCode = 4001
+	// ErrInfluxDBConnection indicates an InfluxDB connection error (4002).
 	ErrInfluxDBConnection ErrorCode = 4002
 )
 
