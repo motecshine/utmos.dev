@@ -156,13 +156,13 @@ func TestRouter_CreateGatewayMessage_WithError(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, msg)
 
-	var data map[string]any
+	var data gatewayPayload
 	err = json.Unmarshal(msg.Data, &data)
 	require.NoError(t, err)
 
-	dispatchResult := data["dispatch_result"].(map[string]any)
-	assert.False(t, dispatchResult["success"].(bool))
-	assert.NotEmpty(t, dispatchResult["error"])
+	require.NotNil(t, data.DispatchResult)
+	assert.False(t, data.DispatchResult.Success)
+	assert.NotEmpty(t, data.DispatchResult.Error)
 }
 
 func TestRouter_Metrics(t *testing.T) {

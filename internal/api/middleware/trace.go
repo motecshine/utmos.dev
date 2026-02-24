@@ -184,11 +184,11 @@ func RequestLogger(logger *logrus.Entry) gin.HandlerFunc {
 func InjectTraceContext(c *gin.Context) map[string]string {
 	headers := make(map[string]string)
 
-	if traceID, exists := c.Get("trace_id"); exists {
-		headers[TraceIDHeader] = traceID.(string)
+	if traceID := c.GetString("trace_id"); traceID != "" {
+		headers[TraceIDHeader] = traceID
 	}
-	if requestID, exists := c.Get("request_id"); exists {
-		headers[RequestIDHeader] = requestID.(string)
+	if requestID := c.GetString("request_id"); requestID != "" {
+		headers[RequestIDHeader] = requestID
 	}
 
 	return headers
@@ -196,16 +196,10 @@ func InjectTraceContext(c *gin.Context) map[string]string {
 
 // GetTraceID returns the trace ID from context
 func GetTraceID(c *gin.Context) string {
-	if traceID, exists := c.Get("trace_id"); exists {
-		return traceID.(string)
-	}
-	return ""
+	return c.GetString("trace_id")
 }
 
 // GetRequestID returns the request ID from context
 func GetRequestID(c *gin.Context) string {
-	if requestID, exists := c.Get("request_id"); exists {
-		return requestID.(string)
-	}
-	return ""
+	return c.GetString("request_id")
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -134,23 +135,39 @@ func (r *Router) getRoutingKey(call *dispatcher.ServiceCall) string {
 	}
 }
 
+// gatewayPayload is the typed payload sent in gateway messages.
+type gatewayPayload struct {
+	Method         string                 `json:"method"`
+	Params         any                    `json:"params"`
+	DispatchResult *gatewayDispatchResult `json:"dispatch_result,omitempty"`
+}
+
+// gatewayDispatchResult is the typed dispatch result embedded in gateway payloads.
+type gatewayDispatchResult struct {
+	Success   bool      `json:"success"`
+	MessageID string    `json:"message_id"`
+	SentAt    time.Time `json:"sent_at"`
+	Error     string    `json:"error,omitempty"`
+}
+
 // createGatewayMessage creates a StandardMessage for the gateway
 func (r *Router) createGatewayMessage(call *dispatcher.ServiceCall, result *dispatcher.DispatchResult) (*rabbitmq.StandardMessage, error) {
-	// Create data payload
-	data := map[string]any{
-		"method": call.Method,
-		"params": call.Params,
+	// Create typed payload
+	payload := &gatewayPayload{
+		Method: call.Method,
+		Params: call.Params,
 	}
 
 	if result != nil {
-		data["dispatch_result"] = map[string]any{
-			"success":    result.Success,
-			"message_id": result.MessageID,
-			"sent_at":    result.SentAt,
+		dr := &gatewayDispatchResult{
+			Success:   result.Success,
+			MessageID: result.MessageID,
+			SentAt:    result.SentAt,
 		}
 		if result.Error != nil {
-			data["dispatch_result"].(map[string]any)["error"] = result.Error.Error()
+			dr.Error = result.Error.Error()
 		}
+		payload.DispatchResult = dr
 	}
 
 	// Create standard message
@@ -160,7 +177,7 @@ func (r *Router) createGatewayMessage(call *dispatcher.ServiceCall, result *disp
 		"iot-downlink",
 		r.getAction(call.CallType),
 		call.DeviceSN,
-		data,
+		payload,
 	)
 	if err != nil {
 		return nil, err

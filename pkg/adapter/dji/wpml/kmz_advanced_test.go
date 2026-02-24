@@ -53,16 +53,12 @@ func TestGetKmzInfo(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, info)
-	assert.Contains(t, info, "total_size")
-	assert.Contains(t, info, "files")
-	assert.Greater(t, info["total_size"], 0)
-
-	files := info["files"].([]map[string]any)
-	assert.NotEmpty(t, files)
+	assert.Greater(t, info.TotalSize, 0)
+	assert.NotEmpty(t, info.Files)
 
 	// Check that we have expected files - may be different structure
 	// Just verify that we got meaningful data
-	assert.True(t, len(files) > 0, "Should have at least one file entry")
+	assert.True(t, len(info.Files) > 0, "Should have at least one file entry")
 }
 
 func TestGetKmzInfo_InvalidMission(t *testing.T) {

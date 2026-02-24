@@ -89,8 +89,22 @@ func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
 	return CreateKmzBuffer(mission)
 }
 
+// KmzFileInfo holds metadata for a single file inside a KMZ archive.
+type KmzFileInfo struct {
+	Name             string `json:"name"`
+	CompressedSize   uint64 `json:"compressed_size"`
+	UncompressedSize uint64 `json:"uncompressed_size"`
+	Method           uint16 `json:"method"`
+}
+
+// KmzInfo holds metadata about a KMZ archive.
+type KmzInfo struct {
+	TotalSize int           `json:"total_size"`
+	Files     []KmzFileInfo `json:"files"`
+}
+
 // GetKmzInfo returns metadata about the KMZ file generated from a Mission, including file sizes.
-func GetKmzInfo(mission *Mission) (map[string]any, error) {
+func GetKmzInfo(mission *Mission) (*KmzInfo, error) {
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
 		return nil, err
@@ -101,19 +115,18 @@ func GetKmzInfo(mission *Mission) (map[string]any, error) {
 		return nil, fmt.Errorf(ErrParseZIP, err)
 	}
 
-	info := map[string]any{
-		"total_size": buffer.Len(),
-		"files":      make([]map[string]any, 0),
+	info := &KmzInfo{
+		TotalSize: buffer.Len(),
+		Files:     make([]KmzFileInfo, 0, len(zipReader.File)),
 	}
 
 	for _, file := range zipReader.File {
-		fileInfo := map[string]any{
-			"name":              file.Name,
-			"compressed_size":   file.CompressedSize64,
-			"uncompressed_size": file.UncompressedSize64,
-			"method":            file.Method,
-		}
-		info["files"] = append(info["files"].([]map[string]any), fileInfo)
+		info.Files = append(info.Files, KmzFileInfo{
+			Name:             file.Name,
+			CompressedSize:   file.CompressedSize64,
+			UncompressedSize: file.UncompressedSize64,
+			Method:           file.Method,
+		})
 	}
 
 	return info, nil
