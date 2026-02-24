@@ -7,15 +7,15 @@ import (
 // DefaultAuthor is the default author string used when creating WPML missions.
 const DefaultAuthor = "DJI WPML SDK"
 
-// ConvertWaylinesToWPMLMission converts a Waylines schema into a complete WPMLMission with template and waylines documents.
-func ConvertWaylinesToWPMLMission(waylines *Waylines) (*WPMLMission, error) {
+// ConvertWaylinesToMission converts a Waylines schema into a complete Mission with template and waylines documents.
+func ConvertWaylinesToMission(waylines *Waylines) (*Mission, error) {
 	waylines.ApplyDefaults()
 
 	if err := waylines.Validate(); err != nil {
 		return nil, fmt.Errorf(ErrWaylinesValidationFailed, err)
 	}
 
-	mission := NewWPMLMission()
+	mission := NewMission()
 	mission.SetAuthor(DefaultAuthor)
 	mission.UpdateTimestamp()
 	missionConfig, err := convertToMissionConfig(waylines)

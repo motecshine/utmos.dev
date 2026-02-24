@@ -134,7 +134,7 @@ func TestWaypointValidationCoverage(t *testing.T) {
 		waylines := createValidWaylines("Action Test")
 
 		// Convert and validate
-		mission, err := ConvertWaylinesToWPMLMission(waylines)
+		mission, err := ConvertWaylinesToMission(waylines)
 		if err != nil {
 			t.Logf("Conversion failed: %v", err)
 		} else {
@@ -148,7 +148,7 @@ func TestSerializerEdgeCases(t *testing.T) {
 
 	t.Run("XMLSerializer with different settings", func(t *testing.T) {
 		waylines := createValidWaylines("Serializer Test")
-		mission, err := ConvertWaylinesToWPMLMission(waylines)
+		mission, err := ConvertWaylinesToMission(waylines)
 		require.NoError(t, err)
 
 		// Test global marshal functions

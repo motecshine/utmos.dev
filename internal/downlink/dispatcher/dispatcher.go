@@ -153,20 +153,20 @@ func (d *AdapterDispatcher) Dispatch(ctx context.Context, call *ServiceCall) (*D
 	}, nil
 }
 
-// DispatcherRegistry manages registered dispatchers using the generic registry
-type DispatcherRegistry struct {
+// Registry manages registered dispatchers using the generic registry
+type Registry struct {
 	*registry.Registry[Dispatcher]
 }
 
-// NewDispatcherRegistry creates a new dispatcher registry
-func NewDispatcherRegistry(logger *logrus.Entry) *DispatcherRegistry {
-	return &DispatcherRegistry{
+// NewRegistry creates a new dispatcher registry
+func NewRegistry(logger *logrus.Entry) *Registry {
+	return &Registry{
 		Registry: registry.New[Dispatcher]("dispatcher-registry", logger),
 	}
 }
 
 // GetForCall returns a dispatcher that can handle the given call
-func (r *DispatcherRegistry) GetForCall(call *ServiceCall) (Dispatcher, bool) {
+func (r *Registry) GetForCall(call *ServiceCall) (Dispatcher, bool) {
 	// Use GetOrFind: first try vendor lookup, then predicate
 	return r.GetOrFind(call.Vendor, func(d Dispatcher) bool {
 		return d.CanDispatch(call)
@@ -175,13 +175,13 @@ func (r *DispatcherRegistry) GetForCall(call *ServiceCall) (Dispatcher, bool) {
 
 // DispatchHandler handles service call dispatching
 type DispatchHandler struct {
-	registry     *DispatcherRegistry
+	registry     *Registry
 	logger       *logrus.Entry
 	onDispatched func(ctx context.Context, call *ServiceCall, result *DispatchResult) error
 }
 
 // NewDispatchHandler creates a new dispatch handler
-func NewDispatchHandler(registry *DispatcherRegistry, logger *logrus.Entry) *DispatchHandler {
+func NewDispatchHandler(registry *Registry, logger *logrus.Entry) *DispatchHandler {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}

@@ -47,7 +47,6 @@ linters:
         - name: exported
           arguments:
             - "checkPrivateReceivers"
-            - "disableStutteringCheck"
             - "sayRepetitiveInsteadOfStutters"
   exclusions:
     rules:

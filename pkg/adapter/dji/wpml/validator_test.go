@@ -7,13 +7,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewWPMLValidator(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestNewValidator(t *testing.T) {
+	validator, _ := NewValidator()
 	require.NotNil(t, validator)
 }
 
-func TestWPMLValidator_ValidateStruct(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateStruct(t *testing.T) {
+	validator, _ := NewValidator()
 
 	tests := []struct {
 		name        string
@@ -106,7 +106,7 @@ func TestWPMLValidator_ValidateStruct(t *testing.T) {
 }
 
 func TestDroneModelValidation(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+	validator, _ := NewValidator()
 
 	tests := []struct {
 		name        string
@@ -168,7 +168,7 @@ func TestDroneModelValidation(t *testing.T) {
 }
 
 func TestPayloadModelValidation(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+	validator, _ := NewValidator()
 
 	tests := []struct {
 		name         string
@@ -230,7 +230,7 @@ func TestPayloadModelValidation(t *testing.T) {
 }
 
 func TestWaypointValidation(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+	validator, _ := NewValidator()
 
 	tests := []struct {
 		name        string

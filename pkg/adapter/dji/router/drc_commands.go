@@ -20,7 +20,7 @@ const (
 func RegisterDRCCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// DRC mode commands - use types from protocol/drc package
-		MethodDRCModeEnter: SimpleCommandHandler[drc.DRCModeEnterData](MethodDRCModeEnter),
+		MethodDRCModeEnter: SimpleCommandHandler[drc.ModeEnterData](MethodDRCModeEnter),
 		MethodDRCModeExit:  NoDataCommandHandler(MethodDRCModeExit),
 
 		// Control commands

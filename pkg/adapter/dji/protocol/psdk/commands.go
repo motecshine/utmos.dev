@@ -6,23 +6,23 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // PSDK Payload Commands
 // ===============================
 
-// PsdkWidgetValueSetData represents the PSDK widget value set data
-type PsdkWidgetValueSetData struct {
+// WidgetValueSetData represents the PSDK widget value set data
+type WidgetValueSetData struct {
 	PsdkIndex int `json:"psdk_index"` // PSDK payload device index (0-3)
 	Index     int `json:"index"`      // Widget index
 	Value     int `json:"value"`      // Widget value (defined by developer)
 }
 
-// PsdkWidgetValueSetCommand represents the PSDK widget value set request
-type PsdkWidgetValueSetCommand struct {
+// WidgetValueSetCommand represents the PSDK widget value set request
+type WidgetValueSetCommand struct {
 	common.Header
 	MethodName string                 `json:"method"`
-	DataValue  PsdkWidgetValueSetData `json:"data"`
+	DataValue  WidgetValueSetData `json:"data"`
 }
 
-// NewPsdkWidgetValueSetCommand creates a new PSDK widget value set request
-func NewPsdkWidgetValueSetCommand(data PsdkWidgetValueSetData) *PsdkWidgetValueSetCommand {
-	return &PsdkWidgetValueSetCommand{
+// NewWidgetValueSetCommand creates a new PSDK widget value set request
+func NewWidgetValueSetCommand(data WidgetValueSetData) *WidgetValueSetCommand {
+	return &WidgetValueSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "psdk_widget_value_set",
 		DataValue:  data,
@@ -30,27 +30,27 @@ func NewPsdkWidgetValueSetCommand(data PsdkWidgetValueSetData) *PsdkWidgetValueS
 }
 
 // Method returns the method name.
-func (c *PsdkWidgetValueSetCommand) Method() string { return c.MethodName }
+func (c *WidgetValueSetCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *PsdkWidgetValueSetCommand) Data() any { return c.DataValue }
+func (c *WidgetValueSetCommand) Data() any { return c.DataValue }
 
-// PsdkInputBoxTextSetData represents the PSDK input box text set data
-type PsdkInputBoxTextSetData struct {
+// InputBoxTextSetData represents the PSDK input box text set data
+type InputBoxTextSetData struct {
 	PsdkIndex int    `json:"psdk_index"` // PSDK payload device index (0-3)
 	Value     string `json:"value"`      // Text content (max 128 bytes)
 }
 
-// PsdkInputBoxTextSetCommand represents the PSDK input box text set request
-type PsdkInputBoxTextSetCommand struct {
+// InputBoxTextSetCommand represents the PSDK input box text set request
+type InputBoxTextSetCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
-	DataValue  PsdkInputBoxTextSetData `json:"data"`
+	DataValue  InputBoxTextSetData `json:"data"`
 }
 
-// NewPsdkInputBoxTextSetCommand creates a new PSDK input box text set request
-func NewPsdkInputBoxTextSetCommand(data PsdkInputBoxTextSetData) *PsdkInputBoxTextSetCommand {
-	return &PsdkInputBoxTextSetCommand{
+// NewInputBoxTextSetCommand creates a new PSDK input box text set request
+func NewInputBoxTextSetCommand(data InputBoxTextSetData) *InputBoxTextSetCommand {
+	return &InputBoxTextSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "psdk_input_box_text_set",
 		DataValue:  data,
@@ -58,10 +58,10 @@ func NewPsdkInputBoxTextSetCommand(data PsdkInputBoxTextSetData) *PsdkInputBoxTe
 }
 
 // Method returns the method name.
-func (c *PsdkInputBoxTextSetCommand) Method() string { return c.MethodName }
+func (c *InputBoxTextSetCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *PsdkInputBoxTextSetCommand) Data() any { return c.DataValue }
+func (c *InputBoxTextSetCommand) Data() any { return c.DataValue }
 
 // AudioFile represents audio file information for speaker
 type AudioFile struct {
@@ -311,12 +311,12 @@ func (c *CustomDataTransmissionToPSDKCommand) GetHeader() *common.Header {
 }
 
 // GetHeader implements Command.GetHeader
-func (c *PsdkInputBoxTextSetCommand) GetHeader() *common.Header {
+func (c *InputBoxTextSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *PsdkWidgetValueSetCommand) GetHeader() *common.Header {
+func (c *WidgetValueSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 

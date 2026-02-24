@@ -24,16 +24,16 @@ func TestCoverCloseCommand(t *testing.T) {
 	}
 }
 
-func TestDeviceRebootCommand(t *testing.T) {
-	cmd := NewDeviceRebootCommand()
+func TestRebootCommand(t *testing.T) {
+	cmd := NewRebootCommand()
 
 	if cmd.Method() != "device_reboot" {
 		t.Errorf("Method() = %v, want device_reboot", cmd.Method())
 	}
 }
 
-func TestDeviceFormatCommand(t *testing.T) {
-	cmd := NewDeviceFormatCommand()
+func TestFormatCommand(t *testing.T) {
+	cmd := NewFormatCommand()
 
 	if cmd.Method() != "device_format" {
 		t.Errorf("Method() = %v, want device_format", cmd.Method())

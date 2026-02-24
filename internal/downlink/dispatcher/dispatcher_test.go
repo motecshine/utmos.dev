@@ -41,14 +41,14 @@ func (d *mockDispatcher) Dispatch(ctx context.Context, call *ServiceCall) (*Disp
 	}, nil
 }
 
-func TestNewDispatcherRegistry(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+func TestNewRegistry(t *testing.T) {
+	registry := NewRegistry(nil)
 	require.NotNil(t, registry)
 	assert.Equal(t, 0, registry.Count())
 }
 
-func TestDispatcherRegistry_Register(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+func TestRegistry_Register(t *testing.T) {
+	registry := NewRegistry(nil)
 	dispatcher := newMockDispatcher("test-vendor")
 
 	registry.Register(dispatcher)
@@ -58,8 +58,8 @@ func TestDispatcherRegistry_Register(t *testing.T) {
 	assert.Equal(t, "test-vendor", d.GetVendor())
 }
 
-func TestDispatcherRegistry_Unregister(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+func TestRegistry_Unregister(t *testing.T) {
+	registry := NewRegistry(nil)
 	dispatcher := newMockDispatcher("test-vendor")
 
 	registry.Register(dispatcher)
@@ -69,8 +69,8 @@ func TestDispatcherRegistry_Unregister(t *testing.T) {
 	assert.False(t, exists)
 }
 
-func TestDispatcherRegistry_GetForCall(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+func TestRegistry_GetForCall(t *testing.T) {
+	registry := NewRegistry(nil)
 	djiDispatcher := newMockDispatcher("dji")
 	customDispatcher := newMockDispatcher("custom")
 
@@ -117,8 +117,8 @@ func TestDispatcherRegistry_GetForCall(t *testing.T) {
 	})
 }
 
-func TestDispatcherRegistry_ListVendors(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+func TestRegistry_ListVendors(t *testing.T) {
+	registry := NewRegistry(nil)
 	registry.Register(newMockDispatcher("vendor1"))
 	registry.Register(newMockDispatcher("vendor2"))
 	registry.Register(newMockDispatcher("vendor3"))
@@ -131,7 +131,7 @@ func TestDispatcherRegistry_ListVendors(t *testing.T) {
 }
 
 func TestNewDispatchHandler(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+	registry := NewRegistry(nil)
 	handler := NewDispatchHandler(registry, nil)
 
 	require.NotNil(t, handler)
@@ -139,7 +139,7 @@ func TestNewDispatchHandler(t *testing.T) {
 }
 
 func TestDispatchHandler_Handle(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+	registry := NewRegistry(nil)
 	dispatcher := newMockDispatcher("dji")
 	registry.Register(dispatcher)
 
@@ -189,7 +189,7 @@ func TestDispatchHandler_Handle(t *testing.T) {
 }
 
 func TestDispatchHandler_RegisterDispatcher(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+	registry := NewRegistry(nil)
 	handler := NewDispatchHandler(registry, nil)
 
 	dispatcher := newMockDispatcher("new-vendor")
@@ -201,7 +201,7 @@ func TestDispatchHandler_RegisterDispatcher(t *testing.T) {
 }
 
 func TestDispatchHandler_UnregisterDispatcher(t *testing.T) {
-	registry := NewDispatcherRegistry(nil)
+	registry := NewRegistry(nil)
 	handler := NewDispatchHandler(registry, nil)
 
 	dispatcher := newMockDispatcher("test-vendor")

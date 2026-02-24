@@ -6,8 +6,8 @@ import (
 	"github.com/nbio/xml"
 )
 
-// WPMLMission represents a complete WPML mission containing template and waylines documents along with resources.
-type WPMLMission struct {
+// Mission represents a complete WPML mission containing template and waylines documents along with resources.
+type Mission struct {
 	Template  *TemplateDocument
 	Waylines  *WaylinesDocument
 	Resources map[string][]byte
@@ -144,11 +144,11 @@ type WaylineFolder struct {
 	StartActionGroup *ActionGroup `xml:"wpml:startActionGroup,omitempty" json:"start_action_group,omitempty"`
 }
 
-// NewWPMLMission creates a new WPMLMission with default namespaces and current timestamps.
-func NewWPMLMission() *WPMLMission {
+// NewMission creates a new Mission with default namespaces and current timestamps.
+func NewMission() *Mission {
 	now := time.Now().UnixMilli()
 
-	return &WPMLMission{
+	return &Mission{
 		Template: &TemplateDocument{
 			XMLNS:  "http://www.opengis.net/kml/2.2",
 			WPMLNS: "http://www.dji.com/wpmz/1.0.6",
@@ -167,14 +167,14 @@ func NewWPMLMission() *WPMLMission {
 }
 
 // SetAuthor sets the author field of the mission's template document.
-func (m *WPMLMission) SetAuthor(author string) {
+func (m *Mission) SetAuthor(author string) {
 	if m.Template != nil {
 		m.Template.Document.Author = author
 	}
 }
 
 // UpdateTimestamp updates the template document's update time to the current time.
-func (m *WPMLMission) UpdateTimestamp() {
+func (m *Mission) UpdateTimestamp() {
 	now := time.Now().UnixMilli()
 	if m.Template != nil {
 		m.Template.Document.UpdateTime = now
@@ -182,7 +182,7 @@ func (m *WPMLMission) UpdateTimestamp() {
 }
 
 // SetMissionConfig sets the mission configuration on both the template and waylines documents.
-func (m *WPMLMission) SetMissionConfig(config MissionConfig) {
+func (m *Mission) SetMissionConfig(config MissionConfig) {
 	if m.Template != nil {
 		m.Template.Document.MissionConfig = config
 	}
@@ -212,7 +212,7 @@ func (m *WPMLMission) SetMissionConfig(config MissionConfig) {
 }
 
 // AddResource adds a named resource file (such as an image or data file) to the mission.
-func (m *WPMLMission) AddResource(filename string, data []byte) {
+func (m *Mission) AddResource(filename string, data []byte) {
 	if m.Resources == nil {
 		m.Resources = make(map[string][]byte)
 	}

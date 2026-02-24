@@ -93,7 +93,7 @@ func main() {
 	publisher := rabbitmq.NewPublisher(rmqClient)
 
 	// Initialize dispatcher registry and handler
-	dispatcherRegistry := dispatcher.NewDispatcherRegistry(log.WithService(serviceName))
+	dispatcherRegistry := dispatcher.NewRegistry(log.WithService(serviceName))
 	djiDispatcher := djidownlink.NewDispatcherAdapter(publisher, log.WithService(serviceName))
 	dispatcherRegistry.Register(dispatcher.NewAdapterDispatcher(djiDispatcher))
 	dispatchHandler := dispatcher.NewDispatchHandler(dispatcherRegistry, log.WithService(serviceName))

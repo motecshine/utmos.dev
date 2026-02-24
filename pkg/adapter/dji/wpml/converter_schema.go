@@ -49,7 +49,7 @@ type WaylinesWaypoint struct {
 
 // Validate validates the Waylines schema using the WPML validator.
 func (w *Waylines) Validate() error {
-	validator, err := NewWPMLValidator()
+	validator, err := NewValidator()
 	if err != nil {
 		return err
 	}

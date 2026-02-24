@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWPMLValidator_ValidateVar(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateVar(t *testing.T) {
+	validator, _ := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -54,8 +54,8 @@ func TestWPMLValidator_ValidateVar(t *testing.T) {
 	}
 }
 
-func TestWPMLValidator_ValidateAction(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateAction(t *testing.T) {
+	validator, _ := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -114,19 +114,19 @@ func TestWPMLValidator_ValidateAction(t *testing.T) {
 	}
 }
 
-func TestWPMLValidator_ValidateActionGroup(t *testing.T) {
+func TestValidator_ValidateActionGroup(t *testing.T) {
 	// Test with a simple valid action group - skip for now since validation is complex
 	t.Skip("ActionGroup validation requires complex setup - covered by other tests")
 }
 
-func TestWPMLValidator_ValidateWaylinesDocument(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateWaylinesDocument(t *testing.T) {
+	validator, _ := NewValidator()
 
 	// Create a valid document using helper
 	waylines := createValidWaylines("Test Mission")
 
 	// Convert to document
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 	require.NotNil(t, mission.Waylines)
 
@@ -134,12 +134,12 @@ func TestWPMLValidator_ValidateWaylinesDocument(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWPMLValidator_ValidateTemplateDocument(t *testing.T) {
+func TestValidator_ValidateTemplateDocument(t *testing.T) {
 	// Create a valid document using helper
 	waylines := createValidWaylines("Test Mission")
 
 	// Convert to document
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 	require.NotNil(t, mission.Template)
 
@@ -147,8 +147,8 @@ func TestWPMLValidator_ValidateTemplateDocument(t *testing.T) {
 	t.Skip("Template document validation requires complex field setup - covered by integration tests")
 }
 
-func TestWPMLValidator_ValidateWithContext(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateWithContext(t *testing.T) {
+	validator, _ := NewValidator()
 
 	waylines := createValidWaylines("Test Mission")
 
@@ -156,8 +156,8 @@ func TestWPMLValidator_ValidateWithContext(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWPMLValidator_GetValidationErrors(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_GetValidationErrors(t *testing.T) {
+	validator, _ := NewValidator()
 
 	// Create an invalid waylines with multiple errors
 	waylines := &Waylines{
@@ -213,7 +213,7 @@ func TestValidateWaylinesDocumentGlobal(t *testing.T) {
 	waylines := createValidWaylines("Test Mission")
 
 	// Convert to document
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 	require.NotNil(t, mission.Waylines)
 
@@ -221,8 +221,8 @@ func TestValidateWaylinesDocumentGlobal(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWPMLValidator_ValidateActionGroup_Real(_ *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateActionGroup_Real(_ *testing.T) {
+	validator, _ := NewValidator()
 
 	// Create a minimal valid ActionGroup using actual WPML structure
 	actionGroup := &ActionGroup{
@@ -247,12 +247,12 @@ func TestWPMLValidator_ValidateActionGroup_Real(_ *testing.T) {
 	_ = err
 }
 
-func TestWPMLValidator_ValidateTemplateDocument_Real(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+func TestValidator_ValidateTemplateDocument_Real(t *testing.T) {
+	validator, _ := NewValidator()
 
 	// Create a basic template document
 	waylines := createValidWaylines("Template Test")
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 	require.NotNil(t, mission.Template)
 

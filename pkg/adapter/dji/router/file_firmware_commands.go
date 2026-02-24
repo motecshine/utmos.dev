@@ -22,9 +22,9 @@ const (
 func RegisterFileAndFirmwareCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// File upload commands
-		MethodFileUploadStart:  SimpleCommandHandler[file.FileUploadStartData](MethodFileUploadStart),
-		MethodFileUploadFinish: SimpleCommandHandler[file.FileUploadUpdateData](MethodFileUploadFinish),
-		MethodFileUploadList:   SimpleCommandHandler[file.FileUploadListData](MethodFileUploadList),
+		MethodFileUploadStart:  SimpleCommandHandler[file.UploadStartData](MethodFileUploadStart),
+		MethodFileUploadFinish: SimpleCommandHandler[file.UploadUpdateData](MethodFileUploadFinish),
+		MethodFileUploadList:   SimpleCommandHandler[file.UploadListData](MethodFileUploadList),
 		// Firmware commands
 		MethodOTACreate: SimpleCommandHandler[firmware.OTACreateData](MethodOTACreate),
 	}

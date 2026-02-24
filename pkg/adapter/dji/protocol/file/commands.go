@@ -43,22 +43,22 @@ func (c *UploadFlighttaskMediaPrioritizeCommand) Data() any { return c.DataValue
 // 日志文件管理命令
 // ===============================
 
-// FileUploadListData represents the file upload list request data
+// UploadListData represents the file upload list request data
 // 获取设备可上传的文件列表
-type FileUploadListData struct {
+type UploadListData struct {
 	ModuleList []string `json:"module_list"` // 文件所属过滤列表: "0"=飞行器, "3"=机场
 }
 
-// FileUploadListCommand represents the file upload list request
-type FileUploadListCommand struct {
+// UploadListCommand represents the file upload list request
+type UploadListCommand struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  FileUploadListData `json:"data"`
+	DataValue  UploadListData `json:"data"`
 }
 
-// NewFileUploadListCommand creates a new file upload list request
-func NewFileUploadListCommand(data FileUploadListData) *FileUploadListCommand {
-	return &FileUploadListCommand{
+// NewUploadListCommand creates a new file upload list request
+func NewUploadListCommand(data UploadListData) *UploadListCommand {
+	return &UploadListCommand{
 		Header:     common.NewHeader(),
 		MethodName: "fileupload_list",
 		DataValue:  data,
@@ -66,10 +66,10 @@ func NewFileUploadListCommand(data FileUploadListData) *FileUploadListCommand {
 }
 
 // Method returns the method name.
-func (c *FileUploadListCommand) Method() string { return c.MethodName }
+func (c *UploadListCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *FileUploadListCommand) Data() any { return c.DataValue }
+func (c *UploadListCommand) Data() any { return c.DataValue }
 
 // Credentials represents the cloud storage credentials
 type Credentials struct {
@@ -79,39 +79,39 @@ type Credentials struct {
 	SecurityToken   string `json:"security_token"`    // 会话凭证
 }
 
-// FileUploadStartFile represents a file in the upload start request
-type FileUploadStartFile struct {
+// UploadStartFile represents a file in the upload start request
+type UploadStartFile struct {
 	List      json.RawMessage `json:"list"`       // 日志列表
 	Module    string          `json:"module"`     // 日志所属模块: "0"=飞行器, "3"=机场
 	ObjectKey string          `json:"object_key"` // 文件在对象存储桶的 Key
 }
 
-// FileUploadStartParams represents the params in the upload start request
-type FileUploadStartParams struct {
-	Files []FileUploadStartFile `json:"files"`
+// UploadStartParams represents the params in the upload start request
+type UploadStartParams struct {
+	Files []UploadStartFile `json:"files"`
 }
 
-// FileUploadStartData represents the file upload start data
+// UploadStartData represents the file upload start data
 // 发起日志文件上传
-type FileUploadStartData struct {
+type UploadStartData struct {
 	Bucket      string                `json:"bucket"`      // 对象存储桶名称
 	Region      string                `json:"region"`      // 数据中心所在的地域
 	Credentials Credentials           `json:"credentials"` // 凭证信息
 	Endpoint    string                `json:"endpoint"`    // 对外服务的访问域名
 	Provider    string                `json:"provider"`    // 云厂商枚举值: "ali"=阿里云, "aws"=亚马逊云, "minio"=minio
-	Params      FileUploadStartParams `json:"params"`
+	Params      UploadStartParams `json:"params"`
 }
 
-// FileUploadStartCommand represents the file upload start request
-type FileUploadStartCommand struct {
+// UploadStartCommand represents the file upload start request
+type UploadStartCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
-	DataValue  FileUploadStartData `json:"data"`
+	DataValue  UploadStartData `json:"data"`
 }
 
-// NewFileUploadStartCommand creates a new file upload start request
-func NewFileUploadStartCommand(data FileUploadStartData) *FileUploadStartCommand {
-	return &FileUploadStartCommand{
+// NewUploadStartCommand creates a new file upload start request
+func NewUploadStartCommand(data UploadStartData) *UploadStartCommand {
+	return &UploadStartCommand{
 		Header:     common.NewHeader(),
 		MethodName: "fileupload_start",
 		DataValue:  data,
@@ -119,28 +119,28 @@ func NewFileUploadStartCommand(data FileUploadStartData) *FileUploadStartCommand
 }
 
 // Method returns the method name.
-func (c *FileUploadStartCommand) Method() string { return c.MethodName }
+func (c *UploadStartCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *FileUploadStartCommand) Data() any { return c.DataValue }
+func (c *UploadStartCommand) Data() any { return c.DataValue }
 
-// FileUploadUpdateData represents the file upload update data
+// UploadUpdateData represents the file upload update data
 // 上传状态更新
-type FileUploadUpdateData struct {
+type UploadUpdateData struct {
 	Status     string   `json:"status"`      // 上传状态: "cancel"=取消
 	ModuleList []string `json:"module_list"` // 日志所属模块列表: "0"=飞行器, "3"=机场
 }
 
-// FileUploadUpdateCommand represents the file upload update request
-type FileUploadUpdateCommand struct {
+// UploadUpdateCommand represents the file upload update request
+type UploadUpdateCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
-	DataValue  FileUploadUpdateData `json:"data"`
+	DataValue  UploadUpdateData `json:"data"`
 }
 
-// NewFileUploadUpdateCommand creates a new file upload update request
-func NewFileUploadUpdateCommand(data FileUploadUpdateData) *FileUploadUpdateCommand {
-	return &FileUploadUpdateCommand{
+// NewUploadUpdateCommand creates a new file upload update request
+func NewUploadUpdateCommand(data UploadUpdateData) *UploadUpdateCommand {
+	return &UploadUpdateCommand{
 		Header:     common.NewHeader(),
 		MethodName: "fileupload_update",
 		DataValue:  data,
@@ -148,21 +148,21 @@ func NewFileUploadUpdateCommand(data FileUploadUpdateData) *FileUploadUpdateComm
 }
 
 // Method returns the method name.
-func (c *FileUploadUpdateCommand) Method() string { return c.MethodName }
+func (c *UploadUpdateCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *FileUploadUpdateCommand) Data() any { return c.DataValue }
+func (c *UploadUpdateCommand) Data() any { return c.DataValue }
 
 // ===============================
 // Service Reply Structures (services_reply)
 // 服务响应结构体
 // ===============================
 
-// FileUploadListItem represents a file item in the file list
+// UploadListItem represents a file item in the file list
 // 支持两种格式:
 // 1. DJI 官方文档格式: boot_index, start_time, end_time, size
 // 2. 实际设备返回格式: file_name, file_size, path, start_time, end_time
-type FileUploadListItem struct {
+type UploadListItem struct {
 	// DJI 官方文档格式字段
 	BootIndex int `json:"boot_index,omitempty"` // 文件索引
 
@@ -178,7 +178,7 @@ type FileUploadListItem struct {
 }
 
 // GetFileSize 获取文件大小 (兼容两种格式)
-func (f *FileUploadListItem) GetFileSize() int {
+func (f *UploadListItem) GetFileSize() int {
 	if f.FileSize > 0 {
 		return f.FileSize
 	}
@@ -186,56 +186,56 @@ func (f *FileUploadListItem) GetFileSize() int {
 }
 
 // GetFileName 获取文件名 (兼容两种格式)
-func (f *FileUploadListItem) GetFileName() string {
+func (f *UploadListItem) GetFileName() string {
 	if f.FileName != "" {
 		return f.FileName
 	}
 	return fmt.Sprintf("log_%d", f.BootIndex)
 }
 
-// FileUploadListFile represents a file group in the file list reply
-type FileUploadListFile struct {
-	DeviceSN string               `json:"device_sn"` // 设备序列号 (SN)
-	Result   int                  `json:"result"`    // 返回码 (非0代表错误)
-	Module   common.FlexInt       `json:"module"`    // 所属设备类型: 0=飞行器, 3=机场 (可能是数字或字符串)
-	List     []FileUploadListItem `json:"list"`      // 文件索引列表
+// UploadListFile represents a file group in the file list reply
+type UploadListFile struct {
+	DeviceSN string           `json:"device_sn"` // 设备序列号 (SN)
+	Result   int              `json:"result"`    // 返回码 (非0代表错误)
+	Module   common.FlexInt   `json:"module"`    // 所属设备类型: 0=飞行器, 3=机场 (可能是数字或字符串)
+	List     []UploadListItem `json:"list"`      // 文件索引列表
 }
 
-// FileUploadListOutput represents the output field in the reply
-type FileUploadListOutput struct {
+// UploadListOutput represents the output field in the reply
+type UploadListOutput struct {
 	Status string `json:"status"` // 状态: "ok"
 }
 
-// FileUploadListReplyData represents the file upload list reply data
-type FileUploadListReplyData struct {
-	Result    int                   `json:"result"`              // 返回码 (非0代表错误)
-	ResultMsg string                `json:"resultMsg,omitempty"` // 返回消息
-	Files     []FileUploadListFile  `json:"files"`               // 文件列表
-	Output    *FileUploadListOutput `json:"output,omitempty"`    // 输出状态
+// UploadListReplyData represents the file upload list reply data
+type UploadListReplyData struct {
+	Result    int                `json:"result"`              // 返回码 (非0代表错误)
+	ResultMsg string             `json:"resultMsg,omitempty"` // 返回消息
+	Files     []UploadListFile   `json:"files"`               // 文件列表
+	Output    *UploadListOutput  `json:"output,omitempty"`    // 输出状态
 }
 
-// FileUploadStartReplyData represents the file upload start reply data
-type FileUploadStartReplyData struct {
+// UploadStartReplyData represents the file upload start reply data
+type UploadStartReplyData struct {
 	Result int `json:"result"` // 返回码 (非0代表错误)
 }
 
-// FileUploadUpdateReplyData represents the file upload update reply data
-type FileUploadUpdateReplyData struct {
+// UploadUpdateReplyData represents the file upload update reply data
+type UploadUpdateReplyData struct {
 	Result int `json:"result"` // 返回码 (非0代表错误)
 }
 
 // GetHeader implements Command.GetHeader
-func (c *FileUploadListCommand) GetHeader() *common.Header {
+func (c *UploadListCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *FileUploadStartCommand) GetHeader() *common.Header {
+func (c *UploadStartCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *FileUploadUpdateCommand) GetHeader() *common.Header {
+func (c *UploadUpdateCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 

@@ -6,53 +6,53 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // PSDK Payload Events
 // ===============================
 
-// PsdkUIResourceUploadResultData represents the PSDK UI resource upload result data
-type PsdkUIResourceUploadResultData struct {
+// UIResourceUploadResultData represents the PSDK UI resource upload result data
+type UIResourceUploadResultData struct {
 	PsdkIndex int    `json:"psdk_index"` // PSDK payload device index (0-3)
 	ObjectKey string `json:"object_key"` // OSS object key
 	Size      int    `json:"size"`       // File size (bytes)
 	Result    int    `json:"result"`     // Error code
 }
 
-// PsdkUIResourceUploadResultEvent represents the PSDK UI resource upload result event
-type PsdkUIResourceUploadResultEvent struct {
+// UIResourceUploadResultEvent represents the PSDK UI resource upload result event
+type UIResourceUploadResultEvent struct {
 	common.Header
 	MethodName string                         `json:"method"`
-	DataValue  PsdkUIResourceUploadResultData `json:"data"`
+	DataValue  UIResourceUploadResultData `json:"data"`
 }
 
 // Method returns the method name.
-func (e *PsdkUIResourceUploadResultEvent) Method() string { return e.MethodName }
+func (e *UIResourceUploadResultEvent) Method() string { return e.MethodName }
 
 // Data returns the command/event data.
-func (e *PsdkUIResourceUploadResultEvent) Data() any { return e.DataValue }
+func (e *UIResourceUploadResultEvent) Data() any { return e.DataValue }
 
 // GetHeader returns the event header.
-func (e *PsdkUIResourceUploadResultEvent) GetHeader() *common.Header {
+func (e *UIResourceUploadResultEvent) GetHeader() *common.Header {
 	return &e.Header
 }
 
-// PsdkFloatingWindowTextData represents the PSDK floating window text data
-type PsdkFloatingWindowTextData struct {
+// FloatingWindowTextData represents the PSDK floating window text data
+type FloatingWindowTextData struct {
 	PsdkIndex int    `json:"psdk_index"` // PSDK payload device index (0-3)
 	Value     string `json:"value"`      // Floating window content
 }
 
-// PsdkFloatingWindowTextEvent represents the PSDK floating window text event
-type PsdkFloatingWindowTextEvent struct {
+// FloatingWindowTextEvent represents the PSDK floating window text event
+type FloatingWindowTextEvent struct {
 	common.Header
 	MethodName string                     `json:"method"`
-	DataValue  PsdkFloatingWindowTextData `json:"data"`
+	DataValue  FloatingWindowTextData `json:"data"`
 }
 
 // Method returns the method name.
-func (e *PsdkFloatingWindowTextEvent) Method() string { return e.MethodName }
+func (e *FloatingWindowTextEvent) Method() string { return e.MethodName }
 
 // Data returns the command/event data.
-func (e *PsdkFloatingWindowTextEvent) Data() any { return e.DataValue }
+func (e *FloatingWindowTextEvent) Data() any { return e.DataValue }
 
 // GetHeader returns the event header.
-func (e *PsdkFloatingWindowTextEvent) GetHeader() *common.Header { return &e.Header }
+func (e *FloatingWindowTextEvent) GetHeader() *common.Header { return &e.Header }
 
 // SpeakerPlayProgress represents the speaker play progress information
 type SpeakerPlayProgress struct {

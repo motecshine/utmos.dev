@@ -49,7 +49,7 @@ func DefaultConfig() *Config {
 type Service struct {
 	config     *Config
 	logger     *logrus.Entry
-	registry   *dispatcher.DispatcherRegistry
+	registry   *dispatcher.Registry
 	handler    *dispatcher.DispatchHandler
 	retryHandler *retry.Handler
 	router     *router.Router
@@ -77,7 +77,7 @@ func NewService(config *Config, publisher *rabbitmq.Publisher, logger *logrus.En
 	serviceLogger := logger.WithField("service", "iot-downlink")
 
 	// Create dispatcher registry
-	registry := dispatcher.NewDispatcherRegistry(serviceLogger)
+	registry := dispatcher.NewRegistry(serviceLogger)
 
 	// Create dispatch handler
 	handler := dispatcher.NewDispatchHandler(registry, serviceLogger)

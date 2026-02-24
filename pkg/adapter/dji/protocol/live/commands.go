@@ -6,24 +6,24 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // Live Streaming Commands
 // ===============================
 
-// LiveStartPushData represents the start live push data
-type LiveStartPushData struct {
+// StartPushData represents the start live push data
+type StartPushData struct {
 	URLType      int    `json:"url_type"`      // URL type: 0=Agora, 1=RTMP, 3=GB28181, 4=WebRTC
 	URL          string `json:"url"`           // Live stream URL/parameters
 	VideoID      string `json:"video_id"`      // Video stream ID (format: {sn}/{camera_index}/{video_index})
 	VideoQuality int    `json:"video_quality"` // Video quality: 0=adaptive, 1=smooth, 2=standard, 3=high, 4=super
 }
 
-// LiveStartPushCommand represents the start live push request
-type LiveStartPushCommand struct {
+// StartPushCommand represents the start live push request
+type StartPushCommand struct {
 	common.Header
 	MethodName string            `json:"method"`
-	DataValue  LiveStartPushData `json:"data"`
+	DataValue  StartPushData `json:"data"`
 }
 
-// NewLiveStartPushCommand creates a new start live push command
-func NewLiveStartPushCommand(data LiveStartPushData) *LiveStartPushCommand {
-	return &LiveStartPushCommand{
+// NewStartPushCommand creates a new start live push command
+func NewStartPushCommand(data StartPushData) *StartPushCommand {
+	return &StartPushCommand{
 		Header:     common.NewHeader(),
 		MethodName: "live_start_push",
 		DataValue:  data,
@@ -31,30 +31,30 @@ func NewLiveStartPushCommand(data LiveStartPushData) *LiveStartPushCommand {
 }
 
 // Method implements Command.Method
-func (c *LiveStartPushCommand) Method() string {
+func (c *StartPushCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *LiveStartPushCommand) Data() any {
+func (c *StartPushCommand) Data() any {
 	return c.DataValue
 }
 
-// LiveStopPushData represents the stop live push data
-type LiveStopPushData struct {
+// StopPushData represents the stop live push data
+type StopPushData struct {
 	VideoID string `json:"video_id"` // Video stream ID
 }
 
-// LiveStopPushCommand represents the stop live push request
-type LiveStopPushCommand struct {
+// StopPushCommand represents the stop live push request
+type StopPushCommand struct {
 	common.Header
 	MethodName string           `json:"method"`
-	DataValue  LiveStopPushData `json:"data"`
+	DataValue  StopPushData `json:"data"`
 }
 
-// NewLiveStopPushCommand creates a new stop live push command
-func NewLiveStopPushCommand(data LiveStopPushData) *LiveStopPushCommand {
-	return &LiveStopPushCommand{
+// NewStopPushCommand creates a new stop live push command
+func NewStopPushCommand(data StopPushData) *StopPushCommand {
+	return &StopPushCommand{
 		Header:     common.NewHeader(),
 		MethodName: "live_stop_push",
 		DataValue:  data,
@@ -62,31 +62,31 @@ func NewLiveStopPushCommand(data LiveStopPushData) *LiveStopPushCommand {
 }
 
 // Method implements Command.Method
-func (c *LiveStopPushCommand) Method() string {
+func (c *StopPushCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *LiveStopPushCommand) Data() any {
+func (c *StopPushCommand) Data() any {
 	return c.DataValue
 }
 
-// LiveSetQualityData represents the set live quality data
-type LiveSetQualityData struct {
+// SetQualityData represents the set live quality data
+type SetQualityData struct {
 	VideoID      string `json:"video_id"`      // Video stream ID (format: {sn}/{camera_index}/{video_index})
 	VideoQuality int    `json:"video_quality"` // Video quality: 0=adaptive, 1=smooth, 2=standard, 3=high, 4=super
 }
 
-// LiveSetQualityCommand represents the set live quality request
-type LiveSetQualityCommand struct {
+// SetQualityCommand represents the set live quality request
+type SetQualityCommand struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  LiveSetQualityData `json:"data"`
+	DataValue  SetQualityData `json:"data"`
 }
 
-// NewLiveSetQualityCommand creates a new set live quality command
-func NewLiveSetQualityCommand(data LiveSetQualityData) *LiveSetQualityCommand {
-	return &LiveSetQualityCommand{
+// NewSetQualityCommand creates a new set live quality command
+func NewSetQualityCommand(data SetQualityData) *SetQualityCommand {
+	return &SetQualityCommand{
 		Header:     common.NewHeader(),
 		MethodName: "live_set_quality",
 		DataValue:  data,
@@ -94,31 +94,31 @@ func NewLiveSetQualityCommand(data LiveSetQualityData) *LiveSetQualityCommand {
 }
 
 // Method implements Command.Method
-func (c *LiveSetQualityCommand) Method() string {
+func (c *SetQualityCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *LiveSetQualityCommand) Data() any {
+func (c *SetQualityCommand) Data() any {
 	return c.DataValue
 }
 
-// LiveLensChangeData represents the live lens change data
-type LiveLensChangeData struct {
+// LensChangeData represents the live lens change data
+type LensChangeData struct {
 	// VideoID   string `json:"video_id"`   // Video stream ID (format: {sn}/{camera_index}/{video_index})
 	VideoType string `json:"video_type"` // Video type: ir=infrared, normal=default, wide=wide angle, zoom=zoom
 }
 
-// LiveLensChangeCommand represents the live lens change request
-type LiveLensChangeCommand struct {
+// LensChangeCommand represents the live lens change request
+type LensChangeCommand struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  LiveLensChangeData `json:"data"`
+	DataValue  LensChangeData `json:"data"`
 }
 
-// NewLiveLensChangeCommand creates a new live lens change command
-func NewLiveLensChangeCommand(data LiveLensChangeData) *LiveLensChangeCommand {
-	return &LiveLensChangeCommand{
+// NewLensChangeCommand creates a new live lens change command
+func NewLensChangeCommand(data LensChangeData) *LensChangeCommand {
+	return &LensChangeCommand{
 		Header:     common.NewHeader(),
 		MethodName: "live_lens_change",
 		DataValue:  data,
@@ -126,31 +126,31 @@ func NewLiveLensChangeCommand(data LiveLensChangeData) *LiveLensChangeCommand {
 }
 
 // Method implements Command.Method
-func (c *LiveLensChangeCommand) Method() string {
+func (c *LensChangeCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *LiveLensChangeCommand) Data() any {
+func (c *LensChangeCommand) Data() any {
 	return c.DataValue
 }
 
 // GetHeader implements Command.GetHeader
-func (c *LiveLensChangeCommand) GetHeader() *common.Header {
+func (c *LensChangeCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *LiveSetQualityCommand) GetHeader() *common.Header {
+func (c *SetQualityCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *LiveStartPushCommand) GetHeader() *common.Header {
+func (c *StartPushCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *LiveStopPushCommand) GetHeader() *common.Header {
+func (c *StopPushCommand) GetHeader() *common.Header {
 	return &c.Header
 }

@@ -68,27 +68,27 @@ func (e *TakeoffToPointProgressEvent) Data() any { return e.DataValue }
 // GetHeader returns the event header.
 func (e *TakeoffToPointProgressEvent) GetHeader() *common.Header { return &e.Header }
 
-// DRCStatusNotifyData represents the DRC link status notification data
-type DRCStatusNotifyData struct {
+// StatusNotifyData represents the DRC link status notification data
+type StatusNotifyData struct {
 	Result   int `json:"result"`    // Return code (0=success)
 	DRCState int `json:"drc_state"` // DRC state (0=disconnected, 1=connecting, 2=connected)
 }
 
-// DRCStatusNotifyEvent represents the DRC link status notification event
-type DRCStatusNotifyEvent struct {
+// StatusNotifyEvent represents the DRC link status notification event
+type StatusNotifyEvent struct {
 	common.Header
-	MethodName string              `json:"method"`
-	DataValue  DRCStatusNotifyData `json:"data"`
+	MethodName string           `json:"method"`
+	DataValue  StatusNotifyData `json:"data"`
 }
 
 // Method returns the method name.
-func (e *DRCStatusNotifyEvent) Method() string { return e.MethodName }
+func (e *StatusNotifyEvent) Method() string { return e.MethodName }
 
 // Data returns the command/event data.
-func (e *DRCStatusNotifyEvent) Data() any { return e.DataValue }
+func (e *StatusNotifyEvent) Data() any { return e.DataValue }
 
 // GetHeader returns the event header.
-func (e *DRCStatusNotifyEvent) GetHeader() *common.Header { return &e.Header }
+func (e *StatusNotifyEvent) GetHeader() *common.Header { return &e.Header }
 
 // JoystickInvalidNotifyData represents the joystick control invalid reason data
 type JoystickInvalidNotifyData struct {

@@ -46,7 +46,7 @@ func TestCreateKmzBufferFromWaylines_InvalidWaylines(t *testing.T) {
 func TestGetKmzInfo(t *testing.T) {
 	waylines := createValidWaylines("Test Mission")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	info, err := GetKmzInfo(mission)
@@ -77,7 +77,7 @@ func TestParseKMZFile(t *testing.T) {
 	// Create a test KMZ file first
 	waylines := createValidWaylines("Test Mission")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	// Create temporary file
@@ -107,7 +107,7 @@ func TestParseKMZFile_NonexistentFile(t *testing.T) {
 func TestGenerateKMZJSON(t *testing.T) {
 	waylines := createValidWaylines("Test Mission")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	jsonData, err := GenerateKMZJSON(mission, "test_mission.kmz")

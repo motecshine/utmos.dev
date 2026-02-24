@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// CreateKmz creates a KMZ file at the specified path from a WPMLMission.
-func CreateKmz(mission *WPMLMission, kmzPath string) error {
+// CreateKmz creates a KMZ file at the specified path from a Mission.
+func CreateKmz(mission *Mission, kmzPath string) error {
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
 		return fmt.Errorf(ErrGenerateKMZBuffer, err)
@@ -31,8 +31,8 @@ func CreateKmz(mission *WPMLMission, kmzPath string) error {
 	return nil
 }
 
-// CreateKmzBuffer creates a KMZ file as an in-memory buffer from a WPMLMission.
-func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
+// CreateKmzBuffer creates a KMZ file as an in-memory buffer from a Mission.
+func CreateKmzBuffer(mission *Mission) (*bytes.Buffer, error) {
 	if mission == nil {
 		return nil, ErrMissionCannotBeEmpty
 	}
@@ -79,9 +79,9 @@ func CreateKmzBuffer(mission *WPMLMission) (*bytes.Buffer, error) {
 	return buffer, nil
 }
 
-// CreateKmzBufferFromWaylines creates a KMZ buffer by converting a Waylines schema to a WPMLMission first.
+// CreateKmzBufferFromWaylines creates a KMZ buffer by converting a Waylines schema to a Mission first.
 func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	if err != nil {
 		return nil, fmt.Errorf(ErrConvertWaylines, err)
 	}
@@ -89,8 +89,8 @@ func CreateKmzBufferFromWaylines(waylines *Waylines) (*bytes.Buffer, error) {
 	return CreateKmzBuffer(mission)
 }
 
-// GetKmzInfo returns metadata about the KMZ file generated from a WPMLMission, including file sizes.
-func GetKmzInfo(mission *WPMLMission) (map[string]any, error) {
+// GetKmzInfo returns metadata about the KMZ file generated from a Mission, including file sizes.
+func GetKmzInfo(mission *Mission) (map[string]any, error) {
 	buffer, err := CreateKmzBuffer(mission)
 	if err != nil {
 		return nil, err
@@ -119,8 +119,8 @@ func GetKmzInfo(mission *WPMLMission) (map[string]any, error) {
 	return info, nil
 }
 
-// ParseKMZBuffer parses a KMZ file from a byte buffer and returns a WPMLMission.
-func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
+// ParseKMZBuffer parses a KMZ file from a byte buffer and returns a Mission.
+func ParseKMZBuffer(buffer []byte) (*Mission, error) {
 	zipReader, err := zip.NewReader(bytes.NewReader(buffer), int64(len(buffer)))
 	if err != nil {
 		return nil, fmt.Errorf(ErrParseZIPFile, err)
@@ -163,15 +163,15 @@ func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
 		return nil, fmt.Errorf(ErrParseWaylinesWPML, err)
 	}
 
-	return &WPMLMission{
+	return &Mission{
 		Template:  template,
 		Waylines:  waylines,
 		Resources: resources,
 	}, nil
 }
 
-// ParseKMZFile reads and parses a KMZ file from the filesystem and returns a WPMLMission.
-func ParseKMZFile(filePath string) (*WPMLMission, error) {
+// ParseKMZFile reads and parses a KMZ file from the filesystem and returns a Mission.
+func ParseKMZFile(filePath string) (*Mission, error) {
 	buffer, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return nil, fmt.Errorf("读取KMZfilefailure: %w", err)
@@ -179,8 +179,8 @@ func ParseKMZFile(filePath string) (*WPMLMission, error) {
 	return ParseKMZBuffer(buffer)
 }
 
-// GenerateKMZJSON generates a JSON representation of the WPMLMission with the given filename and creation timestamp.
-func GenerateKMZJSON(mission *WPMLMission, fileName string) (string, error) {
+// GenerateKMZJSON generates a JSON representation of the Mission with the given filename and creation timestamp.
+func GenerateKMZJSON(mission *Mission, fileName string) (string, error) {
 	if mission == nil {
 		return "", fmt.Errorf("mission不能为空")
 	}

@@ -46,14 +46,14 @@ func (p *mockProcessor) Process(ctx context.Context, msg *rabbitmq.StandardMessa
 	}, nil
 }
 
-func TestNewProcessorRegistry(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+func TestNewRegistry(t *testing.T) {
+	registry := NewRegistry(nil)
 	require.NotNil(t, registry)
 	assert.Equal(t, 0, registry.Count())
 }
 
-func TestProcessorRegistry_Register(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+func TestRegistry_Register(t *testing.T) {
+	registry := NewRegistry(nil)
 	processor := newMockProcessor("test-vendor")
 
 	registry.Register(processor)
@@ -63,8 +63,8 @@ func TestProcessorRegistry_Register(t *testing.T) {
 	assert.Equal(t, "test-vendor", p.GetVendor())
 }
 
-func TestProcessorRegistry_Unregister(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+func TestRegistry_Unregister(t *testing.T) {
+	registry := NewRegistry(nil)
 	processor := newMockProcessor("test-vendor")
 
 	registry.Register(processor)
@@ -74,8 +74,8 @@ func TestProcessorRegistry_Unregister(t *testing.T) {
 	assert.False(t, exists)
 }
 
-func TestProcessorRegistry_GetForMessage(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+func TestRegistry_GetForMessage(t *testing.T) {
+	registry := NewRegistry(nil)
 	djiProcessor := newMockProcessor("dji")
 	customProcessor := newMockProcessor("custom")
 
@@ -123,8 +123,8 @@ func TestProcessorRegistry_GetForMessage(t *testing.T) {
 	})
 }
 
-func TestProcessorRegistry_ListVendors(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+func TestRegistry_ListVendors(t *testing.T) {
+	registry := NewRegistry(nil)
 	registry.Register(newMockProcessor("vendor1"))
 	registry.Register(newMockProcessor("vendor2"))
 	registry.Register(newMockProcessor("vendor3"))
@@ -137,7 +137,7 @@ func TestProcessorRegistry_ListVendors(t *testing.T) {
 }
 
 func TestNewMessageHandler(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+	registry := NewRegistry(nil)
 	handler := NewMessageHandler(registry, nil)
 
 	require.NotNil(t, handler)
@@ -145,7 +145,7 @@ func TestNewMessageHandler(t *testing.T) {
 }
 
 func TestMessageHandler_Handle(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+	registry := NewRegistry(nil)
 	processor := newMockProcessor("dji")
 	registry.Register(processor)
 
@@ -198,7 +198,7 @@ func TestMessageHandler_Handle(t *testing.T) {
 }
 
 func TestMessageHandler_RegisterProcessor(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+	registry := NewRegistry(nil)
 	handler := NewMessageHandler(registry, nil)
 
 	processor := newMockProcessor("new-vendor")
@@ -210,7 +210,7 @@ func TestMessageHandler_RegisterProcessor(t *testing.T) {
 }
 
 func TestMessageHandler_UnregisterProcessor(t *testing.T) {
-	registry := NewProcessorRegistry(nil)
+	registry := NewRegistry(nil)
 	handler := NewMessageHandler(registry, nil)
 
 	processor := newMockProcessor("test-vendor")

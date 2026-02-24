@@ -24,20 +24,20 @@ type Handler interface {
 	UnregisterProcessor(vendor string)
 }
 
-// ProcessorRegistry manages registered processors using the generic registry
-type ProcessorRegistry struct {
+// Registry manages registered processors using the generic registry
+type Registry struct {
 	*registry.Registry[adapter.UplinkProcessor]
 }
 
-// NewProcessorRegistry creates a new processor registry
-func NewProcessorRegistry(logger *logrus.Entry) *ProcessorRegistry {
-	return &ProcessorRegistry{
+// NewRegistry creates a new processor registry
+func NewRegistry(logger *logrus.Entry) *Registry {
+	return &Registry{
 		Registry: registry.New[adapter.UplinkProcessor]("processor-registry", logger),
 	}
 }
 
 // GetForMessage returns a processor that can handle the given message
-func (r *ProcessorRegistry) GetForMessage(msg *rabbitmq.StandardMessage) (adapter.UplinkProcessor, bool) {
+func (r *Registry) GetForMessage(msg *rabbitmq.StandardMessage) (adapter.UplinkProcessor, bool) {
 	// First try to match by protocol meta vendor
 	vendor := ""
 	if msg.ProtocolMeta != nil {
@@ -52,13 +52,13 @@ func (r *ProcessorRegistry) GetForMessage(msg *rabbitmq.StandardMessage) (adapte
 
 // MessageHandler handles incoming messages using registered processors
 type MessageHandler struct {
-	registry    *ProcessorRegistry
+	registry    *Registry
 	logger      *logrus.Entry
 	onProcessed func(ctx context.Context, processed *adapter.ProcessedMessage) error
 }
 
 // NewMessageHandler creates a new message handler
-func NewMessageHandler(registry *ProcessorRegistry, logger *logrus.Entry) *MessageHandler {
+func NewMessageHandler(registry *Registry, logger *logrus.Entry) *MessageHandler {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}

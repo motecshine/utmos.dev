@@ -11,7 +11,7 @@ import (
 func RegisterFileEvents(r *EventRouter) error {
 	handlers := map[string]EventHandlerFunc{
 		// Use types from protocol/file package
-		MethodFileUploadCallback:    SimpleEventHandler[file.FileUploadCallbackData](MethodFileUploadCallback),
+		MethodFileUploadCallback:    SimpleEventHandler[file.UploadCallbackData](MethodFileUploadCallback),
 		MethodFileUploadProgress:    NoDataEventHandler(MethodFileUploadProgress),
 		MethodHighestPriorityUpload: SimpleEventHandler[file.HighestPriorityUploadFlighttaskMediaData](MethodHighestPriorityUpload),
 	}

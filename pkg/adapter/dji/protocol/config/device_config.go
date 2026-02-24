@@ -6,13 +6,13 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // Device Configuration Requests (Device → Cloud)
 // ===============================
 
-// ConfigRequestData represents the data in config request from device
-type ConfigRequestData struct {
+// RequestData represents the data in config request from device
+type RequestData struct {
 	ConfigType  string `json:"config_type"`  // "json"
 	ConfigScope string `json:"config_scope"` // "product"
 }
 
-// Note: ConfigResponseData is defined in requests.go
+// Note: ResponseData is defined in requests.go
 
 // StorageConfigGetRequestData represents the data in storage_config_get request from device
 type StorageConfigGetRequestData struct {

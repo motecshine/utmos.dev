@@ -6,8 +6,8 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // Firmware Upgrade Commands
 // ===============================
 
-// FirmwareUpgradeDevice represents a single device firmware upgrade entry
-type FirmwareUpgradeDevice struct {
+// UpgradeDevice represents a single device firmware upgrade entry
+type UpgradeDevice struct {
 	SN                  string `json:"sn"`                    // Device serial number (SN)
 	ProductVersion      string `json:"product_version"`       // Firmware version
 	FileURL             string `json:"file_url"`              // Firmware file download URL
@@ -19,7 +19,7 @@ type FirmwareUpgradeDevice struct {
 
 // OTACreateData represents the OTA create data
 type OTACreateData struct {
-	Devices []FirmwareUpgradeDevice `json:"devices"` // Array of devices to upgrade (max 2 devices)
+	Devices []UpgradeDevice `json:"devices"` // Array of devices to upgrade (max 2 devices)
 }
 
 // OTACreateCommand represents the OTA create command

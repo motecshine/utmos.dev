@@ -9,7 +9,7 @@ import (
 // These tests aim to trigger internal validator functions that are currently at 0% coverage
 
 func TestValidator_InternalFunctions(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+	validator, _ := NewValidator()
 
 	// Test isRequiredForDrone by creating a validation scenario
 	t.Run("Test drone validation patterns", func(t *testing.T) {
@@ -62,7 +62,7 @@ func TestValidator_InternalFunctions(t *testing.T) {
 }
 
 func TestValidator_RequiredForFields(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+	validator, _ := NewValidator()
 
 	// Call validateRequiredForDrone and validateRequiredForPayload indirectly
 	// by creating a validation context - these are typically called during struct validation

@@ -26,15 +26,15 @@ const (
 func RegisterCameraCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// Commands using types from protocol/camera package
-		MethodCameraModeSwitch:       SimpleCommandHandler[camera.CameraModeSwitchData](MethodCameraModeSwitch),
-		MethodCameraPhotoTake:        SimpleCommandHandler[camera.CameraPhotoTakeData](MethodCameraPhotoTake),
-		MethodCameraRecordingStart:   SimpleCommandHandler[camera.CameraRecordingStartData](MethodCameraRecordingStart),
-		MethodCameraRecordingStop:    SimpleCommandHandler[camera.CameraRecordingStopData](MethodCameraRecordingStop),
-		MethodCameraAim:              SimpleCommandHandler[camera.CameraAimData](MethodCameraAim),
-		MethodCameraFocalLengthSet:   SimpleCommandHandler[camera.CameraFocalLengthSetData](MethodCameraFocalLengthSet),
+		MethodCameraModeSwitch:       SimpleCommandHandler[camera.ModeSwitchData](MethodCameraModeSwitch),
+		MethodCameraPhotoTake:        SimpleCommandHandler[camera.PhotoTakeData](MethodCameraPhotoTake),
+		MethodCameraRecordingStart:   SimpleCommandHandler[camera.RecordingStartData](MethodCameraRecordingStart),
+		MethodCameraRecordingStop:    SimpleCommandHandler[camera.RecordingStopData](MethodCameraRecordingStop),
+		MethodCameraAim:              SimpleCommandHandler[camera.AimData](MethodCameraAim),
+		MethodCameraFocalLengthSet:   SimpleCommandHandler[camera.FocalLengthSetData](MethodCameraFocalLengthSet),
 		MethodGimbalReset:            SimpleCommandHandler[camera.GimbalResetData](MethodGimbalReset),
-		MethodCameraPointFocusAction: SimpleCommandHandler[camera.CameraPointFocusActionData](MethodCameraPointFocusAction),
-		MethodCameraScreenSplit:      SimpleCommandHandler[camera.CameraScreenSplitData](MethodCameraScreenSplit),
+		MethodCameraPointFocusAction: SimpleCommandHandler[camera.PointFocusActionData](MethodCameraPointFocusAction),
+		MethodCameraScreenSplit:      SimpleCommandHandler[camera.ScreenSplitData](MethodCameraScreenSplit),
 
 		// IR metering commands - use types from protocol/camera
 		MethodIRMeteringPoint: SimpleCommandHandler[camera.IRMeteringPointSetData](MethodIRMeteringPoint),

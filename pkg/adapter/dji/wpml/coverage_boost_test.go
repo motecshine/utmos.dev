@@ -8,7 +8,7 @@ import (
 
 // Test to trigger the remaining 0% coverage validation functions
 func TestValidationCallbacks(t *testing.T) {
-	validator, _ := NewWPMLValidator()
+	validator, _ := NewValidator()
 
 	// These validation functions are called by the validation framework
 	// We need to create scenarios where they would be invoked

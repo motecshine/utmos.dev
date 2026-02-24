@@ -6,22 +6,22 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // Camera Control Commands
 // ===============================
 
-// CameraModeSwitchData represents the camera mode switch data
-type CameraModeSwitchData struct {
+// ModeSwitchData represents the camera mode switch data
+type ModeSwitchData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 	CameraMode   int    `json:"camera_mode"`   // Camera mode: 0=photo, 1=video
 }
 
-// CameraModeSwitchCommand represents the camera mode switch request
-type CameraModeSwitchCommand struct {
+// ModeSwitchCommand represents the camera mode switch request
+type ModeSwitchCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
-	DataValue  CameraModeSwitchData `json:"data"`
+	DataValue  ModeSwitchData `json:"data"`
 }
 
-// NewCameraModeSwitchCommand creates a new camera mode switch request
-func NewCameraModeSwitchCommand(data CameraModeSwitchData) *CameraModeSwitchCommand {
-	return &CameraModeSwitchCommand{
+// NewModeSwitchCommand creates a new camera mode switch request
+func NewModeSwitchCommand(data ModeSwitchData) *ModeSwitchCommand {
+	return &ModeSwitchCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_mode_switch",
 		DataValue:  data,
@@ -29,35 +29,35 @@ func NewCameraModeSwitchCommand(data CameraModeSwitchData) *CameraModeSwitchComm
 }
 
 // Method implements Command.Method
-func (c *CameraModeSwitchCommand) Method() string {
+func (c *ModeSwitchCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraModeSwitchCommand) Data() any {
+func (c *ModeSwitchCommand) Data() any {
 	return c.DataValue
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraModeSwitchCommand) GetHeader() *common.Header {
+func (c *ModeSwitchCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
-// CameraPhotoTakeData represents the camera photo take data
-type CameraPhotoTakeData struct {
+// PhotoTakeData represents the camera photo take data
+type PhotoTakeData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraPhotoTakeCommand represents the camera photo take request
-type CameraPhotoTakeCommand struct {
+// PhotoTakeCommand represents the camera photo take request
+type PhotoTakeCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
-	DataValue  CameraPhotoTakeData `json:"data"`
+	DataValue  PhotoTakeData `json:"data"`
 }
 
-// NewCameraPhotoTakeCommand creates a new camera photo take request
-func NewCameraPhotoTakeCommand(data CameraPhotoTakeData) *CameraPhotoTakeCommand {
-	return &CameraPhotoTakeCommand{
+// NewPhotoTakeCommand creates a new camera photo take request
+func NewPhotoTakeCommand(data PhotoTakeData) *PhotoTakeCommand {
+	return &PhotoTakeCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_photo_take",
 		DataValue:  data,
@@ -65,30 +65,30 @@ func NewCameraPhotoTakeCommand(data CameraPhotoTakeData) *CameraPhotoTakeCommand
 }
 
 // Method implements Command.Method
-func (c *CameraPhotoTakeCommand) Method() string {
+func (c *PhotoTakeCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraPhotoTakeCommand) Data() any {
+func (c *PhotoTakeCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraPhotoStopData represents the camera photo stop data
-type CameraPhotoStopData struct {
+// PhotoStopData represents the camera photo stop data
+type PhotoStopData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraPhotoStopCommand represents the camera photo stop request
-type CameraPhotoStopCommand struct {
+// PhotoStopCommand represents the camera photo stop request
+type PhotoStopCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
-	DataValue  CameraPhotoStopData `json:"data"`
+	DataValue  PhotoStopData `json:"data"`
 }
 
-// NewCameraPhotoStopCommand creates a new camera photo stop request
-func NewCameraPhotoStopCommand(data CameraPhotoStopData) *CameraPhotoStopCommand {
-	return &CameraPhotoStopCommand{
+// NewPhotoStopCommand creates a new camera photo stop request
+func NewPhotoStopCommand(data PhotoStopData) *PhotoStopCommand {
+	return &PhotoStopCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_photo_stop",
 		DataValue:  data,
@@ -96,30 +96,30 @@ func NewCameraPhotoStopCommand(data CameraPhotoStopData) *CameraPhotoStopCommand
 }
 
 // Method implements Command.Method
-func (c *CameraPhotoStopCommand) Method() string {
+func (c *PhotoStopCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraPhotoStopCommand) Data() any {
+func (c *PhotoStopCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraRecordingStartData represents the camera recording start data
-type CameraRecordingStartData struct {
+// RecordingStartData represents the camera recording start data
+type RecordingStartData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraRecordingStartCommand represents the camera recording start request
-type CameraRecordingStartCommand struct {
+// RecordingStartCommand represents the camera recording start request
+type RecordingStartCommand struct {
 	common.Header
 	MethodName string                   `json:"method"`
-	DataValue  CameraRecordingStartData `json:"data"`
+	DataValue  RecordingStartData `json:"data"`
 }
 
-// NewCameraRecordingStartCommand creates a new camera recording start request
-func NewCameraRecordingStartCommand(data CameraRecordingStartData) *CameraRecordingStartCommand {
-	return &CameraRecordingStartCommand{
+// NewRecordingStartCommand creates a new camera recording start request
+func NewRecordingStartCommand(data RecordingStartData) *RecordingStartCommand {
+	return &RecordingStartCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_recording_start",
 		DataValue:  data,
@@ -127,30 +127,30 @@ func NewCameraRecordingStartCommand(data CameraRecordingStartData) *CameraRecord
 }
 
 // Method implements Command.Method
-func (c *CameraRecordingStartCommand) Method() string {
+func (c *RecordingStartCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraRecordingStartCommand) Data() any {
+func (c *RecordingStartCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraRecordingStopData represents the camera recording stop data
-type CameraRecordingStopData struct {
+// RecordingStopData represents the camera recording stop data
+type RecordingStopData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 }
 
-// CameraRecordingStopCommand represents the camera recording stop request
-type CameraRecordingStopCommand struct {
+// RecordingStopCommand represents the camera recording stop request
+type RecordingStopCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
-	DataValue  CameraRecordingStopData `json:"data"`
+	DataValue  RecordingStopData `json:"data"`
 }
 
-// NewCameraRecordingStopCommand creates a new camera recording stop request
-func NewCameraRecordingStopCommand(data CameraRecordingStopData) *CameraRecordingStopCommand {
-	return &CameraRecordingStopCommand{
+// NewRecordingStopCommand creates a new camera recording stop request
+func NewRecordingStopCommand(data RecordingStopData) *RecordingStopCommand {
+	return &RecordingStopCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_recording_stop",
 		DataValue:  data,
@@ -158,33 +158,33 @@ func NewCameraRecordingStopCommand(data CameraRecordingStopData) *CameraRecordin
 }
 
 // Method implements Command.Method
-func (c *CameraRecordingStopCommand) Method() string {
+func (c *RecordingStopCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraRecordingStopCommand) Data() any {
+func (c *RecordingStopCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraScreenDragData represents the camera screen drag data
-type CameraScreenDragData struct {
+// ScreenDragData represents the camera screen drag data
+type ScreenDragData struct {
 	PayloadIndex string  `json:"payload_index"` // Camera enumeration value
 	Locked       bool    `json:"locked"`        // Whether aircraft head and gimbal relationship is locked
 	PitchSpeed   float64 `json:"pitch_speed"`   // Gimbal pitch speed (rad/s)
 	YawSpeed     float64 `json:"yaw_speed"`     // Gimbal yaw speed (rad/s, only effective when not locked)
 }
 
-// CameraScreenDragCommand represents the camera screen drag request
-type CameraScreenDragCommand struct {
+// ScreenDragCommand represents the camera screen drag request
+type ScreenDragCommand struct {
 	common.Header
 	MethodName string               `json:"method"`
-	DataValue  CameraScreenDragData `json:"data"`
+	DataValue  ScreenDragData `json:"data"`
 }
 
-// NewCameraScreenDragCommand creates a new camera screen drag request
-func NewCameraScreenDragCommand(data CameraScreenDragData) *CameraScreenDragCommand {
-	return &CameraScreenDragCommand{
+// NewScreenDragCommand creates a new camera screen drag request
+func NewScreenDragCommand(data ScreenDragData) *ScreenDragCommand {
+	return &ScreenDragCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_screen_drag",
 		DataValue:  data,
@@ -192,17 +192,17 @@ func NewCameraScreenDragCommand(data CameraScreenDragData) *CameraScreenDragComm
 }
 
 // Method implements Command.Method
-func (c *CameraScreenDragCommand) Method() string {
+func (c *ScreenDragCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraScreenDragCommand) Data() any {
+func (c *ScreenDragCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraAimData represents the camera aim data
-type CameraAimData struct {
+// AimData represents the camera aim data
+type AimData struct {
 	PayloadIndex string  `json:"payload_index"` // Camera enumeration value
 	CameraType   string  `json:"camera_type"`   // Camera type: ir, wide, zoom
 	Locked       bool    `json:"locked"`        // Whether aircraft head and gimbal relationship is locked
@@ -210,16 +210,16 @@ type CameraAimData struct {
 	Y            float64 `json:"y"`             // Target coordinate y (0-1)
 }
 
-// CameraAimCommand represents the camera aim request
-type CameraAimCommand struct {
+// AimCommand represents the camera aim request
+type AimCommand struct {
 	common.Header
 	MethodName string        `json:"method"`
-	DataValue  CameraAimData `json:"data"`
+	DataValue  AimData `json:"data"`
 }
 
-// NewCameraAimCommand creates a new camera aim request
-func NewCameraAimCommand(data CameraAimData) *CameraAimCommand {
-	return &CameraAimCommand{
+// NewAimCommand creates a new camera aim request
+func NewAimCommand(data AimData) *AimCommand {
+	return &AimCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_aim",
 		DataValue:  data,
@@ -227,32 +227,32 @@ func NewCameraAimCommand(data CameraAimData) *CameraAimCommand {
 }
 
 // Method implements Command.Method
-func (c *CameraAimCommand) Method() string {
+func (c *AimCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraAimCommand) Data() any {
+func (c *AimCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraFocalLengthSetData represents the camera focal length set data
-type CameraFocalLengthSetData struct {
+// FocalLengthSetData represents the camera focal length set data
+type FocalLengthSetData struct {
 	PayloadIndex string  `json:"payload_index"` // Camera enumeration value
 	CameraType   string  `json:"camera_type"`   // Camera type: ir, wide, zoom
 	ZoomFactor   float64 `json:"zoom_factor"`   // Zoom factor (2-200 for visible light, 2-20 for IR)
 }
 
-// CameraFocalLengthSetCommand represents the camera focal length set request
-type CameraFocalLengthSetCommand struct {
+// FocalLengthSetCommand represents the camera focal length set request
+type FocalLengthSetCommand struct {
 	common.Header
 	MethodName string                   `json:"method"`
-	DataValue  CameraFocalLengthSetData `json:"data"`
+	DataValue  FocalLengthSetData `json:"data"`
 }
 
-// NewCameraFocalLengthSetCommand creates a new camera focal length set request
-func NewCameraFocalLengthSetCommand(data CameraFocalLengthSetData) *CameraFocalLengthSetCommand {
-	return &CameraFocalLengthSetCommand{
+// NewFocalLengthSetCommand creates a new camera focal length set request
+func NewFocalLengthSetCommand(data FocalLengthSetData) *FocalLengthSetCommand {
+	return &FocalLengthSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_focal_length_set",
 		DataValue:  data,
@@ -260,17 +260,17 @@ func NewCameraFocalLengthSetCommand(data CameraFocalLengthSetData) *CameraFocalL
 }
 
 // Method implements Command.Method
-func (c *CameraFocalLengthSetCommand) Method() string {
+func (c *FocalLengthSetCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraFocalLengthSetCommand) Data() any {
+func (c *FocalLengthSetCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraFrameZoomData represents the camera frame zoom data
-type CameraFrameZoomData struct {
+// FrameZoomData represents the camera frame zoom data
+type FrameZoomData struct {
 	PayloadIndex string  `json:"payload_index"` // Camera enumeration value
 	CameraType   string  `json:"camera_type"`   // Camera type: ir, wide, zoom
 	Locked       bool    `json:"locked"`        // Whether aircraft head and gimbal relationship is locked
@@ -280,16 +280,16 @@ type CameraFrameZoomData struct {
 	Height       float64 `json:"height"`        // Frame height (0-1)
 }
 
-// CameraFrameZoomCommand represents the camera frame zoom request
-type CameraFrameZoomCommand struct {
+// FrameZoomCommand represents the camera frame zoom request
+type FrameZoomCommand struct {
 	common.Header
 	MethodName string              `json:"method"`
-	DataValue  CameraFrameZoomData `json:"data"`
+	DataValue  FrameZoomData `json:"data"`
 }
 
-// NewCameraFrameZoomCommand creates a new camera frame zoom request
-func NewCameraFrameZoomCommand(data CameraFrameZoomData) *CameraFrameZoomCommand {
-	return &CameraFrameZoomCommand{
+// NewFrameZoomCommand creates a new camera frame zoom request
+func NewFrameZoomCommand(data FrameZoomData) *FrameZoomCommand {
+	return &FrameZoomCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_frame_zoom",
 		DataValue:  data,
@@ -297,17 +297,17 @@ func NewCameraFrameZoomCommand(data CameraFrameZoomData) *CameraFrameZoomCommand
 }
 
 // Method implements Command.Method
-func (c *CameraFrameZoomCommand) Method() string {
+func (c *FrameZoomCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraFrameZoomCommand) Data() any {
+func (c *FrameZoomCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraLookAtData represents the camera look at data
-type CameraLookAtData struct {
+// LookAtData represents the camera look at data
+type LookAtData struct {
 	PayloadIndex string  `json:"payload_index"` // Camera enumeration value
 	Locked       bool    `json:"locked"`        // Whether aircraft head and gimbal relationship is locked
 	Latitude     float64 `json:"latitude"`      // Target point latitude (-90 to 90 degrees)
@@ -315,16 +315,16 @@ type CameraLookAtData struct {
 	Height       float64 `json:"height"`        // Target point height (meters, relative to takeoff point)
 }
 
-// CameraLookAtCommand represents the camera look at request
-type CameraLookAtCommand struct {
+// LookAtCommand represents the camera look at request
+type LookAtCommand struct {
 	common.Header
 	MethodName string           `json:"method"`
-	DataValue  CameraLookAtData `json:"data"`
+	DataValue  LookAtData `json:"data"`
 }
 
-// NewCameraLookAtCommand creates a new camera look at request
-func NewCameraLookAtCommand(data CameraLookAtData) *CameraLookAtCommand {
-	return &CameraLookAtCommand{
+// NewLookAtCommand creates a new camera look at request
+func NewLookAtCommand(data LookAtData) *LookAtCommand {
+	return &LookAtCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_look_at",
 		DataValue:  data,
@@ -332,31 +332,31 @@ func NewCameraLookAtCommand(data CameraLookAtData) *CameraLookAtCommand {
 }
 
 // Method implements Command.Method
-func (c *CameraLookAtCommand) Method() string {
+func (c *LookAtCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraLookAtCommand) Data() any {
+func (c *LookAtCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraScreenSplitData represents the camera screen split data
-type CameraScreenSplitData struct {
+// ScreenSplitData represents the camera screen split data
+type ScreenSplitData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 	Enable       bool   `json:"enable"`        // Whether to enable split screen mode
 }
 
-// CameraScreenSplitCommand represents the camera screen split request
-type CameraScreenSplitCommand struct {
+// ScreenSplitCommand represents the camera screen split request
+type ScreenSplitCommand struct {
 	common.Header
 	MethodName string                `json:"method"`
-	DataValue  CameraScreenSplitData `json:"data"`
+	DataValue  ScreenSplitData `json:"data"`
 }
 
-// NewCameraScreenSplitCommand creates a new camera screen split request
-func NewCameraScreenSplitCommand(data CameraScreenSplitData) *CameraScreenSplitCommand {
-	return &CameraScreenSplitCommand{
+// NewScreenSplitCommand creates a new camera screen split request
+func NewScreenSplitCommand(data ScreenSplitData) *ScreenSplitCommand {
+	return &ScreenSplitCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_screen_split",
 		DataValue:  data,
@@ -364,32 +364,32 @@ func NewCameraScreenSplitCommand(data CameraScreenSplitData) *CameraScreenSplitC
 }
 
 // Method implements Command.Method
-func (c *CameraScreenSplitCommand) Method() string {
+func (c *ScreenSplitCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraScreenSplitCommand) Data() any {
+func (c *ScreenSplitCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraExposureModeSetData represents the camera exposure mode set data
-type CameraExposureModeSetData struct {
+// ExposureModeSetData represents the camera exposure mode set data
+type ExposureModeSetData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 	CameraType   string `json:"camera_type"`   // Camera type: wide, zoom
 	ExposureMode int    `json:"exposure_mode"` // Exposure mode: 1=auto, 2=shutter_priority, 3=aperture_priority, 4=manual
 }
 
-// CameraExposureModeSetCommand represents the camera exposure mode set request
-type CameraExposureModeSetCommand struct {
+// ExposureModeSetCommand represents the camera exposure mode set request
+type ExposureModeSetCommand struct {
 	common.Header
 	MethodName string                    `json:"method"`
-	DataValue  CameraExposureModeSetData `json:"data"`
+	DataValue  ExposureModeSetData `json:"data"`
 }
 
-// NewCameraExposureModeSetCommand creates a new camera exposure mode set request
-func NewCameraExposureModeSetCommand(data CameraExposureModeSetData) *CameraExposureModeSetCommand {
-	return &CameraExposureModeSetCommand{
+// NewExposureModeSetCommand creates a new camera exposure mode set request
+func NewExposureModeSetCommand(data ExposureModeSetData) *ExposureModeSetCommand {
+	return &ExposureModeSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_exposure_mode_set",
 		DataValue:  data,
@@ -397,32 +397,32 @@ func NewCameraExposureModeSetCommand(data CameraExposureModeSetData) *CameraExpo
 }
 
 // Method implements Command.Method
-func (c *CameraExposureModeSetCommand) Method() string {
+func (c *ExposureModeSetCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraExposureModeSetCommand) Data() any {
+func (c *ExposureModeSetCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraExposureSetData represents the camera exposure set data
-type CameraExposureSetData struct {
+// ExposureSetData represents the camera exposure set data
+type ExposureSetData struct {
 	PayloadIndex  string `json:"payload_index"`  // Camera enumeration value
 	CameraType    string `json:"camera_type"`    // Camera type: wide, zoom
 	ExposureValue string `json:"exposure_value"` // Exposure value: 1=-5.0EV, 2=-4.7EV, ..., 16=0EV, ..., 31=5.0EV, 255=FIXED
 }
 
-// CameraExposureSetCommand represents the camera exposure set request
-type CameraExposureSetCommand struct {
+// ExposureSetCommand represents the camera exposure set request
+type ExposureSetCommand struct {
 	common.Header
 	MethodName string                `json:"method"`
-	DataValue  CameraExposureSetData `json:"data"`
+	DataValue  ExposureSetData `json:"data"`
 }
 
-// NewCameraExposureSetCommand creates a new camera exposure set request
-func NewCameraExposureSetCommand(data CameraExposureSetData) *CameraExposureSetCommand {
-	return &CameraExposureSetCommand{
+// NewExposureSetCommand creates a new camera exposure set request
+func NewExposureSetCommand(data ExposureSetData) *ExposureSetCommand {
+	return &ExposureSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_exposure_set",
 		DataValue:  data,
@@ -430,32 +430,32 @@ func NewCameraExposureSetCommand(data CameraExposureSetData) *CameraExposureSetC
 }
 
 // Method implements Command.Method
-func (c *CameraExposureSetCommand) Method() string {
+func (c *ExposureSetCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraExposureSetCommand) Data() any {
+func (c *ExposureSetCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraFocusModeSetData represents the camera focus mode set data
-type CameraFocusModeSetData struct {
+// FocusModeSetData represents the camera focus mode set data
+type FocusModeSetData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 	CameraType   string `json:"camera_type"`   // Camera type: wide, zoom (M30 series only supports zoom)
 	FocusMode    int    `json:"focus_mode"`    // Focus mode: 0=MF (manual), 1=AFS (auto single), 2=AFC (auto continuous)
 }
 
-// CameraFocusModeSetCommand represents the camera focus mode set request
-type CameraFocusModeSetCommand struct {
+// FocusModeSetCommand represents the camera focus mode set request
+type FocusModeSetCommand struct {
 	common.Header
 	MethodName string                 `json:"method"`
-	DataValue  CameraFocusModeSetData `json:"data"`
+	DataValue  FocusModeSetData `json:"data"`
 }
 
-// NewCameraFocusModeSetCommand creates a new camera focus mode set request
-func NewCameraFocusModeSetCommand(data CameraFocusModeSetData) *CameraFocusModeSetCommand {
-	return &CameraFocusModeSetCommand{
+// NewFocusModeSetCommand creates a new camera focus mode set request
+func NewFocusModeSetCommand(data FocusModeSetData) *FocusModeSetCommand {
+	return &FocusModeSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_focus_mode_set",
 		DataValue:  data,
@@ -463,32 +463,32 @@ func NewCameraFocusModeSetCommand(data CameraFocusModeSetData) *CameraFocusModeS
 }
 
 // Method implements Command.Method
-func (c *CameraFocusModeSetCommand) Method() string {
+func (c *FocusModeSetCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraFocusModeSetCommand) Data() any {
+func (c *FocusModeSetCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraFocusValueSetData represents the camera focus value set data
-type CameraFocusValueSetData struct {
+// FocusValueSetData represents the camera focus value set data
+type FocusValueSetData struct {
 	PayloadIndex string `json:"payload_index"` // Camera enumeration value
 	CameraType   string `json:"camera_type"`   // Camera type: wide, zoom (M30 series only supports zoom)
 	FocusValue   int    `json:"focus_value"`   // Focus value (range from zoom_min_focus_value to zoom_max_focus_value in OSD)
 }
 
-// CameraFocusValueSetCommand represents the camera focus value set request
-type CameraFocusValueSetCommand struct {
+// FocusValueSetCommand represents the camera focus value set request
+type FocusValueSetCommand struct {
 	common.Header
 	MethodName string                  `json:"method"`
-	DataValue  CameraFocusValueSetData `json:"data"`
+	DataValue  FocusValueSetData `json:"data"`
 }
 
-// NewCameraFocusValueSetCommand creates a new camera focus value set request
-func NewCameraFocusValueSetCommand(data CameraFocusValueSetData) *CameraFocusValueSetCommand {
-	return &CameraFocusValueSetCommand{
+// NewFocusValueSetCommand creates a new camera focus value set request
+func NewFocusValueSetCommand(data FocusValueSetData) *FocusValueSetCommand {
+	return &FocusValueSetCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_focus_value_set",
 		DataValue:  data,
@@ -496,33 +496,33 @@ func NewCameraFocusValueSetCommand(data CameraFocusValueSetData) *CameraFocusVal
 }
 
 // Method implements Command.Method
-func (c *CameraFocusValueSetCommand) Method() string {
+func (c *FocusValueSetCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraFocusValueSetCommand) Data() any {
+func (c *FocusValueSetCommand) Data() any {
 	return c.DataValue
 }
 
-// CameraPointFocusActionData represents the camera point focus action data
-type CameraPointFocusActionData struct {
+// PointFocusActionData represents the camera point focus action data
+type PointFocusActionData struct {
 	PayloadIndex string  `json:"payload_index"` // Camera enumeration value
 	CameraType   string  `json:"camera_type"`   // Camera type: wide, zoom (M30 series only supports zoom)
 	X            float64 `json:"x"`             // Focus point coordinate x (0-1)
 	Y            float64 `json:"y"`             // Focus point coordinate y (0-1)
 }
 
-// CameraPointFocusActionCommand represents the camera point focus action request
-type CameraPointFocusActionCommand struct {
+// PointFocusActionCommand represents the camera point focus action request
+type PointFocusActionCommand struct {
 	common.Header
 	MethodName string                     `json:"method"`
-	DataValue  CameraPointFocusActionData `json:"data"`
+	DataValue  PointFocusActionData `json:"data"`
 }
 
-// NewCameraPointFocusActionCommand creates a new camera point focus action request
-func NewCameraPointFocusActionCommand(data CameraPointFocusActionData) *CameraPointFocusActionCommand {
-	return &CameraPointFocusActionCommand{
+// NewPointFocusActionCommand creates a new camera point focus action request
+func NewPointFocusActionCommand(data PointFocusActionData) *PointFocusActionCommand {
+	return &PointFocusActionCommand{
 		Header:     common.NewHeader(),
 		MethodName: "camera_point_focus_action",
 		DataValue:  data,
@@ -530,12 +530,12 @@ func NewCameraPointFocusActionCommand(data CameraPointFocusActionData) *CameraPo
 }
 
 // Method implements Command.Method
-func (c *CameraPointFocusActionCommand) Method() string {
+func (c *PointFocusActionCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *CameraPointFocusActionCommand) Data() any {
+func (c *PointFocusActionCommand) Data() any {
 	return c.DataValue
 }
 
@@ -572,77 +572,77 @@ func (c *GimbalResetCommand) Data() any {
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraAimCommand) GetHeader() *common.Header {
+func (c *AimCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraExposureModeSetCommand) GetHeader() *common.Header {
+func (c *ExposureModeSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraExposureSetCommand) GetHeader() *common.Header {
+func (c *ExposureSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraFocalLengthSetCommand) GetHeader() *common.Header {
+func (c *FocalLengthSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraFrameZoomCommand) GetHeader() *common.Header {
+func (c *FrameZoomCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraFocusModeSetCommand) GetHeader() *common.Header {
+func (c *FocusModeSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraFocusValueSetCommand) GetHeader() *common.Header {
+func (c *FocusValueSetCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraLookAtCommand) GetHeader() *common.Header {
+func (c *LookAtCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraPhotoStopCommand) GetHeader() *common.Header {
+func (c *PhotoStopCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraPhotoTakeCommand) GetHeader() *common.Header {
+func (c *PhotoTakeCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraPointFocusActionCommand) GetHeader() *common.Header {
+func (c *PointFocusActionCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraRecordingStartCommand) GetHeader() *common.Header {
+func (c *RecordingStartCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraRecordingStopCommand) GetHeader() *common.Header {
+func (c *RecordingStopCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraScreenDragCommand) GetHeader() *common.Header {
+func (c *ScreenDragCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *CameraScreenSplitCommand) GetHeader() *common.Header {
+func (c *ScreenSplitCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 

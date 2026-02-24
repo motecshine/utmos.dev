@@ -6,29 +6,29 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // Device Control Progress Events
 // ===============================
 
-// DeviceProgress represents the progress information
-type DeviceProgress struct {
+// Progress represents the progress information
+type Progress struct {
 	Percent int    `json:"percent"`            // Progress percentage (0-100)
 	StepKey string `json:"step_key,omitempty"` // Current step (optional, varies by operation)
 }
 
-// DeviceOutput represents the device operation output
-type DeviceOutput struct {
+// Output represents the device operation output
+type Output struct {
 	Status   string         `json:"status"`   // Operation status (sent, in_progress, ok, failed, canceled, paused, rejected, timeout)
-	Progress DeviceProgress `json:"progress"` // Progress information
+	Progress Progress `json:"progress"` // Progress information
 }
 
-// DeviceProgressData represents the device operation progress data
-type DeviceProgressData struct {
+// ProgressData represents the device operation progress data
+type ProgressData struct {
 	Result int          `json:"result"` // Return code (0=success)
-	Output DeviceOutput `json:"output"` // Output data
+	Output Output `json:"output"` // Output data
 }
 
 // CoverOpenProgressEvent represents the cover open progress event
 type CoverOpenProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -44,7 +44,7 @@ func (e *CoverOpenProgressEvent) GetHeader() *common.Header { return &e.Header }
 type CoverCloseProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -60,7 +60,7 @@ func (e *CoverCloseProgressEvent) GetHeader() *common.Header { return &e.Header 
 type CoverForceCloseProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -76,7 +76,7 @@ func (e *CoverForceCloseProgressEvent) GetHeader() *common.Header { return &e.He
 type DroneOpenProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -92,7 +92,7 @@ func (e *DroneOpenProgressEvent) GetHeader() *common.Header { return &e.Header }
 type DroneCloseProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -108,7 +108,7 @@ func (e *DroneCloseProgressEvent) GetHeader() *common.Header { return &e.Header 
 type ChargeOpenProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -124,7 +124,7 @@ func (e *ChargeOpenProgressEvent) GetHeader() *common.Header { return &e.Header 
 type ChargeCloseProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -136,43 +136,43 @@ func (e *ChargeCloseProgressEvent) Data() any { return e.DataValue }
 // GetHeader returns the event header.
 func (e *ChargeCloseProgressEvent) GetHeader() *common.Header { return &e.Header }
 
-// DeviceRebootProgressEvent represents the device reboot progress event
-type DeviceRebootProgressEvent struct {
+// RebootProgressEvent represents the device reboot progress event
+type RebootProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
-func (e *DeviceRebootProgressEvent) Method() string { return e.MethodName }
+func (e *RebootProgressEvent) Method() string { return e.MethodName }
 
 // Data returns the command/event data.
-func (e *DeviceRebootProgressEvent) Data() any { return e.DataValue }
+func (e *RebootProgressEvent) Data() any { return e.DataValue }
 
 // GetHeader returns the event header.
-func (e *DeviceRebootProgressEvent) GetHeader() *common.Header { return &e.Header }
+func (e *RebootProgressEvent) GetHeader() *common.Header { return &e.Header }
 
-// DeviceFormatProgressEvent represents the dock data format progress event
-type DeviceFormatProgressEvent struct {
+// FormatProgressEvent represents the dock data format progress event
+type FormatProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
-func (e *DeviceFormatProgressEvent) Method() string { return e.MethodName }
+func (e *FormatProgressEvent) Method() string { return e.MethodName }
 
 // Data returns the command/event data.
-func (e *DeviceFormatProgressEvent) Data() any { return e.DataValue }
+func (e *FormatProgressEvent) Data() any { return e.DataValue }
 
 // GetHeader returns the event header.
-func (e *DeviceFormatProgressEvent) GetHeader() *common.Header { return &e.Header }
+func (e *FormatProgressEvent) GetHeader() *common.Header { return &e.Header }
 
 // DroneFormatProgressEvent represents the drone data format progress event
 type DroneFormatProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -188,7 +188,7 @@ func (e *DroneFormatProgressEvent) GetHeader() *common.Header { return &e.Header
 type PutterOpenProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.
@@ -204,7 +204,7 @@ func (e *PutterOpenProgressEvent) GetHeader() *common.Header { return &e.Header 
 type PutterCloseProgressEvent struct {
 	common.Header
 	MethodName string             `json:"method"`
-	DataValue  DeviceProgressData `json:"data"`
+	DataValue  ProgressData `json:"data"`
 }
 
 // Method returns the method name.

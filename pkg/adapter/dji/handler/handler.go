@@ -18,5 +18,5 @@ type Handler interface {
 	GetTopicType() dji.TopicType
 }
 
-// HandlerFunc is a function type that implements Handler.
-type HandlerFunc func(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error)
+// Func is a function type that implements Handler.
+type Func func(ctx context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error)

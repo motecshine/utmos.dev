@@ -31,8 +31,8 @@ func unmarshalOSD[T any](data json.RawMessage, typeName string) (*T, error) {
 }
 
 // ParseAircraftOSD parses aircraft OSD data from raw JSON.
-func (p *OSDParser) ParseAircraftOSD(data json.RawMessage) (*aircraft.AircraftOSD, error) {
-	return unmarshalOSD[aircraft.AircraftOSD](data, "aircraft")
+func (p *OSDParser) ParseAircraftOSD(data json.RawMessage) (*aircraft.OSD, error) {
+	return unmarshalOSD[aircraft.OSD](data, "aircraft")
 }
 
 // ParseDockOSD parses dock OSD data from raw JSON.
@@ -93,7 +93,7 @@ func (p *OSDParser) DetectOSDType(data json.RawMessage) OSDType {
 // ParsedOSD holds the parsed OSD data with type information.
 type ParsedOSD struct {
 	Type     OSDType
-	Aircraft *aircraft.AircraftOSD
+	Aircraft *aircraft.OSD
 	Dock     *aircraft.DockOSD
 	RC       *aircraft.RCOSD
 }

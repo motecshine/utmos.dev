@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConvertWaylinesToWPMLMission(t *testing.T) {
+func TestConvertWaylinesToMission(t *testing.T) {
 	tests := []struct {
 		name        string
 		waylines    *Waylines
@@ -112,7 +112,7 @@ func TestConvertWaylinesToWPMLMission(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mission, err := ConvertWaylinesToWPMLMission(tt.waylines)
+			mission, err := ConvertWaylinesToMission(tt.waylines)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -137,7 +137,7 @@ func TestConvertWaylinesToWPMLMission(t *testing.T) {
 	}
 }
 
-func TestConvertWaylinesToWPMLMissionWithJSON(t *testing.T) {
+func TestConvertWaylinesToMissionWithJSON(t *testing.T) {
 	jsonData := `{
 		"name": "JSON Test Mission",
 		"drone_model": 91,
@@ -181,7 +181,7 @@ func TestConvertWaylinesToWPMLMissionWithJSON(t *testing.T) {
 	err := json.Unmarshal([]byte(jsonData), &waylines)
 	require.NoError(t, err)
 
-	mission, err := ConvertWaylinesToWPMLMission(&waylines)
+	mission, err := ConvertWaylinesToMission(&waylines)
 	require.NoError(t, err)
 	require.NotNil(t, mission)
 

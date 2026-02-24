@@ -34,8 +34,8 @@ func DefaultConfig() *Config {
 	}
 }
 
-// PushMessage represents a message to be pushed
-type PushMessage struct {
+// Message represents a message to be pushed
+type Message struct {
 	// Topic is the subscription topic
 	Topic string
 	// Message is the message to push
@@ -53,7 +53,7 @@ type Pusher struct {
 	hub         *hub.Hub
 	subManager  *subscription.Manager
 	logger      *logrus.Entry
-	queue       chan *PushMessage
+	queue       chan *Message
 	done        chan struct{}
 	wg          sync.WaitGroup
 	running     bool
@@ -84,7 +84,7 @@ func NewPusher(
 		hub:        h,
 		subManager: subManager,
 		logger:     logger.WithField("component", "pusher"),
-		queue:      make(chan *PushMessage, config.QueueSize),
+		queue:      make(chan *Message, config.QueueSize),
 		done:       make(chan struct{}),
 	}
 }
@@ -132,7 +132,7 @@ func (p *Pusher) IsRunning() bool {
 }
 
 // Push queues a message for pushing
-func (p *Pusher) Push(msg *PushMessage) bool {
+func (p *Pusher) Push(msg *Message) bool {
 	if !p.IsRunning() {
 		return false
 	}
@@ -149,7 +149,7 @@ func (p *Pusher) Push(msg *PushMessage) bool {
 
 // PushToTopic pushes a message to all subscribers of a topic
 func (p *Pusher) PushToTopic(topic string, msg *hub.Message) bool {
-	return p.Push(&PushMessage{
+	return p.Push(&Message{
 		Topic:   topic,
 		Message: msg,
 	})
@@ -157,7 +157,7 @@ func (p *Pusher) PushToTopic(topic string, msg *hub.Message) bool {
 
 // PushToClients pushes a message to specific clients
 func (p *Pusher) PushToClients(clientIDs []string, msg *hub.Message) bool {
-	return p.Push(&PushMessage{
+	return p.Push(&Message{
 		ClientIDs: clientIDs,
 		Message:   msg,
 	})
@@ -165,7 +165,7 @@ func (p *Pusher) PushToClients(clientIDs []string, msg *hub.Message) bool {
 
 // PushToTopicExcluding pushes a message to topic subscribers excluding specific clients
 func (p *Pusher) PushToTopicExcluding(topic string, msg *hub.Message, excludeIDs []string) bool {
-	return p.Push(&PushMessage{
+	return p.Push(&Message{
 		Topic:            topic,
 		Message:          msg,
 		ExcludeClientIDs: excludeIDs,
@@ -199,7 +199,7 @@ func (p *Pusher) worker(id int) {
 }
 
 // processMessage processes a single push message
-func (p *Pusher) processMessage(msg *PushMessage) {
+func (p *Pusher) processMessage(msg *Message) {
 	if msg == nil || msg.Message == nil {
 		return
 	}

@@ -62,7 +62,7 @@ func TestPusher_Push(t *testing.T) {
 	pusher := NewPusher(nil, nil, nil, nil)
 
 	// Push before start should fail
-	success := pusher.Push(&PushMessage{
+	success := pusher.Push(&Message{
 		Topic:   "test",
 		Message: &hub.Message{Type: hub.MessageTypeEvent},
 	})
@@ -72,7 +72,7 @@ func TestPusher_Push(t *testing.T) {
 	defer pusher.Stop()
 
 	// Push after start should succeed
-	success = pusher.Push(&PushMessage{
+	success = pusher.Push(&Message{
 		Topic:   "test",
 		Message: &hub.Message{Type: hub.MessageTypeEvent},
 	})
@@ -182,7 +182,7 @@ func TestPusher_QueueFull(t *testing.T) {
 
 	// Fill the queue
 	for i := 0; i < 2; i++ {
-		pusher.Push(&PushMessage{
+		pusher.Push(&Message{
 			Topic:   "test",
 			Message: &hub.Message{Type: hub.MessageTypeEvent},
 		})
@@ -248,11 +248,11 @@ func TestPusher_ProcessMessage(t *testing.T) {
 
 	t.Run("nil inner message", func(t *testing.T) {
 		// Should not panic
-		pusher.processMessage(&PushMessage{Topic: "test"})
+		pusher.processMessage(&Message{Topic: "test"})
 	})
 
 	t.Run("no subscribers", func(t *testing.T) {
-		pusher.processMessage(&PushMessage{
+		pusher.processMessage(&Message{
 			Topic:   "no-subscribers",
 			Message: &hub.Message{Type: hub.MessageTypeEvent},
 		})

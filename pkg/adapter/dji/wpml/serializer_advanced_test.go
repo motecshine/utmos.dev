@@ -10,7 +10,7 @@ import (
 func TestMarshalTemplate(t *testing.T) {
 	waylines := createValidWaylines("Template Marshal Test")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	// Test MarshalTemplate
@@ -25,7 +25,7 @@ func TestMarshalTemplate(t *testing.T) {
 func TestMarshalWaylines(t *testing.T) {
 	waylines := createValidWaylines("Waylines Marshal Test")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	// Test MarshalWaylines
@@ -40,7 +40,7 @@ func TestMarshalWaylines(t *testing.T) {
 func TestUnmarshalTemplate(t *testing.T) {
 	waylines := createValidWaylines("Unmarshal Template Test")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	xmlBytes, err := MarshalTemplate(mission.Template)
@@ -67,7 +67,7 @@ func TestUnmarshalTemplate_InvalidXML(t *testing.T) {
 func TestUnmarshalWaylines(t *testing.T) {
 	waylines := createValidWaylines("Unmarshal Waylines Test")
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	xmlBytes, err := MarshalWaylines(mission.Waylines)

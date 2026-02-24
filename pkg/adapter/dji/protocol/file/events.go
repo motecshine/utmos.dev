@@ -44,20 +44,20 @@ type MediaMetadata struct {
 	ShootPosition    ShootPosition `json:"shoot_position"`    // Shooting position
 }
 
-// FileExt represents the file extension information
-type FileExt struct {
+// Ext represents the file extension information
+type Ext struct {
 	FlightID        string `json:"flight_id"`         // Flight task ID
 	DroneModelKey   string `json:"drone_model_key"`   // Drone product enum value
 	PayloadModelKey string `json:"payload_model_key"` // Payload product enum value
 	IsOriginal      bool   `json:"is_original"`       // Whether it is an original image
 }
 
-// FileInfo represents the file information
-type FileInfo struct {
+// Info represents the file information
+type Info struct {
 	ObjectKey      string        `json:"object_key"`        // File key in object storage bucket
 	Path           string        `json:"path"`              // File business path
 	Name           string        `json:"name"`              // File name
-	Ext            FileExt       `json:"ext"`               // File extension information
+	Ext            Ext           `json:"ext"`               // File extension information
 	Metadata       MediaMetadata `json:"metadata"`          // Media metadata
 	CloudToCloudID string        `json:"cloud_to_cloud_id"` // Cloud-to-cloud storage bucket ID
 }
@@ -69,24 +69,24 @@ type FlightTaskInfo struct {
 	FlightType        int `json:"flight_type"`         // Flight type (0=wayline task, 1=one-key takeoff task)
 }
 
-// FileUploadCallbackData represents the file upload result data
-type FileUploadCallbackData struct {
-	File       FileInfo       `json:"file"`        // File information
+// UploadCallbackData represents the file upload result data
+type UploadCallbackData struct {
+	File       Info           `json:"file"`        // File information
 	FlightTask FlightTaskInfo `json:"flight_task"` // Flight task information
 }
 
-// FileUploadCallbackEvent represents the file upload result event
-type FileUploadCallbackEvent struct {
+// UploadCallbackEvent represents the file upload result event
+type UploadCallbackEvent struct {
 	common.Header
 	MethodName string                 `json:"method"`
-	DataValue  FileUploadCallbackData `json:"data"`
+	DataValue  UploadCallbackData `json:"data"`
 }
 
 // Method returns the method name.
-func (e *FileUploadCallbackEvent) Method() string { return e.MethodName }
+func (e *UploadCallbackEvent) Method() string { return e.MethodName }
 
 // Data returns the command/event data.
-func (e *FileUploadCallbackEvent) Data() any { return e.DataValue }
+func (e *UploadCallbackEvent) Data() any { return e.DataValue }
 
 // GetHeader returns the event header.
-func (e *FileUploadCallbackEvent) GetHeader() *common.Header { return &e.Header }
+func (e *UploadCallbackEvent) GetHeader() *common.Header { return &e.Header }

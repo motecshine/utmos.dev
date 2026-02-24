@@ -193,9 +193,9 @@ type PSDKWidgetValues struct {
 	Values         []PSDKWidgetValue `json:"values,omitempty"`           // Widget value list
 }
 
-// AircraftOSD represents the DJI Aircraft OSD and State data structure
+// OSD represents the DJI Aircraft OSD and State data structure
 // All fields are pointers to support partial updates
-type AircraftOSD struct {
+type OSD struct {
 	// Payload information
 	Payloads []PayloadInfo `json:"payloads,omitempty"` // Payload status list
 

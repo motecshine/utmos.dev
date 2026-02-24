@@ -42,7 +42,7 @@ func TestCreateKmz(t *testing.T) {
 		},
 	}
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	// Create temp directory for test
@@ -97,7 +97,7 @@ func TestCreateKmzBuffer(t *testing.T) {
 		},
 	}
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	// Test CreateKmzBuffer
@@ -151,7 +151,7 @@ func TestParseKMZBuffer(t *testing.T) {
 		},
 	}
 
-	originalMission, err := ConvertWaylinesToWPMLMission(waylines)
+	originalMission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	buffer, err := CreateKmzBuffer(originalMission)
@@ -172,7 +172,7 @@ func TestParseKMZBuffer(t *testing.T) {
 func TestCreateKmzErrors(t *testing.T) {
 	tests := []struct {
 		name        string
-		mission     *WPMLMission
+		mission     *Mission
 		kmzPath     string
 		expectError bool
 		errorMsg    string
@@ -185,7 +185,7 @@ func TestCreateKmzErrors(t *testing.T) {
 		},
 		{
 			name: "Invalid path",
-			mission: &WPMLMission{
+			mission: &Mission{
 				Template: &TemplateDocument{},
 			},
 			kmzPath:     "/invalid/path/that/doesnt/exist/and/cannot/be/created/test.kmz",
@@ -288,7 +288,7 @@ func TestKmzWithComplexWaylines(t *testing.T) {
 		},
 	}
 
-	mission, err := ConvertWaylinesToWPMLMission(waylines)
+	mission, err := ConvertWaylinesToMission(waylines)
 	require.NoError(t, err)
 
 	// Create KMZ buffer

@@ -65,23 +65,23 @@ type MQTTBroker struct {
 	EnableTLS  bool   `json:"enable_tls"`  // Whether to enable TLS
 }
 
-// DRCModeEnterData represents the DRC mode enter data
-type DRCModeEnterData struct {
+// ModeEnterData represents the DRC mode enter data
+type ModeEnterData struct {
 	MQTTBroker   MQTTBroker `json:"mqtt_broker"`   // MQTT broker connection info
 	OSDFrequency int        `json:"osd_frequency"` // OSD frequency (1-30 Hz)
 	HSIFrequency int        `json:"hsi_frequency"` // HSI frequency (1-30 Hz)
 }
 
-// DRCModeEnterCommand represents the DRC mode enter request
-type DRCModeEnterCommand struct {
+// ModeEnterCommand represents the DRC mode enter request
+type ModeEnterCommand struct {
 	common.Header
-	MethodName string           `json:"method"`
-	DataValue  DRCModeEnterData `json:"data"`
+	MethodName string        `json:"method"`
+	DataValue  ModeEnterData `json:"data"`
 }
 
-// NewDRCModeEnterCommand creates a new DRC mode enter request
-func NewDRCModeEnterCommand(data DRCModeEnterData) *DRCModeEnterCommand {
-	return &DRCModeEnterCommand{
+// NewModeEnterCommand creates a new DRC mode enter request
+func NewModeEnterCommand(data ModeEnterData) *ModeEnterCommand {
+	return &ModeEnterCommand{
 		Header:     common.NewHeader(),
 		MethodName: "drc_mode_enter",
 		DataValue:  data,
@@ -89,21 +89,21 @@ func NewDRCModeEnterCommand(data DRCModeEnterData) *DRCModeEnterCommand {
 }
 
 // Method returns the method name.
-func (c *DRCModeEnterCommand) Method() string { return c.MethodName }
+func (c *ModeEnterCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *DRCModeEnterCommand) Data() any { return c.DataValue }
+func (c *ModeEnterCommand) Data() any { return c.DataValue }
 
-// DRCModeExitCommand represents the DRC mode exit request
-type DRCModeExitCommand struct {
+// ModeExitCommand represents the DRC mode exit request
+type ModeExitCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewDRCModeExitCommand creates a new DRC mode exit request
-func NewDRCModeExitCommand() *DRCModeExitCommand {
-	return &DRCModeExitCommand{
+// NewModeExitCommand creates a new DRC mode exit request
+func NewModeExitCommand() *ModeExitCommand {
+	return &ModeExitCommand{
 		Header:     common.NewHeader(),
 		MethodName: "drc_mode_exit",
 		DataValue:  nil,
@@ -111,10 +111,10 @@ func NewDRCModeExitCommand() *DRCModeExitCommand {
 }
 
 // Method returns the method name.
-func (c *DRCModeExitCommand) Method() string { return c.MethodName }
+func (c *ModeExitCommand) Method() string { return c.MethodName }
 
 // Data returns the command/event data.
-func (c *DRCModeExitCommand) Data() any { return c.DataValue }
+func (c *ModeExitCommand) Data() any { return c.DataValue }
 
 // TakeoffToPointData represents the takeoff to point data
 type TakeoffToPointData struct {
@@ -362,12 +362,12 @@ func (c *HeartBeatCommand) Method() string { return c.MethodName }
 func (c *HeartBeatCommand) Data() any { return c.DataValue }
 
 // GetHeader implements Command.GetHeader
-func (c *DRCModeEnterCommand) GetHeader() *common.Header {
+func (c *ModeEnterCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *DRCModeExitCommand) GetHeader() *common.Header {
+func (c *ModeExitCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 

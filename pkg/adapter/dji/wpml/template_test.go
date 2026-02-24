@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWPMLMission_AddResource(t *testing.T) {
-	mission := &WPMLMission{}
+func TestMission_AddResource(t *testing.T) {
+	mission := &Mission{}
 	filename := "test.jpg"
 	data := []byte("test image data")
 
@@ -18,8 +18,8 @@ func TestWPMLMission_AddResource(t *testing.T) {
 	assert.Equal(t, data, mission.Resources[filename])
 }
 
-func TestWPMLMission_AddResource_Multiple(t *testing.T) {
-	mission := &WPMLMission{}
+func TestMission_AddResource_Multiple(t *testing.T) {
+	mission := &Mission{}
 
 	mission.AddResource("file1.jpg", []byte("data1"))
 	mission.AddResource("file2.jpg", []byte("data2"))

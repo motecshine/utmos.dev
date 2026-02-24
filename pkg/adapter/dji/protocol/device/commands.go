@@ -184,16 +184,16 @@ func (c *ChargeCloseCommand) Data() any {
 	return c.DataValue
 }
 
-// DeviceRebootCommand represents the device reboot command
-type DeviceRebootCommand struct {
+// RebootCommand represents the device reboot command
+type RebootCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewDeviceRebootCommand creates a new device reboot command
-func NewDeviceRebootCommand() *DeviceRebootCommand {
-	return &DeviceRebootCommand{
+// NewRebootCommand creates a new device reboot command
+func NewRebootCommand() *RebootCommand {
+	return &RebootCommand{
 		Header:     common.NewHeader(),
 		MethodName: "device_reboot",
 		DataValue:  nil,
@@ -201,25 +201,25 @@ func NewDeviceRebootCommand() *DeviceRebootCommand {
 }
 
 // Method implements Command.Method
-func (c *DeviceRebootCommand) Method() string {
+func (c *RebootCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *DeviceRebootCommand) Data() any {
+func (c *RebootCommand) Data() any {
 	return c.DataValue
 }
 
-// DeviceFormatCommand represents the device format command
-type DeviceFormatCommand struct {
+// FormatCommand represents the device format command
+type FormatCommand struct {
 	common.Header
 	MethodName string      `json:"method"`
 	DataValue  any `json:"data"`
 }
 
-// NewDeviceFormatCommand creates a new device format command
-func NewDeviceFormatCommand() *DeviceFormatCommand {
-	return &DeviceFormatCommand{
+// NewFormatCommand creates a new device format command
+func NewFormatCommand() *FormatCommand {
+	return &FormatCommand{
 		Header:     common.NewHeader(),
 		MethodName: "device_format",
 		DataValue:  nil,
@@ -227,12 +227,12 @@ func NewDeviceFormatCommand() *DeviceFormatCommand {
 }
 
 // Method implements Command.Method
-func (c *DeviceFormatCommand) Method() string {
+func (c *FormatCommand) Method() string {
 	return c.MethodName
 }
 
 // Data implements Command.Data
-func (c *DeviceFormatCommand) Data() any {
+func (c *FormatCommand) Data() any {
 	return c.DataValue
 }
 
@@ -654,12 +654,12 @@ func (c *DebugModeOpenCommand) GetHeader() *common.Header {
 }
 
 // GetHeader implements Command.GetHeader
-func (c *DeviceFormatCommand) GetHeader() *common.Header {
+func (c *FormatCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 
 // GetHeader implements Command.GetHeader
-func (c *DeviceRebootCommand) GetHeader() *common.Header {
+func (c *RebootCommand) GetHeader() *common.Header {
 	return &c.Header
 }
 

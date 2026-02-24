@@ -4,11 +4,11 @@ import (
 	"testing"
 )
 
-func TestCameraPhotoTakeCommand(t *testing.T) {
-	data := CameraPhotoTakeData{
+func TestPhotoTakeCommand(t *testing.T) {
+	data := PhotoTakeData{
 		PayloadIndex: "0-0-0",
 	}
-	cmd := NewCameraPhotoTakeCommand(data)
+	cmd := NewPhotoTakeCommand(data)
 
 	if cmd.Method() != "camera_photo_take" {
 		t.Errorf("Method() = %v, want camera_photo_take", cmd.Method())
@@ -24,34 +24,34 @@ func TestCameraPhotoTakeCommand(t *testing.T) {
 	}
 }
 
-func TestCameraRecordingStartCommand(t *testing.T) {
-	data := CameraRecordingStartData{
+func TestRecordingStartCommand(t *testing.T) {
+	data := RecordingStartData{
 		PayloadIndex: "0-0-0",
 	}
-	cmd := NewCameraRecordingStartCommand(data)
+	cmd := NewRecordingStartCommand(data)
 
 	if cmd.Method() != "camera_recording_start" {
 		t.Errorf("Method() = %v, want camera_recording_start", cmd.Method())
 	}
 }
 
-func TestCameraRecordingStopCommand(t *testing.T) {
-	data := CameraRecordingStopData{
+func TestRecordingStopCommand(t *testing.T) {
+	data := RecordingStopData{
 		PayloadIndex: "0-0-0",
 	}
-	cmd := NewCameraRecordingStopCommand(data)
+	cmd := NewRecordingStopCommand(data)
 
 	if cmd.Method() != "camera_recording_stop" {
 		t.Errorf("Method() = %v, want camera_recording_stop", cmd.Method())
 	}
 }
 
-func TestCameraModeSwitchCommand(t *testing.T) {
-	data := CameraModeSwitchData{
+func TestModeSwitchCommand(t *testing.T) {
+	data := ModeSwitchData{
 		PayloadIndex: "0-0-0",
 		CameraMode:   0,
 	}
-	cmd := NewCameraModeSwitchCommand(data)
+	cmd := NewModeSwitchCommand(data)
 
 	if cmd.Method() != "camera_mode_switch" {
 		t.Errorf("Method() = %v, want camera_mode_switch", cmd.Method())

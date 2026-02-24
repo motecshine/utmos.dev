@@ -9,16 +9,16 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// WPMLValidator provides validation for WPML structures using custom validation rules.
-type WPMLValidator struct {
+// Validator provides validation for WPML structures using custom validation rules.
+type Validator struct {
 	validator *validator.Validate
 }
 
-// NewWPMLValidator creates a new WPMLValidator with all custom validation rules registered.
-func NewWPMLValidator() (*WPMLValidator, error) {
+// NewValidator creates a new Validator with all custom validation rules registered.
+func NewValidator() (*Validator, error) {
 	validate := validator.New()
 
-	w := &WPMLValidator{validator: validate}
+	w := &Validator{validator: validate}
 	if err := w.registerCustomValidators(); err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func NewWPMLValidator() (*WPMLValidator, error) {
 	return w, nil
 }
 
-func (w *WPMLValidator) registerCustomValidators() error {
+func (w *Validator) registerCustomValidators() error {
 	validations := []struct {
 		tag string
 		fn  validator.Func
@@ -47,13 +47,13 @@ func (w *WPMLValidator) registerCustomValidators() error {
 	return nil
 }
 
-func (w *WPMLValidator) validatePayloadPosition(fl validator.FieldLevel) bool {
+func (w *Validator) validatePayloadPosition(fl validator.FieldLevel) bool {
 	value := fl.Field().Int()
 
 	return value == 0 || value == 1 || value == 2 || value == 7
 }
 
-func (w *WPMLValidator) validateDroneModel(fl validator.FieldLevel) bool {
+func (w *Validator) validateDroneModel(fl validator.FieldLevel) bool {
 	value := fl.Field().Int()
 
 	validDroneModels := []int{
@@ -76,7 +76,7 @@ func (w *WPMLValidator) validateDroneModel(fl validator.FieldLevel) bool {
 	return false
 }
 
-func (w *WPMLValidator) validatePayloadModel(fl validator.FieldLevel) bool {
+func (w *Validator) validatePayloadModel(fl validator.FieldLevel) bool {
 	value := fl.Field().Int()
 
 	validPayloadModels := []int{
@@ -114,7 +114,7 @@ func (w *WPMLValidator) validatePayloadModel(fl validator.FieldLevel) bool {
 	return false
 }
 
-func (w *WPMLValidator) validateActionType(fl validator.FieldLevel) bool {
+func (w *Validator) validateActionType(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 
 	validActionTypes := []string{
@@ -149,26 +149,26 @@ func (w *WPMLValidator) validateActionType(fl validator.FieldLevel) bool {
 	return false
 }
 
-func (w *WPMLValidator) validateRequiredForDrone(_ validator.FieldLevel) bool {
+func (w *Validator) validateRequiredForDrone(_ validator.FieldLevel) bool {
 	return true
 }
 
-func (w *WPMLValidator) validateRequiredForPayload(_ validator.FieldLevel) bool {
+func (w *Validator) validateRequiredForPayload(_ validator.FieldLevel) bool {
 	return true
 }
 
 // ValidateStruct validates all fields of the given struct according to their validation tags.
-func (w *WPMLValidator) ValidateStruct(s any) error {
+func (w *Validator) ValidateStruct(s any) error {
 	return w.validator.Struct(s)
 }
 
 // ValidateVar validates a single variable against the given validation tag.
-func (w *WPMLValidator) ValidateVar(field any, tag string) error {
+func (w *Validator) ValidateVar(field any, tag string) error {
 	return w.validator.Var(field, tag)
 }
 
 // ValidateAction validates an action, returning an error if it is nil or fails struct validation.
-func (w *WPMLValidator) ValidateAction(action any) error {
+func (w *Validator) ValidateAction(action any) error {
 	if action == nil {
 		return ErrActionCannotBeNil
 	}
@@ -177,7 +177,7 @@ func (w *WPMLValidator) ValidateAction(action any) error {
 }
 
 // ValidateActionGroup validates an action group and all of its contained actions.
-func (w *WPMLValidator) ValidateActionGroup(actionGroup *ActionGroup) error {
+func (w *Validator) ValidateActionGroup(actionGroup *ActionGroup) error {
 	if actionGroup == nil {
 		return ErrActionGroupCannotBeNil
 	}
@@ -196,7 +196,7 @@ func (w *WPMLValidator) ValidateActionGroup(actionGroup *ActionGroup) error {
 }
 
 // ValidateWaylinesDocument validates a WaylinesDocument, returning an error if it is nil or fails validation.
-func (w *WPMLValidator) ValidateWaylinesDocument(waylineDoc *WaylinesDocument) error {
+func (w *Validator) ValidateWaylinesDocument(waylineDoc *WaylinesDocument) error {
 	if waylineDoc == nil {
 		return ErrWaylineDocumentCannotBeNil
 	}
@@ -209,7 +209,7 @@ func (w *WPMLValidator) ValidateWaylinesDocument(waylineDoc *WaylinesDocument) e
 }
 
 // ValidateTemplateDocument validates a TemplateDocument, returning an error if it is nil or fails validation.
-func (w *WPMLValidator) ValidateTemplateDocument(template *TemplateDocument) error {
+func (w *Validator) ValidateTemplateDocument(template *TemplateDocument) error {
 	if template == nil {
 		return ErrTemplateCannotBeNil
 	}
@@ -218,7 +218,7 @@ func (w *WPMLValidator) ValidateTemplateDocument(template *TemplateDocument) err
 }
 
 // ValidateWithContext validates a struct with additional drone and payload model context for conditional rules.
-func (w *WPMLValidator) ValidateWithContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
+func (w *Validator) ValidateWithContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
 	if err := w.ValidateStruct(s); err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func (w *WPMLValidator) ValidateWithContext(s any, droneModel DroneModel, payloa
 	return w.validateWithMachineContext(s, droneModel, payloadModel)
 }
 
-func (w *WPMLValidator) validateWithMachineContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
+func (w *Validator) validateWithMachineContext(s any, droneModel DroneModel, payloadModel PayloadModel) error {
 	val := reflect.ValueOf(s)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -252,7 +252,7 @@ func (w *WPMLValidator) validateWithMachineContext(s any, droneModel DroneModel,
 	return nil
 }
 
-func (w *WPMLValidator) checkRequiredFor(rule, prefix string, field reflect.Value, fieldName string, matchFn func(string) bool, errFmt string, modelValue any) error {
+func (w *Validator) checkRequiredFor(rule, prefix string, field reflect.Value, fieldName string, matchFn func(string) bool, errFmt string, modelValue any) error {
 	if strings.HasPrefix(rule, prefix) {
 		pattern := strings.TrimPrefix(rule, prefix)
 		if matchFn(pattern) && field.IsZero() {
@@ -263,7 +263,7 @@ func (w *WPMLValidator) checkRequiredFor(rule, prefix string, field reflect.Valu
 }
 
 // two checkRequiredFor calls differ only in parameters; further extraction would hurt readability
-func (w *WPMLValidator) validateFieldWithMachineContext(field reflect.Value, fieldType reflect.StructField, validateTag string, droneModel DroneModel, payloadModel PayloadModel) error {
+func (w *Validator) validateFieldWithMachineContext(field reflect.Value, fieldType reflect.StructField, validateTag string, droneModel DroneModel, payloadModel PayloadModel) error {
 	rules := strings.Split(validateTag, ",")
 
 	for _, rule := range rules {
@@ -292,15 +292,15 @@ func matchesAnyPattern[T any](pattern string, model T, matcher func(string, T) b
 	return false
 }
 
-func (w *WPMLValidator) isRequiredForDrone(dronePattern string, droneModel DroneModel) bool {
+func (w *Validator) isRequiredForDrone(dronePattern string, droneModel DroneModel) bool {
 	return matchesAnyPattern(dronePattern, droneModel, w.matchesDronePattern)
 }
 
-func (w *WPMLValidator) isRequiredForPayload(payloadPattern string, payloadModel PayloadModel) bool {
+func (w *Validator) isRequiredForPayload(payloadPattern string, payloadModel PayloadModel) bool {
 	return matchesAnyPattern(payloadPattern, payloadModel, w.matchesPayloadPattern)
 }
 
-func (w *WPMLValidator) matchesDronePattern(pattern string, droneModel DroneModel) bool {
+func (w *Validator) matchesDronePattern(pattern string, droneModel DroneModel) bool {
 	pattern = strings.ToUpper(strings.TrimSpace(pattern))
 
 	switch pattern {
@@ -325,7 +325,7 @@ func (w *WPMLValidator) matchesDronePattern(pattern string, droneModel DroneMode
 	}
 }
 
-func (w *WPMLValidator) matchesPayloadPattern(pattern string, payloadModel PayloadModel) bool {
+func (w *Validator) matchesPayloadPattern(pattern string, payloadModel PayloadModel) bool {
 	pattern = strings.ToUpper(strings.TrimSpace(pattern))
 
 	switch pattern {
@@ -361,7 +361,7 @@ func (w *WPMLValidator) matchesPayloadPattern(pattern string, payloadModel Paylo
 }
 
 // GetValidationErrors extracts and formats validation errors into a list of human-readable strings.
-func (w *WPMLValidator) GetValidationErrors(err error) []string {
+func (w *Validator) GetValidationErrors(err error) []string {
 	var errs []string
 
 	var validationErrors validator.ValidationErrors
@@ -377,7 +377,7 @@ func (w *WPMLValidator) GetValidationErrors(err error) []string {
 	return errs
 }
 
-func (w *WPMLValidator) formatValidationError(e validator.FieldError) string {
+func (w *Validator) formatValidationError(e validator.FieldError) string {
 	switch e.Tag() {
 	case "required":
 		return fmt.Sprintf("field '%s' 是required", e.Field())
@@ -404,12 +404,12 @@ func (w *WPMLValidator) formatValidationError(e validator.FieldError) string {
 	}
 }
 
-var globalValidator *WPMLValidator
+var globalValidator *Validator
 
 // InitGlobalValidator initializes the package-level global WPML validator.
 func InitGlobalValidator() error {
 	var err error
-	globalValidator, err = NewWPMLValidator()
+	globalValidator, err = NewValidator()
 	return err
 }
 

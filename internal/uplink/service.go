@@ -54,7 +54,7 @@ type Service struct {
 	logger *logrus.Entry
 
 	// Components
-	registry   *processor.ProcessorRegistry
+	registry   *processor.Registry
 	handler    *processor.MessageHandler
 	storage    *storage.Storage
 	router     *router.Router
@@ -84,7 +84,7 @@ func NewService(
 	svcLogger := logger.WithField("component", "uplink-service")
 
 	// Create processor registry and handler
-	registry := processor.NewProcessorRegistry(svcLogger)
+	registry := processor.NewRegistry(svcLogger)
 	handler := processor.NewMessageHandler(registry, svcLogger)
 
 	// Note: Processors should be registered by the caller using RegisterProcessor()
@@ -253,7 +253,7 @@ func (s *Service) IsRunning() bool {
 }
 
 // GetRegistry returns the processor registry
-func (s *Service) GetRegistry() *processor.ProcessorRegistry {
+func (s *Service) GetRegistry() *processor.Registry {
 	return s.registry
 }
 

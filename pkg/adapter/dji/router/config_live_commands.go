@@ -26,15 +26,15 @@ const (
 func RegisterConfigAndLiveCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// Config commands
-		MethodConfig:           SimpleCommandHandler[config.ConfigData](MethodConfig),
+		MethodConfig:           SimpleCommandHandler[config.Data](MethodConfig),
 		MethodStorageConfigGet: SimpleCommandHandler[config.StorageConfigGetData](MethodStorageConfigGet),
 		MethodPhotoStorageSet:  SimpleCommandHandler[config.PhotoStorageSetData](MethodPhotoStorageSet),
 		MethodVideoStorageSet:  SimpleCommandHandler[config.VideoStorageSetData](MethodVideoStorageSet),
 		// Live streaming commands
-		MethodLiveStartPush:  SimpleCommandHandler[live.LiveStartPushData](MethodLiveStartPush),
-		MethodLiveStopPush:   SimpleCommandHandler[live.LiveStopPushData](MethodLiveStopPush),
-		MethodLiveSetQuality: SimpleCommandHandler[live.LiveSetQualityData](MethodLiveSetQuality),
-		MethodLiveLensChange: SimpleCommandHandler[live.LiveLensChangeData](MethodLiveLensChange),
+		MethodLiveStartPush:  SimpleCommandHandler[live.StartPushData](MethodLiveStartPush),
+		MethodLiveStopPush:   SimpleCommandHandler[live.StopPushData](MethodLiveStopPush),
+		MethodLiveSetQuality: SimpleCommandHandler[live.SetQualityData](MethodLiveSetQuality),
+		MethodLiveLensChange: SimpleCommandHandler[live.LensChangeData](MethodLiveLensChange),
 	}
 
 	return RegisterHandlers(r, handlers)

@@ -6,14 +6,14 @@ import "github.com/utmos/utmos/pkg/adapter/dji/protocol/common"
 // Configuration Management Commands
 // ===============================
 
-// ConfigData represents the config data
-type ConfigData struct {
+// Data represents the config data
+type Data struct {
 	ConfigType  string `json:"config_type"`  // Configuration type (json)
 	ConfigScope string `json:"config_scope"` // Configuration scope (product)
 }
 
-// ConfigResponseData represents the config response data
-type ConfigResponseData struct {
+// ResponseData represents the config response data
+type ResponseData struct {
 	NTPServerHost string `json:"ntp_server_host"`           // NTP server host
 	AppID         string `json:"app_id"`                    // App ID from DJI developer website
 	AppKey        string `json:"app_key"`                   // App Key from DJI developer website
@@ -21,16 +21,16 @@ type ConfigResponseData struct {
 	NTPServerPort int    `json:"ntp_server_port,omitempty"` // NTP server port (default 123)
 }
 
-// ConfigRequest represents the config request
-type ConfigRequest struct {
+// Request represents the config request
+type Request struct {
 	common.Header
 	MethodName string     `json:"method"`
-	DataValue  ConfigData `json:"data"`
+	DataValue  Data `json:"data"`
 }
 
-// NewConfigRequest creates a new config request
-func NewConfigRequest(data ConfigData) *ConfigRequest {
-	return &ConfigRequest{
+// NewRequest creates a new config request
+func NewRequest(data Data) *Request {
+	return &Request{
 		Header:     common.NewHeader(),
 		MethodName: "config",
 		DataValue:  data,
@@ -38,10 +38,10 @@ func NewConfigRequest(data ConfigData) *ConfigRequest {
 }
 
 // Method returns the method name.
-func (r *ConfigRequest) Method() string { return r.MethodName }
+func (r *Request) Method() string { return r.MethodName }
 
 // Data returns the command/event data.
-func (r *ConfigRequest) Data() any { return r.DataValue }
+func (r *Request) Data() any { return r.DataValue }
 
 // UpdateTopoRequest represents the update topology request
 type UpdateTopoRequest struct {
@@ -91,7 +91,7 @@ func (r *UpdateTopoRequest) Method() string { return r.MethodName }
 func (r *UpdateTopoRequest) Data() any { return r.DataValue }
 
 // GetHeader implements Command.GetHeader
-func (r *ConfigRequest) GetHeader() *common.Header {
+func (r *Request) GetHeader() *common.Header {
 	return &r.Header
 }
 
