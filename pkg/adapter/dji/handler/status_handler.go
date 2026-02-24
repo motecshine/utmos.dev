@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	dji "github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -39,25 +38,11 @@ func (h *StatusHandler) Handle(ctx context.Context, msg *dji.Message, topic *dji
 		action = dji.ActionDeviceOffline
 	}
 
-	// Build StandardMessage
-	sm := &rabbitmq.StandardMessage{
-		TID:       msg.TID,
-		BID:       msg.BID,
-		Timestamp: msg.Timestamp,
-		DeviceSN:  topic.DeviceSN,
-		Service:   dji.VendorDJI,
-		Action:    action,
-		ProtocolMeta: &rabbitmq.ProtocolMeta{
-			Vendor:        dji.VendorDJI,
-			OriginalTopic: topic.Raw,
-			Method:        msg.Method,
-		},
+	// Build StandardMessage using shared helper
+	cfg := MessageConfig{
+		RequestAction: action,
 	}
-
-	// Set timestamp if not provided
-	if sm.Timestamp == 0 {
-		sm.Timestamp = time.Now().UnixMilli()
-	}
+	sm := BuildStandardMessage(msg, topic, cfg)
 
 	// Build status data
 	data, err := h.buildStatusData(isOnline, topology, topic)

@@ -178,52 +178,60 @@ func (a *Adapter) GetRawPayload(pm *adapter.ProtocolMessage) ([]byte, error) {
 	return djiMsg.ToJSON()
 }
 
-// mapTopicTypeToMessageType maps DJI topic type to adapter message type.
-func mapTopicTypeToMessageType(tt TopicType) adapter.MessageType {
-	switch tt {
-	case TopicTypeOSD, TopicTypeState:
-		return adapter.MessageTypeProperty
-	case TopicTypeEvents:
-		return adapter.MessageTypeEvent
-	case TopicTypeServices, TopicTypeServicesReply:
-		return adapter.MessageTypeService
-	case TopicTypeStatus, TopicTypeStatusReply:
-		return adapter.MessageTypeStatus
-	default:
-		return adapter.MessageTypeProperty
-	}
+// topicTypeToMessageType maps DJI topic types to adapter message types.
+var topicTypeToMessageType = map[TopicType]adapter.MessageType{
+	TopicTypeOSD:           adapter.MessageTypeProperty,
+	TopicTypeState:         adapter.MessageTypeProperty,
+	TopicTypeEvents:        adapter.MessageTypeEvent,
+	TopicTypeServices:      adapter.MessageTypeService,
+	TopicTypeServicesReply: adapter.MessageTypeService,
+	TopicTypeStatus:        adapter.MessageTypeStatus,
+	TopicTypeStatusReply:   adapter.MessageTypeStatus,
 }
 
-// mapMessageTypeToTopicType maps adapter message type to DJI topic type.
-func mapMessageTypeToTopicType(mt adapter.MessageType) TopicType {
-	switch mt {
-	case adapter.MessageTypeProperty:
-		return TopicTypeOSD
-	case adapter.MessageTypeEvent:
-		return TopicTypeEvents
-	case adapter.MessageTypeService:
-		return TopicTypeServices
-	case adapter.MessageTypeStatus:
-		return TopicTypeStatus
-	default:
-		return TopicTypeOSD
+// actionToMessageType maps standard actions to adapter message types.
+var actionToMessageType = map[string]adapter.MessageType{
+	ActionPropertyReport: adapter.MessageTypeProperty,
+	ActionPropertySet:    adapter.MessageTypeProperty,
+	ActionEventReport:    adapter.MessageTypeEvent,
+	ActionServiceCall:    adapter.MessageTypeService,
+	ActionServiceReply:   adapter.MessageTypeService,
+	ActionDeviceOnline:   adapter.MessageTypeStatus,
+	ActionDeviceOffline:  adapter.MessageTypeStatus,
+}
+
+// lookupMessageType looks up a message type from a map, returning a default if not found.
+func lookupMessageType[K comparable](m map[K]adapter.MessageType, key K) adapter.MessageType {
+	if mt, ok := m[key]; ok {
+		return mt
 	}
+	return adapter.MessageTypeProperty
+}
+
+// mapTopicTypeToMessageType maps DJI topic type to adapter message type.
+func mapTopicTypeToMessageType(tt TopicType) adapter.MessageType {
+	return lookupMessageType(topicTypeToMessageType, tt)
 }
 
 // mapActionToMessageType maps standard action to adapter message type.
 func mapActionToMessageType(action string) adapter.MessageType {
-	switch action {
-	case ActionPropertyReport, ActionPropertySet:
-		return adapter.MessageTypeProperty
-	case ActionEventReport:
-		return adapter.MessageTypeEvent
-	case ActionServiceCall, ActionServiceReply:
-		return adapter.MessageTypeService
-	case ActionDeviceOnline, ActionDeviceOffline:
-		return adapter.MessageTypeStatus
-	default:
-		return adapter.MessageTypeProperty
+	return lookupMessageType(actionToMessageType, action)
+}
+
+// messageTypeToTopicType maps adapter message types back to DJI topic types.
+var messageTypeToTopicType = map[adapter.MessageType]TopicType{
+	adapter.MessageTypeProperty: TopicTypeOSD,
+	adapter.MessageTypeEvent:    TopicTypeEvents,
+	adapter.MessageTypeService:  TopicTypeServices,
+	adapter.MessageTypeStatus:   TopicTypeStatus,
+}
+
+// mapMessageTypeToTopicType maps adapter message type to DJI topic type.
+func mapMessageTypeToTopicType(mt adapter.MessageType) TopicType {
+	if tt, ok := messageTypeToTopicType[mt]; ok {
+		return tt
 	}
+	return TopicTypeOSD
 }
 
 // Register registers the DJI adapter with the global registry.

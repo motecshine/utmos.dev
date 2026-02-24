@@ -13,7 +13,7 @@ import (
 func TestNewServiceRouter(t *testing.T) {
 	r := NewServiceRouter()
 	assert.NotNil(t, r)
-	assert.NotNil(t, r.handlers)
+	assert.NotNil(t, r.registry.handlers)
 }
 
 func TestServiceRouter_RegisterServiceHandler(t *testing.T) {

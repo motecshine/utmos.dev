@@ -92,6 +92,8 @@ type CameraInfo struct {
 }
 
 // BatteryDetail represents single battery details
+//
+// Struct shape similar to WirelessLink but fields are semantically different
 type BatteryDetail struct {
 	CapacityPercent        *int     `json:"capacity_percent,omitempty"`          // Battery remaining capacity (0-100)
 	Index                  *int     `json:"index,omitempty"`                     // Battery index (0+)

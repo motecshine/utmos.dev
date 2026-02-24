@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	dji "github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/utmos/utmos/pkg/adapter/dji/integration"
@@ -24,6 +23,8 @@ func NewOSDHandler() *OSDHandler {
 }
 
 // Handle processes an OSD message and returns a StandardMessage.
+//
+// Same handler flow as StateHandler but with OSD-specific parsing
 func (h *OSDHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	if msg == nil {
 		return nil, fmt.Errorf("nil message")
@@ -38,25 +39,11 @@ func (h *OSDHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.Topi
 		return nil, fmt.Errorf("failed to parse OSD: %w", err)
 	}
 
-	// Build StandardMessage
-	sm := &rabbitmq.StandardMessage{
-		TID:       msg.TID,
-		BID:       msg.BID,
-		Timestamp: msg.Timestamp,
-		DeviceSN:  topic.DeviceSN,
-		Service:   dji.VendorDJI,
-		Action:    dji.ActionPropertyReport,
-		ProtocolMeta: &rabbitmq.ProtocolMeta{
-			Vendor:        dji.VendorDJI,
-			OriginalTopic: topic.Raw,
-			Method:        msg.Method,
-		},
+	// Build StandardMessage using shared helper
+	cfg := MessageConfig{
+		RequestAction: dji.ActionPropertyReport,
 	}
-
-	// Set timestamp if not provided
-	if sm.Timestamp == 0 {
-		sm.Timestamp = time.Now().UnixMilli()
-	}
+	sm := BuildStandardMessage(msg, topic, cfg)
 
 	// Convert parsed OSD to data map
 	data, err := h.buildOSDData(parsedOSD, topic)

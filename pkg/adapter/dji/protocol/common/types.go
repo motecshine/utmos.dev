@@ -5,6 +5,30 @@ import (
 	"strconv"
 )
 
+// parseFlexJSON is a generic helper that parses JSON data as either a number or a string.
+// It handles both numeric and string representations, as well as empty strings (returning 0).
+func parseFlexJSON[T ~int64 | ~int](data []byte, bitSize int) (T, error) {
+	var num T
+	if err := json.Unmarshal(data, &num); err == nil {
+		return num, nil
+	}
+
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return 0, err
+	}
+
+	if str == "" {
+		return 0, nil
+	}
+
+	n, err := strconv.ParseInt(str, 10, bitSize)
+	if err != nil {
+		return 0, err
+	}
+	return T(n), nil
+}
+
 // FlexInt64 is a flexible int64 that can unmarshal from both string and number JSON values
 // DJI API sometimes returns timestamps as strings (e.g., "1704067200") instead of numbers
 // It also handles empty strings by returning 0
@@ -12,31 +36,11 @@ type FlexInt64 int64
 
 // UnmarshalJSON implements json.Unmarshaler
 func (f *FlexInt64) UnmarshalJSON(data []byte) error {
-	// First try to unmarshal as a number
-	var num int64
-	if err := json.Unmarshal(data, &num); err == nil {
-		*f = FlexInt64(num)
-		return nil
-	}
-
-	// Then try to unmarshal as a string
-	var str string
-	if err := json.Unmarshal(data, &str); err != nil {
-		return err
-	}
-
-	// Handle empty string
-	if str == "" {
-		*f = 0
-		return nil
-	}
-
-	// Parse the string as int64
-	num, err := strconv.ParseInt(str, 10, 64)
+	v, err := parseFlexJSON[int64](data, 64)
 	if err != nil {
 		return err
 	}
-	*f = FlexInt64(num)
+	*f = FlexInt64(v)
 	return nil
 }
 
@@ -56,31 +60,11 @@ type FlexInt int
 
 // UnmarshalJSON implements json.Unmarshaler
 func (f *FlexInt) UnmarshalJSON(data []byte) error {
-	// First try to unmarshal as a number
-	var num int
-	if err := json.Unmarshal(data, &num); err == nil {
-		*f = FlexInt(num)
-		return nil
-	}
-
-	// Then try to unmarshal as a string
-	var str string
-	if err := json.Unmarshal(data, &str); err != nil {
-		return err
-	}
-
-	// Handle empty string
-	if str == "" {
-		*f = 0
-		return nil
-	}
-
-	// Parse the string as int
-	num64, err := strconv.ParseInt(str, 10, 32)
+	v, err := parseFlexJSON[int](data, 32)
 	if err != nil {
 		return err
 	}
-	*f = FlexInt(num64)
+	*f = FlexInt(v)
 	return nil
 }
 

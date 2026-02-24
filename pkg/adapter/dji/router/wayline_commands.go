@@ -18,6 +18,8 @@ const (
 
 // RegisterWaylineCommands registers all wayline commands to the router.
 // Returns an error if any handler registration fails.
+//
+// Registration files share structural pattern but register different command types
 func RegisterWaylineCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// Flight task commands with data - use types from protocol/wayline package

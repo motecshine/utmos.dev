@@ -2,6 +2,7 @@ package wpml
 
 type DroneModel int
 
+// different typed constants cannot be deduplicated
 const (
 	DroneM300RTK   DroneModel = 60
 	DroneM30       DroneModel = 67
@@ -156,6 +157,8 @@ const (
 )
 
 // String representations for JSON/testing
+//
+// different typed constants cannot be deduplicated
 const (
 	DroneModelMatrice3TD string = "M3TD"
 	DroneModelMatrice3E  string = "M3E"

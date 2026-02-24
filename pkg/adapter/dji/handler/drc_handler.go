@@ -70,14 +70,7 @@ func (h *DRCHandler) buildDRCEventData(msg *dji.Message, topic *dji.TopicInfo) (
 		"method":       msg.Method,
 	}
 
-	if len(msg.Data) > 0 {
-		var data any
-		if err := json.Unmarshal(msg.Data, &data); err == nil {
-			result["data"] = data
-		} else {
-			result["raw_data"] = string(msg.Data)
-		}
-	}
+	tryUnmarshalData(msg.Data, result)
 
 	return json.Marshal(result)
 }

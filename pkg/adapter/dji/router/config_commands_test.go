@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRegisterConfigCommands(t *testing.T) {
+func TestRegisterConfigAndLiveCommands_ConfigMethods(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterConfigCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	// Verify all config commands are registered
@@ -29,7 +29,7 @@ func TestRegisterConfigCommands(t *testing.T) {
 
 func TestConfigCommands_Config(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterConfigCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -57,7 +57,7 @@ func TestConfigCommands_Config(t *testing.T) {
 
 func TestConfigCommands_StorageConfigGet(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterConfigCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -89,7 +89,7 @@ func TestConfigCommands_StorageConfigGet(t *testing.T) {
 
 func TestConfigCommands_PhotoStorageSet(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterConfigCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -117,7 +117,7 @@ func TestConfigCommands_PhotoStorageSet(t *testing.T) {
 
 func TestConfigCommands_VideoStorageSet(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterConfigCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -145,7 +145,7 @@ func TestConfigCommands_VideoStorageSet(t *testing.T) {
 
 func TestConfigCommands_InvalidData(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterConfigCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{

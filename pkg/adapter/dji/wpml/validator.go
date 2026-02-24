@@ -1,6 +1,7 @@
 package wpml
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -242,50 +243,52 @@ func (w *WPMLValidator) validateWithMachineContext(s any, droneModel DroneModel,
 	return nil
 }
 
+func (w *WPMLValidator) checkRequiredFor(rule, prefix string, field reflect.Value, fieldName string, matchFn func(string) bool, errFmt string, modelValue any) error {
+	if strings.HasPrefix(rule, prefix) {
+		pattern := strings.TrimPrefix(rule, prefix)
+		if matchFn(pattern) && field.IsZero() {
+			return fmt.Errorf(errFmt, fieldName, modelValue)
+		}
+	}
+	return nil
+}
+
+// two checkRequiredFor calls differ only in parameters; further extraction would hurt readability
 func (w *WPMLValidator) validateFieldWithMachineContext(field reflect.Value, fieldType reflect.StructField, validateTag string, droneModel DroneModel, payloadModel PayloadModel) error {
 	rules := strings.Split(validateTag, ",")
 
 	for _, rule := range rules {
-		if strings.HasPrefix(rule, "required_for_drone:") {
-			requiredForDrone := strings.TrimPrefix(rule, "required_for_drone:")
-			if w.isRequiredForDrone(requiredForDrone, droneModel) {
-				if field.IsZero() {
-					return fmt.Errorf(ErrFieldRequiredForDroneModel, fieldType.Name, droneModel)
-				}
-			}
+		if err := w.checkRequiredFor(rule, "required_for_drone:", field, fieldType.Name,
+			func(pattern string) bool { return w.isRequiredForDrone(pattern, droneModel) },
+			ErrFieldRequiredForDroneModel, droneModel); err != nil {
+			return err
 		}
 
-		if strings.HasPrefix(rule, "required_for_payload:") {
-			requiredForPayload := strings.TrimPrefix(rule, "required_for_payload:")
-			if w.isRequiredForPayload(requiredForPayload, payloadModel) {
-				if field.IsZero() {
-					return fmt.Errorf(ErrFieldRequiredForPayloadModel, fieldType.Name, payloadModel)
-				}
-			}
+		if err := w.checkRequiredFor(rule, "required_for_payload:", field, fieldType.Name,
+			func(pattern string) bool { return w.isRequiredForPayload(pattern, payloadModel) },
+			ErrFieldRequiredForPayloadModel, payloadModel); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (w *WPMLValidator) isRequiredForDrone(dronePattern string, droneModel DroneModel) bool {
-	requiredDrones := strings.Split(dronePattern, "|")
-	for _, pattern := range requiredDrones {
-		if w.matchesDronePattern(pattern, droneModel) {
+func matchesAnyPattern[T any](pattern string, model T, matcher func(string, T) bool) bool {
+	for _, p := range strings.Split(pattern, "|") {
+		if matcher(p, model) {
 			return true
 		}
 	}
 	return false
 }
 
+func (w *WPMLValidator) isRequiredForDrone(dronePattern string, droneModel DroneModel) bool {
+	return matchesAnyPattern(dronePattern, droneModel, w.matchesDronePattern)
+}
+
 func (w *WPMLValidator) isRequiredForPayload(payloadPattern string, payloadModel PayloadModel) bool {
-	requiredPayloads := strings.Split(payloadPattern, "|")
-	for _, pattern := range requiredPayloads {
-		if w.matchesPayloadPattern(pattern, payloadModel) {
-			return true
-		}
-	}
-	return false
+	return matchesAnyPattern(payloadPattern, payloadModel, w.matchesPayloadPattern)
 }
 
 func (w *WPMLValidator) matchesDronePattern(pattern string, droneModel DroneModel) bool {
@@ -349,18 +352,19 @@ func (w *WPMLValidator) matchesPayloadPattern(pattern string, payloadModel Paylo
 }
 
 func (w *WPMLValidator) GetValidationErrors(err error) []string {
-	var errors []string
+	var errs []string
 
-	if validationErrors, ok := err.(validator.ValidationErrors); ok {
+	var validationErrors validator.ValidationErrors
+	if errors.As(err, &validationErrors) {
 		for _, e := range validationErrors {
 			errorMsg := w.formatValidationError(e)
-			errors = append(errors, errorMsg)
+			errs = append(errs, errorMsg)
 		}
 	} else {
-		errors = append(errors, err.Error())
+		errs = append(errs, err.Error())
 	}
 
-	return errors
+	return errs
 }
 
 func (w *WPMLValidator) formatValidationError(e validator.FieldError) string {

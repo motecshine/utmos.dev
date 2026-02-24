@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -114,7 +115,7 @@ func main() {
 	// Start HTTP server
 	go func() {
 		log.Info("Starting HTTP server on :8080")
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.WithError(err).Fatal("HTTP server failed")
 		}
 	}()

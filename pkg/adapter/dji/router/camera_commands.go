@@ -21,6 +21,8 @@ const (
 
 // RegisterCameraCommands registers all camera commands to the router.
 // Returns an error if any handler registration fails.
+//
+// Registration files share structural pattern but register different command types
 func RegisterCameraCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// Commands using types from protocol/camera package

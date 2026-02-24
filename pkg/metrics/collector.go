@@ -41,18 +41,18 @@ func (c *Collector) Registry() *prometheus.Registry {
 	return c.registry
 }
 
+// registerMetric registers a prometheus.Collector and returns it.
+func registerMetric[T prometheus.Collector](c *Collector, metric T) T {
+	c.registry.MustRegister(metric)
+	return metric
+}
+
 // NewCounter creates and registers a new counter.
 func (c *Collector) NewCounter(name, help string, labels []string) *prometheus.CounterVec {
-	counter := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: c.namespace,
-			Name:      name,
-			Help:      help,
-		},
+	return registerMetric(c, prometheus.NewCounterVec(
+		prometheus.CounterOpts{Namespace: c.namespace, Name: name, Help: help},
 		labels,
-	)
-	c.registry.MustRegister(counter)
-	return counter
+	))
 }
 
 // NewHistogram creates and registers a new histogram.
@@ -75,28 +75,16 @@ func (c *Collector) NewHistogram(name, help string, labels []string, buckets []f
 
 // NewGauge creates and registers a new gauge.
 func (c *Collector) NewGauge(name, help string, labels []string) *prometheus.GaugeVec {
-	gauge := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: c.namespace,
-			Name:      name,
-			Help:      help,
-		},
+	return registerMetric(c, prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{Namespace: c.namespace, Name: name, Help: help},
 		labels,
-	)
-	c.registry.MustRegister(gauge)
-	return gauge
+	))
 }
 
 // NewSummary creates and registers a new summary.
 func (c *Collector) NewSummary(name, help string, labels []string) *prometheus.SummaryVec {
-	summary := prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Namespace: c.namespace,
-			Name:      name,
-			Help:      help,
-		},
+	return registerMetric(c, prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{Namespace: c.namespace, Name: name, Help: help},
 		labels,
-	)
-	c.registry.MustRegister(summary)
-	return summary
+	))
 }

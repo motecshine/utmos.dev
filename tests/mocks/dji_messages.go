@@ -72,6 +72,17 @@ type ServiceReplyData struct {
 	Output json.RawMessage `json:"output,omitempty"`
 }
 
+// newMockMessage creates a DJIMockMessage with standard field prefixes.
+// The prefix is used to generate TID and BID values (e.g., "osd", "event").
+func newMockMessage(deviceSN, prefix string, data any) DJIMockMessage {
+	return DJIMockMessage{
+		TID:       "tid-" + prefix + "-" + deviceSN,
+		BID:       "bid-" + prefix + "-" + deviceSN,
+		Timestamp: time.Now().UnixMilli(),
+		Data:      mustMarshal(data),
+	}
+}
+
 // NewOSDMessage creates a mock OSD message.
 func NewOSDMessage(deviceSN string) (topic string, payload []byte) {
 	topic = "thing/product/" + deviceSN + "/osd"
@@ -91,13 +102,7 @@ func NewOSDMessage(deviceSN string) (topic string, payload []byte) {
 		HorizontalSpeed: 15.0,
 	}
 
-	msg := DJIMockMessage{
-		TID:       "tid-osd-" + deviceSN,
-		BID:       "bid-osd-" + deviceSN,
-		Timestamp: time.Now().UnixMilli(),
-		Data:      mustMarshal(osdData),
-	}
-
+	msg := newMockMessage(deviceSN, "osd", osdData)
 	payload = mustMarshal(msg)
 	return topic, payload
 }
@@ -113,13 +118,7 @@ func NewStateMessage(deviceSN string) (topic string, payload []byte) {
 		Online:          true,
 	}
 
-	msg := DJIMockMessage{
-		TID:       "tid-state-" + deviceSN,
-		BID:       "bid-state-" + deviceSN,
-		Timestamp: time.Now().UnixMilli(),
-		Data:      mustMarshal(stateData),
-	}
-
+	msg := newMockMessage(deviceSN, "state", stateData)
 	payload = mustMarshal(msg)
 	return topic, payload
 }
@@ -136,14 +135,9 @@ func NewEventMessage(gatewaySN, eventType string, progress int) (topic string, p
 	}
 
 	needReply := 0
-	msg := DJIMockMessage{
-		TID:       "tid-event-" + gatewaySN,
-		BID:       "bid-event-" + gatewaySN,
-		Timestamp: time.Now().UnixMilli(),
-		Method:    eventType,
-		NeedReply: &needReply,
-		Data:      mustMarshal(eventData),
-	}
+	msg := newMockMessage(gatewaySN, "event", eventData)
+	msg.Method = eventType
+	msg.NeedReply = &needReply
 
 	payload = mustMarshal(msg)
 	return topic, payload
@@ -159,14 +153,9 @@ func NewServicesRequestMessage(gatewaySN, method string, params any) (topic stri
 	}
 
 	needReply := 1
-	msg := DJIMockMessage{
-		TID:       "tid-svc-" + gatewaySN,
-		BID:       "bid-svc-" + gatewaySN,
-		Timestamp: time.Now().UnixMilli(),
-		Method:    method,
-		NeedReply: &needReply,
-		Data:      mustMarshal(requestData),
-	}
+	msg := newMockMessage(gatewaySN, "svc", requestData)
+	msg.Method = method
+	msg.NeedReply = &needReply
 
 	payload = mustMarshal(msg)
 	return topic, payload
@@ -181,13 +170,8 @@ func NewServicesReplyMessage(gatewaySN, method string, result int, output any) (
 		Output: mustMarshal(output),
 	}
 
-	msg := DJIMockMessage{
-		TID:       "tid-reply-" + gatewaySN,
-		BID:       "bid-reply-" + gatewaySN,
-		Timestamp: time.Now().UnixMilli(),
-		Method:    method,
-		Data:      mustMarshal(replyData),
-	}
+	msg := newMockMessage(gatewaySN, "reply", replyData)
+	msg.Method = method
 
 	payload = mustMarshal(msg)
 	return topic, payload
@@ -205,13 +189,7 @@ func NewStatusMessage(gatewaySN string, online bool) (topic string, payload []by
 		statusData["status"] = "offline"
 	}
 
-	msg := DJIMockMessage{
-		TID:       "tid-status-" + gatewaySN,
-		BID:       "bid-status-" + gatewaySN,
-		Timestamp: time.Now().UnixMilli(),
-		Data:      mustMarshal(statusData),
-	}
-
+	msg := newMockMessage(gatewaySN, "status", statusData)
 	payload = mustMarshal(msg)
 	return topic, payload
 }

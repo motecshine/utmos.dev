@@ -6,6 +6,8 @@ import (
 
 // RegisterWaylineEvents registers wayline-related events to the event router.
 // Returns an error if any handler registration fails.
+//
+// structurally similar to command registration functions but operates on different handler types
 func RegisterWaylineEvents(r *EventRouter) error {
 	handlers := map[string]EventHandlerFunc{
 		// Use types from protocol/wayline package

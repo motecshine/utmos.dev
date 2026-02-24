@@ -29,10 +29,8 @@ func registerServiceCommands(sr *router.ServiceRouter) error {
 		{"camera commands", router.RegisterCameraCommands},
 		{"wayline commands", router.RegisterWaylineCommands},
 		{"drc commands", router.RegisterDRCCommands},
-		{"file commands", router.RegisterFileCommands},
-		{"firmware commands", router.RegisterFirmwareCommands},
-		{"live commands", router.RegisterLiveCommands},
-		{"config commands", router.RegisterConfigCommands},
+		{"file and firmware commands", router.RegisterFileAndFirmwareCommands},
+		{"config and live commands", router.RegisterConfigAndLiveCommands},
 	}
 
 	for _, r := range registrations {

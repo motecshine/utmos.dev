@@ -2,6 +2,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -113,7 +114,8 @@ func Wrap(err error, code ErrorCode, message string) *Error {
 
 // Is checks if the error matches the given error code.
 func Is(err error, code ErrorCode) bool {
-	if e, ok := err.(*Error); ok {
+	var e *Error
+	if errors.As(err, &e) {
 		return e.Code == code
 	}
 	return false
@@ -121,7 +123,8 @@ func Is(err error, code ErrorCode) bool {
 
 // GetCode returns the error code from an error, or ErrInternal if not an Error.
 func GetCode(err error) ErrorCode {
-	if e, ok := err.(*Error); ok {
+	var e *Error
+	if errors.As(err, &e) {
 		return e.Code
 	}
 	return ErrInternal

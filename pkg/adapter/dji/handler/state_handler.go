@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	dji "github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -19,6 +18,8 @@ func NewStateHandler() *StateHandler {
 }
 
 // Handle processes a State message and returns a StandardMessage.
+//
+// Same handler flow as OSDHandler but with state-specific parsing
 func (h *StateHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.TopicInfo) (*rabbitmq.StandardMessage, error) {
 	if msg == nil {
 		return nil, fmt.Errorf("nil message")
@@ -27,25 +28,11 @@ func (h *StateHandler) Handle(_ context.Context, msg *dji.Message, topic *dji.To
 		return nil, fmt.Errorf("nil topic info")
 	}
 
-	// Build StandardMessage
-	sm := &rabbitmq.StandardMessage{
-		TID:       msg.TID,
-		BID:       msg.BID,
-		Timestamp: msg.Timestamp,
-		DeviceSN:  topic.DeviceSN,
-		Service:   dji.VendorDJI,
-		Action:    dji.ActionPropertyReport,
-		ProtocolMeta: &rabbitmq.ProtocolMeta{
-			Vendor:        dji.VendorDJI,
-			OriginalTopic: topic.Raw,
-			Method:        msg.Method,
-		},
+	// Build StandardMessage using shared helper
+	cfg := MessageConfig{
+		RequestAction: dji.ActionPropertyReport,
 	}
-
-	// Set timestamp if not provided
-	if sm.Timestamp == 0 {
-		sm.Timestamp = time.Now().UnixMilli()
-	}
+	sm := BuildStandardMessage(msg, topic, cfg)
 
 	// Build state data
 	data, err := h.buildStateData(msg.Data, topic)

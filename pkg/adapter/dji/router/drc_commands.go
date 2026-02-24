@@ -15,6 +15,8 @@ const (
 
 // RegisterDRCCommands registers all DRC commands to the router.
 // Returns an error if any handler registration fails.
+//
+// Registration files share structural pattern but register different command types
 func RegisterDRCCommands(r *ServiceRouter) error {
 	handlers := map[string]ServiceHandlerFunc{
 		// DRC mode commands - use types from protocol/drc package

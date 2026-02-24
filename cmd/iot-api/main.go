@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -158,7 +159,7 @@ func main() {
 	// Start server
 	go func() {
 		log.WithService(serviceName).Infof("Server listening on %s:%d", cfg.Server.Host, cfg.Server.Port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.WithService(serviceName).Fatalf("failed to start server: %v", err)
 		}
 	}()

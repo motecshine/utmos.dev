@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRegisterFirmwareCommands(t *testing.T) {
+func TestRegisterFileAndFirmwareCommands_FirmwareMethods(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFirmwareCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	// Verify all firmware commands are registered
@@ -26,7 +26,7 @@ func TestRegisterFirmwareCommands(t *testing.T) {
 
 func TestFirmwareCommands_OTACreate(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFirmwareCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -53,7 +53,7 @@ func TestFirmwareCommands_OTACreate(t *testing.T) {
 
 func TestFirmwareCommands_InvalidData(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFirmwareCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{

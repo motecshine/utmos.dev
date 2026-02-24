@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRegisterFileCommands(t *testing.T) {
+func TestRegisterFileAndFirmwareCommands_FileMethods(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFileCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	// Verify all file commands are registered
@@ -28,7 +28,7 @@ func TestRegisterFileCommands(t *testing.T) {
 
 func TestFileCommands_FileUploadStart(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFileCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -57,7 +57,7 @@ func TestFileCommands_FileUploadStart(t *testing.T) {
 
 func TestFileCommands_FileUploadFinish(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFileCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -75,7 +75,7 @@ func TestFileCommands_FileUploadFinish(t *testing.T) {
 
 func TestFileCommands_FileUploadList(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFileCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -92,7 +92,7 @@ func TestFileCommands_FileUploadList(t *testing.T) {
 
 func TestFileCommands_InvalidData(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterFileCommands(r)
+	err := RegisterFileAndFirmwareCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{

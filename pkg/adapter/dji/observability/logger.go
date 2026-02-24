@@ -39,22 +39,20 @@ func (l *Logger) WithMessage(ctx context.Context, deviceSN, messageType, method 
 	})
 }
 
+// withDJIFields returns a log entry with vendor "dji" and the given extra fields.
+func (l *Logger) withDJIFields(ctx context.Context, fields logrus.Fields) *logrus.Entry {
+	fields["vendor"] = "dji"
+	return l.log.WithTrace(ctx).WithFields(fields)
+}
+
 // WithDevice returns a log entry with device context.
 func (l *Logger) WithDevice(ctx context.Context, deviceSN, gatewaySN string) *logrus.Entry {
-	return l.log.WithTrace(ctx).WithFields(logrus.Fields{
-		"vendor":     "dji",
-		"device_sn":  deviceSN,
-		"gateway_sn": gatewaySN,
-	})
+	return l.withDJIFields(ctx, logrus.Fields{"device_sn": deviceSN, "gateway_sn": gatewaySN})
 }
 
 // WithTID returns a log entry with transaction ID.
 func (l *Logger) WithTID(ctx context.Context, tid, bid string) *logrus.Entry {
-	return l.log.WithTrace(ctx).WithFields(logrus.Fields{
-		"vendor": "dji",
-		"tid":    tid,
-		"bid":    bid,
-	})
+	return l.withDJIFields(ctx, logrus.Fields{"tid": tid, "bid": bid})
 }
 
 // Info logs an info message with context.

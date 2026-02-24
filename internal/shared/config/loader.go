@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -11,8 +12,7 @@ import (
 
 // Load loads configuration from a YAML file with environment variable substitution.
 func Load(path string) (*Config, error) {
-	//nolint:gosec // G304: Configuration file path is provided by caller
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}

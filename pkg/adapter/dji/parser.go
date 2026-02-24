@@ -13,7 +13,7 @@ func ParseMessage(payload []byte) (*Message, error) {
 
 	var msg Message
 	if err := json.Unmarshal(payload, &msg); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidPayload, err)
+		return nil, fmt.Errorf("%w: %w", ErrInvalidPayload, err)
 	}
 
 	return &msg, nil

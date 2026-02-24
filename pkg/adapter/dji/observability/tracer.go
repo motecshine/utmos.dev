@@ -45,28 +45,25 @@ func (t *Tracer) StartMessageSpan(ctx context.Context, messageType, method, devi
 	return ctx, span
 }
 
-// StartServiceCallSpan starts a new span for service call.
-func (t *Tracer) StartServiceCallSpan(ctx context.Context, method, deviceSN string) (context.Context, trace.Span) {
-	ctx, span := t.tracer.Start(ctx, "dji.service.call",
+// startSpan starts a new span with common DJI attributes.
+func (t *Tracer) startSpan(ctx context.Context, spanName, attrKey, attrValue, deviceSN string) (context.Context, trace.Span) {
+	return t.tracer.Start(ctx, spanName,
 		trace.WithAttributes(
 			attribute.String("messaging.system", "dji"),
-			attribute.String("dji.service.method", method),
+			attribute.String(attrKey, attrValue),
 			attribute.String("dji.device_sn", deviceSN),
 		),
 	)
-	return ctx, span
+}
+
+// StartServiceCallSpan starts a new span for service call.
+func (t *Tracer) StartServiceCallSpan(ctx context.Context, method, deviceSN string) (context.Context, trace.Span) {
+	return t.startSpan(ctx, "dji.service.call", "dji.service.method", method, deviceSN)
 }
 
 // StartEventSpan starts a new span for event processing.
 func (t *Tracer) StartEventSpan(ctx context.Context, eventType, deviceSN string) (context.Context, trace.Span) {
-	ctx, span := t.tracer.Start(ctx, "dji.event.process",
-		trace.WithAttributes(
-			attribute.String("messaging.system", "dji"),
-			attribute.String("dji.event.type", eventType),
-			attribute.String("dji.device_sn", deviceSN),
-		),
-	)
-	return ctx, span
+	return t.startSpan(ctx, "dji.event.process", "dji.event.type", eventType, deviceSN)
 }
 
 // RecordError records an error on the span.
@@ -85,20 +82,22 @@ func (t *Tracer) AddAttribute(span trace.Span, key, value string) {
 	span.SetAttributes(attribute.String(key, value))
 }
 
-// GetTraceID extracts the trace ID from context.
-func GetTraceID(ctx context.Context) string {
-	spanCtx := trace.SpanContextFromContext(ctx)
-	if spanCtx.IsValid() {
-		return spanCtx.TraceID().String()
+// spanContextField extracts a field from the span context using the provided extractor function.
+// Returns an empty string if the span context is invalid.
+func spanContextField(ctx context.Context, extract func(trace.SpanContext) string) string {
+	sc := trace.SpanContextFromContext(ctx)
+	if sc.IsValid() {
+		return extract(sc)
 	}
 	return ""
 }
 
+// GetTraceID extracts the trace ID from context.
+func GetTraceID(ctx context.Context) string {
+	return spanContextField(ctx, func(sc trace.SpanContext) string { return sc.TraceID().String() })
+}
+
 // GetSpanID extracts the span ID from context.
 func GetSpanID(ctx context.Context) string {
-	spanCtx := trace.SpanContextFromContext(ctx)
-	if spanCtx.IsValid() {
-		return spanCtx.SpanID().String()
-	}
-	return ""
+	return spanContextField(ctx, func(sc trace.SpanContext) string { return sc.SpanID().String() })
 }

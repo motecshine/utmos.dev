@@ -351,37 +351,34 @@ func convertActionParams(actionReq ActionRequest) *ActionActuatorFuncParam {
 		convertBasicActions(actionReq, param)
 	case ActionTypeCustomDirName, ActionTypeRecordPointCloud:
 		convertUtilityActions(actionReq, param)
-	case ActionTypeStartSmartOblique, ActionTypeStartTimeLapse, ActionTypeStopTimeLapse:
-		convertTimeLapseActions(actionReq, param)
-	case ActionTypeSetFocusType, ActionTypeTargetDetection:
-		convertDetectionActions(actionReq, param)
+	case ActionTypeStartSmartOblique, ActionTypeStartTimeLapse, ActionTypeStopTimeLapse,
+		ActionTypeSetFocusType, ActionTypeTargetDetection:
+		convertPayloadOnlyAction(actionReq, param)
 	}
 
 	return param
 }
 
+// each case branch type-asserts a different action struct; not truly duplicate logic
 func convertCameraActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
 	switch actionReq.Type {
 	case ActionTypeTakePhoto:
 		if takePhotoAction, ok := actionReq.Action.(*TakePhotoAction); ok {
-			posIndex := int(takePhotoAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(takePhotoAction.PayloadPositionIndex)
 			param.PayloadLensIndex = takePhotoAction.PayloadLensIndex
 			param.FileSuffix = &takePhotoAction.FileSuffix
 			param.UseGlobalPayloadLensIndex = boolToIntPtr(takePhotoAction.UseGlobalPayloadLensIndex)
 		}
 	case ActionTypeStartRecord:
 		if startRecordAction, ok := actionReq.Action.(*StartRecordAction); ok {
-			posIndex := int(startRecordAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(startRecordAction.PayloadPositionIndex)
 			param.FileSuffix = &startRecordAction.FileSuffix
 			param.PayloadLensIndex = startRecordAction.PayloadLensIndex
 			param.UseGlobalPayloadLensIndex = boolToIntPtr(startRecordAction.UseGlobalPayloadLensIndex)
 		}
 	case ActionTypeStopRecord:
 		if stopRecordAction, ok := actionReq.Action.(*StopRecordAction); ok {
-			posIndex := int(stopRecordAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(stopRecordAction.PayloadPositionIndex)
 			param.PayloadLensIndex = stopRecordAction.PayloadLensIndex
 		}
 	}
@@ -391,8 +388,7 @@ func convertGimbalActions(actionReq ActionRequest, param *ActionActuatorFuncPara
 	switch actionReq.Type {
 	case ActionTypeGimbalRotate:
 		if gimbalRotateAction, ok := actionReq.Action.(*GimbalRotateAction); ok {
-			posIndex := int(gimbalRotateAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(gimbalRotateAction.PayloadPositionIndex)
 			param.GimbalHeadingYawBase = &gimbalRotateAction.GimbalHeadingYawBase
 			param.GimbalRotateMode = &gimbalRotateAction.GimbalRotateMode
 			param.GimbalPitchRotateEnable = boolToIntPtr(gimbalRotateAction.GimbalPitchRotateEnable)
@@ -406,29 +402,26 @@ func convertGimbalActions(actionReq ActionRequest, param *ActionActuatorFuncPara
 		}
 	case ActionTypeGimbalEvenlyRotate:
 		if gimbalEvenlyRotateAction, ok := actionReq.Action.(*GimbalEvenlyRotateAction); ok {
-			posIndex := int(gimbalEvenlyRotateAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(gimbalEvenlyRotateAction.PayloadPositionIndex)
 			param.GimbalPitchRotateAngle = &gimbalEvenlyRotateAction.GimbalPitchRotateAngle
 		}
 	case ActionTypeGimbalAngleLock:
 		if gimbalAngleLockAction, ok := actionReq.Action.(*GimbalAngleLockAction); ok {
-			posIndex := int(gimbalAngleLockAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(gimbalAngleLockAction.PayloadPositionIndex)
 		}
 	case ActionTypeGimbalAngleUnlock:
 		if gimbalAngleUnlockAction, ok := actionReq.Action.(*GimbalAngleUnlockAction); ok {
-			posIndex := int(gimbalAngleUnlockAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(gimbalAngleUnlockAction.PayloadPositionIndex)
 		}
 	}
 }
 
+// each case branch type-asserts a different action struct; not truly duplicate logic
 func convertAdvancedShootActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
 	switch actionReq.Type {
 	case ActionTypeAccurateShoot:
 		if accurateShootAction, ok := actionReq.Action.(*AccurateShootAction); ok {
-			posIndex := int(accurateShootAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(accurateShootAction.PayloadPositionIndex)
 			param.GimbalPitchRotateAngle = &accurateShootAction.GimbalPitchRotateAngle
 			param.GimbalYawRotateAngle = &accurateShootAction.GimbalYawRotateAngle
 			param.FocusX = float64Ptr(float64(accurateShootAction.FocusX))
@@ -448,8 +441,7 @@ func convertAdvancedShootActions(actionReq ActionRequest, param *ActionActuatorF
 		}
 	case ActionTypeOrientedShoot:
 		if orientedShootAction, ok := actionReq.Action.(*OrientedShootAction); ok {
-			posIndex := int(orientedShootAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(orientedShootAction.PayloadPositionIndex)
 			param.GimbalPitchRotateAngle = &orientedShootAction.GimbalPitchRotateAngle
 			param.GimbalYawRotateAngle = &orientedShootAction.GimbalYawRotateAngle
 			param.FocusX = float64Ptr(float64(orientedShootAction.FocusX))
@@ -480,8 +472,7 @@ func convertAdvancedShootActions(actionReq ActionRequest, param *ActionActuatorF
 		}
 	case ActionTypePanoShot:
 		if panoShotAction, ok := actionReq.Action.(*PanoShotAction); ok {
-			posIndex := int(panoShotAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(panoShotAction.PayloadPositionIndex)
 			param.PanoShotSubMode = &panoShotAction.PanoShotSubMode
 			param.PayloadLensIndex = panoShotAction.PayloadLensIndex
 			param.UseGlobalPayloadLensIndex = boolToIntPtr(panoShotAction.UseGlobalPayloadLensIndex)
@@ -497,14 +488,12 @@ func convertBasicActions(actionReq ActionRequest, param *ActionActuatorFuncParam
 		}
 	case ActionTypeZoom:
 		if zoomAction, ok := actionReq.Action.(*ZoomAction); ok {
-			posIndex := int(zoomAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(zoomAction.PayloadPositionIndex)
 			param.FocalLength = &zoomAction.FocalLength
 		}
 	case ActionTypeFocus:
 		if focusAction, ok := actionReq.Action.(*FocusAction); ok {
-			posIndex := int(focusAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(focusAction.PayloadPositionIndex)
 			param.IsPointFocus = boolToIntPtr(focusAction.IsPointFocus)
 			param.FocusX = &focusAction.FocusX
 			param.FocusY = &focusAction.FocusY
@@ -524,52 +513,63 @@ func convertUtilityActions(actionReq ActionRequest, param *ActionActuatorFuncPar
 	switch actionReq.Type {
 	case ActionTypeCustomDirName:
 		if customDirNameAction, ok := actionReq.Action.(*CustomDirNameAction); ok {
-			posIndex := int(customDirNameAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(customDirNameAction.PayloadPositionIndex)
 			param.DirectoryName = &customDirNameAction.DirectoryName
 		}
 	case ActionTypeRecordPointCloud:
 		if recordPointCloudAction, ok := actionReq.Action.(*RecordPointCloudAction); ok {
-			posIndex := int(recordPointCloudAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
+			param.PayloadPositionIndex = payloadPosIntPtr(recordPointCloudAction.PayloadPositionIndex)
 			param.RecordPointCloudOperate = &recordPointCloudAction.RecordPointCloudOperate
 		}
 	}
 }
 
-func convertTimeLapseActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
-	switch actionReq.Type {
-	case ActionTypeStartSmartOblique:
-		if startSmartObliqueAction, ok := actionReq.Action.(*StartSmartObliqueAction); ok {
-			posIndex := int(startSmartObliqueAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
-	case ActionTypeStartTimeLapse:
-		if startTimeLapseAction, ok := actionReq.Action.(*StartTimeLapseAction); ok {
-			posIndex := int(startTimeLapseAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
-	case ActionTypeStopTimeLapse:
-		if stopTimeLapseAction, ok := actionReq.Action.(*StopTimeLapseAction); ok {
-			posIndex := int(stopTimeLapseAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
+// convertPayloadOnlyAction handles action types that only set PayloadPositionIndex.
+// This covers time-lapse, detection, and similar simple actions.
+func convertPayloadOnlyAction(actionReq ActionRequest, param *ActionActuatorFuncParam) {
+	posMap := map[string]func() PayloadPosition{
+		ActionTypeStartSmartOblique: func() PayloadPosition {
+			if a, ok := actionReq.Action.(*StartSmartObliqueAction); ok {
+				return a.PayloadPositionIndex
+			}
+			return 0
+		},
+		ActionTypeStartTimeLapse: func() PayloadPosition {
+			if a, ok := actionReq.Action.(*StartTimeLapseAction); ok {
+				return a.PayloadPositionIndex
+			}
+			return 0
+		},
+		ActionTypeStopTimeLapse: func() PayloadPosition {
+			if a, ok := actionReq.Action.(*StopTimeLapseAction); ok {
+				return a.PayloadPositionIndex
+			}
+			return 0
+		},
+		ActionTypeSetFocusType: func() PayloadPosition {
+			if a, ok := actionReq.Action.(*SetFocusTypeAction); ok {
+				return a.PayloadPositionIndex
+			}
+			return 0
+		},
+		ActionTypeTargetDetection: func() PayloadPosition {
+			if a, ok := actionReq.Action.(*TargetDetectionAction); ok {
+				return a.PayloadPositionIndex
+			}
+			return 0
+		},
+	}
+
+	if fn, ok := posMap[actionReq.Type]; ok {
+		param.PayloadPositionIndex = payloadPosIntPtr(fn())
 	}
 }
 
-func convertDetectionActions(actionReq ActionRequest, param *ActionActuatorFuncParam) {
-	switch actionReq.Type {
-	case ActionTypeSetFocusType:
-		if setFocusTypeAction, ok := actionReq.Action.(*SetFocusTypeAction); ok {
-			posIndex := int(setFocusTypeAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
-	case ActionTypeTargetDetection:
-		if targetDetectionAction, ok := actionReq.Action.(*TargetDetectionAction); ok {
-			posIndex := int(targetDetectionAction.PayloadPositionIndex)
-			param.PayloadPositionIndex = &posIndex
-		}
-	}
+// payloadPosIntPtr converts a PayloadPosition to an *int, used to set
+// ActionActuatorFuncParam.PayloadPositionIndex in action converters.
+func payloadPosIntPtr(pos PayloadPosition) *int {
+	v := int(pos)
+	return &v
 }
 
 func boolToIntPtr(b bool) *int {

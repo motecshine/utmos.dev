@@ -19,6 +19,29 @@ type TemplateDocument struct {
 	Document TemplateDocumentContent `xml:"Document" json:"document"`
 }
 
+const (
+	defaultKMLNamespace  = "http://www.opengis.net/kml/2.2"
+	defaultWPMLNamespace = "http://www.dji.com/wpmz/1.0.6"
+)
+
+func (d *TemplateDocument) setDefaultNamespaces() {
+	if d.XMLNS == "" {
+		d.XMLNS = defaultKMLNamespace
+	}
+	if d.WPMLNS == "" {
+		d.WPMLNS = defaultWPMLNamespace
+	}
+}
+
+func (d *WaylinesDocument) setDefaultNamespaces() {
+	if d.XMLNS == "" {
+		d.XMLNS = defaultKMLNamespace
+	}
+	if d.WPMLNS == "" {
+		d.WPMLNS = defaultWPMLNamespace
+	}
+}
+
 type TemplateDocumentContent struct {
 	Author     string `xml:"wpml:author,omitempty" json:"author,omitempty"`
 	CreateTime int64  `xml:"wpml:createTime,omitempty" json:"create_time,omitempty"`

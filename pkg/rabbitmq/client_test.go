@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -128,7 +129,7 @@ func TestClientDeclareExchangeNotConnected(t *testing.T) {
 	if err == nil {
 		t.Error("expected error when declaring exchange without connection")
 	}
-	if err != ErrNotConnected {
+	if !errors.Is(err, ErrNotConnected) {
 		t.Errorf("expected ErrNotConnected, got %v", err)
 	}
 }
@@ -147,7 +148,7 @@ func TestClientDeclareQueueNotConnected(t *testing.T) {
 	if err == nil {
 		t.Error("expected error when declaring queue without connection")
 	}
-	if err != ErrNotConnected {
+	if !errors.Is(err, ErrNotConnected) {
 		t.Errorf("expected ErrNotConnected, got %v", err)
 	}
 }
@@ -166,7 +167,7 @@ func TestClientDeclareQueueWithDLQNotConnected(t *testing.T) {
 	if err == nil {
 		t.Error("expected error when declaring queue with DLQ without connection")
 	}
-	if err != ErrNotConnected {
+	if !errors.Is(err, ErrNotConnected) {
 		t.Errorf("expected ErrNotConnected, got %v", err)
 	}
 }
@@ -185,7 +186,7 @@ func TestClientBindQueueNotConnected(t *testing.T) {
 	if err == nil {
 		t.Error("expected error when binding queue without connection")
 	}
-	if err != ErrNotConnected {
+	if !errors.Is(err, ErrNotConnected) {
 		t.Errorf("expected ErrNotConnected, got %v", err)
 	}
 }

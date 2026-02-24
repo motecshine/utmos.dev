@@ -16,46 +16,33 @@ func NewOSDParser() *OSDParser {
 	return &OSDParser{}
 }
 
-// ParseAircraftOSD parses aircraft OSD data from raw JSON.
-func (p *OSDParser) ParseAircraftOSD(data json.RawMessage) (*aircraft.AircraftOSD, error) {
+// unmarshalOSD is a generic helper that unmarshals JSON data into a typed OSD struct.
+func unmarshalOSD[T any](data json.RawMessage, typeName string) (*T, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("empty OSD data")
 	}
 
-	var osd aircraft.AircraftOSD
+	var osd T
 	if err := json.Unmarshal(data, &osd); err != nil {
-		return nil, fmt.Errorf("failed to parse aircraft OSD: %w", err)
+		return nil, fmt.Errorf("failed to parse %s OSD: %w", typeName, err)
 	}
 
 	return &osd, nil
+}
+
+// ParseAircraftOSD parses aircraft OSD data from raw JSON.
+func (p *OSDParser) ParseAircraftOSD(data json.RawMessage) (*aircraft.AircraftOSD, error) {
+	return unmarshalOSD[aircraft.AircraftOSD](data, "aircraft")
 }
 
 // ParseDockOSD parses dock OSD data from raw JSON.
 func (p *OSDParser) ParseDockOSD(data json.RawMessage) (*aircraft.DockOSD, error) {
-	if len(data) == 0 {
-		return nil, fmt.Errorf("empty OSD data")
-	}
-
-	var osd aircraft.DockOSD
-	if err := json.Unmarshal(data, &osd); err != nil {
-		return nil, fmt.Errorf("failed to parse dock OSD: %w", err)
-	}
-
-	return &osd, nil
+	return unmarshalOSD[aircraft.DockOSD](data, "dock")
 }
 
 // ParseRCOSD parses remote controller OSD data from raw JSON.
 func (p *OSDParser) ParseRCOSD(data json.RawMessage) (*aircraft.RCOSD, error) {
-	if len(data) == 0 {
-		return nil, fmt.Errorf("empty OSD data")
-	}
-
-	var osd aircraft.RCOSD
-	if err := json.Unmarshal(data, &osd); err != nil {
-		return nil, fmt.Errorf("failed to parse RC OSD: %w", err)
-	}
-
-	return &osd, nil
+	return unmarshalOSD[aircraft.RCOSD](data, "RC")
 }
 
 // OSDType represents the type of OSD data.

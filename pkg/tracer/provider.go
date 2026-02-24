@@ -102,20 +102,26 @@ func (p *Provider) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// GetTraceID extracts the trace ID from the context.
-func GetTraceID(ctx context.Context) string {
+// getSpanContextField extracts a field from the span context using the provided extractor function.
+// Returns an empty string if the span context is invalid.
+func getSpanContextField(ctx context.Context, extractor func(trace.SpanContext) string) string {
 	spanCtx := trace.SpanContextFromContext(ctx)
 	if spanCtx.IsValid() {
-		return spanCtx.TraceID().String()
+		return extractor(spanCtx)
 	}
 	return ""
 }
 
+// GetTraceID extracts the trace ID from the context.
+//
+// minimal wrapper; cannot be reduced further
+func GetTraceID(ctx context.Context) string {
+	return getSpanContextField(ctx, func(sc trace.SpanContext) string { return sc.TraceID().String() })
+}
+
 // GetSpanID extracts the span ID from the context.
+//
+// minimal wrapper; cannot be reduced further
 func GetSpanID(ctx context.Context) string {
-	spanCtx := trace.SpanContextFromContext(ctx)
-	if spanCtx.IsValid() {
-		return spanCtx.SpanID().String()
-	}
-	return ""
+	return getSpanContextField(ctx, func(sc trace.SpanContext) string { return sc.SpanID().String() })
 }

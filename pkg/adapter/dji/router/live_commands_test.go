@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRegisterLiveCommands(t *testing.T) {
+func TestRegisterConfigAndLiveCommands_LiveMethods(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterLiveCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	// Verify all live commands are registered
@@ -29,7 +29,7 @@ func TestRegisterLiveCommands(t *testing.T) {
 
 func TestLiveCommands_LiveStartPush(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterLiveCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -49,7 +49,7 @@ func TestLiveCommands_LiveStartPush(t *testing.T) {
 
 func TestLiveCommands_LiveStopPush(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterLiveCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -66,7 +66,7 @@ func TestLiveCommands_LiveStopPush(t *testing.T) {
 
 func TestLiveCommands_LiveSetQuality(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterLiveCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -84,7 +84,7 @@ func TestLiveCommands_LiveSetQuality(t *testing.T) {
 
 func TestLiveCommands_LiveLensChange(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterLiveCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{
@@ -101,7 +101,7 @@ func TestLiveCommands_LiveLensChange(t *testing.T) {
 
 func TestLiveCommands_InvalidData(t *testing.T) {
 	r := NewServiceRouter()
-	err := RegisterLiveCommands(r)
+	err := RegisterConfigAndLiveCommands(r)
 	require.NoError(t, err)
 
 	req := &ServiceRequest{

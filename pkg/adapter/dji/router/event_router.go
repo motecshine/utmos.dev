@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 )
 
-// EventHandlerFunc is the function signature for event handlers.
-type EventHandlerFunc func(ctx context.Context, data json.RawMessage) (*EventResponse, error)
+// EventHandlerFunc is an alias for HandlerFunc used in event handler registration.
+type EventHandlerFunc = HandlerFunc
 
 // EventRequest represents an event request.
 type EventRequest struct {
@@ -22,45 +21,30 @@ func (r *EventRequest) NeedReplyBool() bool {
 	return r.NeedReply != nil && *r.NeedReply != 0
 }
 
-// EventResponse represents an event response.
-type EventResponse struct {
-	Result int             `json:"result"`
-	Output json.RawMessage `json:"output,omitempty"`
-}
+// EventResponse is an alias for HandlerResponse used in event handlers.
+type EventResponse = HandlerResponse
 
 // EventRouter routes events to their handlers.
 type EventRouter struct {
-	mu       sync.RWMutex
-	handlers map[string]EventHandlerFunc
+	registry handlerRegistry[HandlerFunc]
 }
 
 // NewEventRouter creates a new EventRouter.
 func NewEventRouter() *EventRouter {
 	return &EventRouter{
-		handlers: make(map[string]EventHandlerFunc),
+		registry: newHandlerRegistry[HandlerFunc](),
 	}
 }
 
 // RegisterEventHandler registers a handler for an event method.
 func (r *EventRouter) RegisterEventHandler(method string, handler EventHandlerFunc) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if _, exists := r.handlers[method]; exists {
-		return fmt.Errorf("event handler for method %s already registered", method)
-	}
-
-	r.handlers[method] = handler
-	return nil
+	return r.registry.register(method, handler, ErrMethodAlreadyRegistered)
 }
 
 // RouteEvent routes an event request to the appropriate handler.
-func (r *EventRouter) RouteEvent(ctx context.Context, req *EventRequest) (*EventResponse, error) {
-	r.mu.RLock()
-	handler, exists := r.handlers[req.Method]
-	r.mu.RUnlock()
-
-	if !exists {
+func (r *EventRouter) RouteEvent(ctx context.Context, req *EventRequest) (*HandlerResponse, error) {
+	handler, err := r.registry.get(req.Method)
+	if err != nil {
 		return nil, fmt.Errorf("unknown event method: %s", req.Method)
 	}
 
@@ -69,21 +53,10 @@ func (r *EventRouter) RouteEvent(ctx context.Context, req *EventRequest) (*Event
 
 // List returns all registered event methods.
 func (r *EventRouter) List() []string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	methods := make([]string, 0, len(r.handlers))
-	for method := range r.handlers {
-		methods = append(methods, method)
-	}
-	return methods
+	return r.registry.list()
 }
 
 // Has returns true if a handler is registered for the given method.
 func (r *EventRouter) Has(method string) bool {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	_, exists := r.handlers[method]
-	return exists
+	return r.registry.has(method)
 }

@@ -3,6 +3,7 @@ package wpml
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 
@@ -77,7 +78,7 @@ func FormatXML(xmlString string) (string, error) {
 	for {
 		token, err := decoder.Token()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return "", fmt.Errorf(ErrParseXML, err)
@@ -101,7 +102,7 @@ func ValidateXML(data []byte) error {
 	for {
 		_, err := decoder.Token()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return fmt.Errorf(ErrInvalidXML, err)
@@ -109,6 +110,19 @@ func ValidateXML(data []byte) error {
 	}
 
 	return nil
+}
+
+func writeStartElement(buf *bytes.Buffer, name string, attrs []xml.Attr) {
+	buf.WriteString("<")
+	buf.WriteString(name)
+	for _, attr := range attrs {
+		buf.WriteString(" ")
+		buf.WriteString(attr.Name.Local)
+		buf.WriteString(`="`)
+		buf.WriteString(attr.Value)
+		buf.WriteString(`"`)
+	}
+	buf.WriteString(">")
 }
 
 func GetXMLElements(data []byte, elementName string) ([]string, error) {
@@ -121,7 +135,7 @@ func GetXMLElements(data []byte, elementName string) ([]string, error) {
 	for {
 		token, err := decoder.Token()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return nil, fmt.Errorf(ErrParseXML, err)
@@ -133,28 +147,10 @@ func GetXMLElements(data []byte, elementName string) ([]string, error) {
 				capturing = true
 				depth = 1
 				element.Reset()
-				element.WriteString("<")
-				element.WriteString(t.Name.Local)
-				for _, attr := range t.Attr {
-					element.WriteString(" ")
-					element.WriteString(attr.Name.Local)
-					element.WriteString(`="`)
-					element.WriteString(attr.Value)
-					element.WriteString(`"`)
-				}
-				element.WriteString(">")
+				writeStartElement(&element, t.Name.Local, t.Attr)
 			} else if capturing {
 				depth++
-				element.WriteString("<")
-				element.WriteString(t.Name.Local)
-				for _, attr := range t.Attr {
-					element.WriteString(" ")
-					element.WriteString(attr.Name.Local)
-					element.WriteString(`="`)
-					element.WriteString(attr.Value)
-					element.WriteString(`"`)
-				}
-				element.WriteString(">")
+				writeStartElement(&element, t.Name.Local, t.Attr)
 			}
 		case xml.EndElement:
 			if capturing {
@@ -177,58 +173,46 @@ func GetXMLElements(data []byte, elementName string) ([]string, error) {
 	return elements, nil
 }
 
-func MarshalTemplate(template *TemplateDocument) ([]byte, error) {
-	if template.XMLNS == "" {
-		template.XMLNS = "http://www.opengis.net/kml/2.2"
-	}
-	if template.WPMLNS == "" {
-		template.WPMLNS = "http://www.dji.com/wpmz/1.0.6"
-	}
+// xmlNamespacer is implemented by document types that have KML/WPML namespace attributes.
+type xmlNamespacer interface {
+	setDefaultNamespaces()
+}
+
+func marshalDocumentWithDefaults[T xmlNamespacer](doc T, errMsg string) ([]byte, error) {
+	doc.setDefaultNamespaces()
 
 	var buf bytes.Buffer
 	buf.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 
-	data, err := xml.MarshalIndent(template, "", "  ")
+	data, err := xml.MarshalIndent(doc, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf(ErrMarshalTemplateDocument, err)
+		return nil, fmt.Errorf(errMsg, err)
 	}
 
 	buf.Write(data)
 	return buf.Bytes(), nil
+}
+
+func MarshalTemplate(template *TemplateDocument) ([]byte, error) {
+	return marshalDocumentWithDefaults(template, ErrMarshalTemplateDocument)
 }
 
 func MarshalWaylines(waylines *WaylinesDocument) ([]byte, error) {
-	if waylines.XMLNS == "" {
-		waylines.XMLNS = "http://www.opengis.net/kml/2.2"
-	}
-	if waylines.WPMLNS == "" {
-		waylines.WPMLNS = "http://www.dji.com/wpmz/1.0.6"
-	}
+	return marshalDocumentWithDefaults(waylines, ErrMarshalWaylinesDocument)
+}
 
-	var buf bytes.Buffer
-	buf.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
-
-	data, err := xml.MarshalIndent(waylines, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf(ErrMarshalWaylinesDocument, err)
+func unmarshalDocument[T any](data []byte, errMsg string) (*T, error) {
+	var doc T
+	if err := nbioxml.Unmarshal(data, &doc); err != nil {
+		return nil, fmt.Errorf(errMsg, err)
 	}
-
-	buf.Write(data)
-	return buf.Bytes(), nil
+	return &doc, nil
 }
 
 func UnmarshalTemplate(data []byte) (*TemplateDocument, error) {
-	var template TemplateDocument
-	if err := nbioxml.Unmarshal(data, &template); err != nil {
-		return nil, fmt.Errorf(ErrUnmarshalTemplateDocument, err)
-	}
-	return &template, nil
+	return unmarshalDocument[TemplateDocument](data, ErrUnmarshalTemplateDocument)
 }
 
 func UnmarshalWaylines(data []byte) (*WaylinesDocument, error) {
-	var waylines WaylinesDocument
-	if err := nbioxml.Unmarshal(data, &waylines); err != nil {
-		return nil, fmt.Errorf(ErrUnmarshalWaylinesDocument, err)
-	}
-	return &waylines, nil
+	return unmarshalDocument[WaylinesDocument](data, ErrUnmarshalWaylinesDocument)
 }

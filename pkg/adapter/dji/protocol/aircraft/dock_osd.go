@@ -29,6 +29,8 @@ type MediaFileDetail struct {
 }
 
 // WirelessLink represents the wireless link topology
+//
+// Struct shape similar to BatteryDetail but fields are semantically different
 type WirelessLink struct {
 	DongleNumber   *int     `json:"dongle_number,omitempty"`  // Dongle count on aircraft
 	Link4GState    *int     `json:"4g_link_state,omitempty"`  // 4G link state (0=disconnected, 1=connected)

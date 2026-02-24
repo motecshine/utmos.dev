@@ -48,19 +48,23 @@ func (r *DeviceRepository) GetVendorByDeviceSN(ctx context.Context, deviceSN str
 }
 
 // Create creates a new device.
+//
+// minimal 3-line function delegating to saveDevice; cannot be further reduced
 func (r *DeviceRepository) Create(ctx context.Context, device *models.Device) error {
-	result := r.db.WithContext(ctx).Create(device)
-	if result.Error != nil {
-		return pkgerrors.Wrap(result.Error, pkgerrors.ErrDatabaseConnection, "failed to create device")
-	}
-	return nil
+	return r.saveDevice(ctx, r.db.WithContext(ctx).Create(device), "create")
 }
 
 // Update updates an existing device.
+//
+// minimal 3-line function delegating to saveDevice; cannot be further reduced
 func (r *DeviceRepository) Update(ctx context.Context, device *models.Device) error {
-	result := r.db.WithContext(ctx).Save(device)
+	return r.saveDevice(ctx, r.db.WithContext(ctx).Save(device), "update")
+}
+
+// saveDevice wraps a GORM result with a consistent error message.
+func (r *DeviceRepository) saveDevice(_ context.Context, result *gorm.DB, operation string) error {
 	if result.Error != nil {
-		return pkgerrors.Wrap(result.Error, pkgerrors.ErrDatabaseConnection, "failed to update device")
+		return pkgerrors.Wrap(result.Error, pkgerrors.ErrDatabaseConnection, "failed to "+operation+" device")
 	}
 	return nil
 }

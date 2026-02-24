@@ -19,7 +19,6 @@ func CreateKmz(mission *WPMLMission, kmzPath string) error {
 	}
 
 	dir := filepath.Dir(kmzPath)
-	//nolint:gosec // G301: Directory permissions 0750 for wayline files
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		return fmt.Errorf(ErrCreateDirectory, err)
 	}
@@ -167,8 +166,7 @@ func ParseKMZBuffer(buffer []byte) (*WPMLMission, error) {
 }
 
 func ParseKMZFile(filePath string) (*WPMLMission, error) {
-	//nolint:gosec // G304: File path is provided by user/caller
-	buffer, err := os.ReadFile(filePath)
+	buffer, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return nil, fmt.Errorf("读取KMZfilefailure: %w", err)
 	}
