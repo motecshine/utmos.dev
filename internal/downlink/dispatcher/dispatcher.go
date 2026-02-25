@@ -1,4 +1,3 @@
-// Package dispatcher provides message dispatching functionality for iot-downlink
 package dispatcher
 
 import (
