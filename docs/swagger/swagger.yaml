@@ -1,0 +1,643 @@
+basePath: /api/v1
+definitions:
+  github_com_utmos_utmos_pkg_models.DeviceStatus:
+    enum:
+    - online
+    - offline
+    - unknown
+    type: string
+    x-enum-varnames:
+    - DeviceStatusOnline
+    - DeviceStatusOffline
+    - DeviceStatusUnknown
+  internal_api_handler.CreateDeviceRequest:
+    properties:
+      device_name:
+        type: string
+      device_sn:
+        type: string
+      device_type:
+        type: string
+      gateway_sn:
+        type: string
+      thing_model_id:
+        type: integer
+      vendor:
+        type: string
+    required:
+    - device_name
+    - device_sn
+    - device_type
+    type: object
+  internal_api_handler.DeviceResponse:
+    properties:
+      created_at:
+        type: string
+      device_name:
+        type: string
+      device_sn:
+        type: string
+      device_type:
+        type: string
+      gateway_sn:
+        type: string
+      id:
+        type: integer
+      last_online_time:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_utmos_utmos_pkg_models.DeviceStatus'
+      thing_model_id:
+        type: integer
+      updated_at:
+        type: string
+      vendor:
+        type: string
+    type: object
+  internal_api_handler.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  internal_api_handler.LatestTelemetryResponse:
+    properties:
+      data:
+        additionalProperties: {}
+        type: object
+      device_sn:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  internal_api_handler.ListDevicesResponse:
+    properties:
+      devices:
+        items:
+          $ref: '#/definitions/internal_api_handler.DeviceResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  internal_api_handler.ListServiceCallsResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      service_calls:
+        items:
+          $ref: '#/definitions/internal_api_handler.ServiceCallResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  internal_api_handler.ServiceCallRequest:
+    properties:
+      call_type:
+        type: string
+      device_sn:
+        type: string
+      max_retries:
+        type: integer
+      method:
+        type: string
+      params:
+        additionalProperties: {}
+        type: object
+      vendor:
+        type: string
+    required:
+    - device_sn
+    - method
+    - vendor
+    type: object
+  internal_api_handler.ServiceCallResponse:
+    properties:
+      bid:
+        type: string
+      call_type:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      device_sn:
+        type: string
+      error:
+        type: string
+      id:
+        type: string
+      max_retries:
+        type: integer
+      method:
+        type: string
+      params:
+        additionalProperties: {}
+        type: object
+      retry_count:
+        type: integer
+      sent_at:
+        type: string
+      status:
+        type: string
+      tid:
+        type: string
+      vendor:
+        type: string
+    type: object
+  internal_api_handler.TelemetryPoint:
+    properties:
+      fields:
+        additionalProperties: {}
+        type: object
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+      time:
+        type: string
+    type: object
+  internal_api_handler.TelemetryQueryResponse:
+    properties:
+      device_sn:
+        type: string
+      points:
+        items:
+          $ref: '#/definitions/internal_api_handler.TelemetryPoint'
+        type: array
+      total:
+        type: integer
+    type: object
+  internal_api_handler.UpdateDeviceRequest:
+    properties:
+      device_name:
+        type: string
+      device_type:
+        type: string
+      gateway_sn:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_utmos_utmos_pkg_models.DeviceStatus'
+      thing_model_id:
+        type: integer
+      vendor:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@utmos.dev
+    name: API Support
+    url: http://www.utmos.dev/support
+  description: UMOS IoT Platform RESTful API for device management and service calls
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: UMOS IoT Platform API
+  version: "1.0"
+paths:
+  /api/v1/devices:
+    get:
+      description: List devices with pagination and optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by vendor
+        in: query
+        name: vendor
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Filter by device type
+        in: query
+        name: device_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.ListDevicesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: List devices
+      tags:
+      - devices
+    post:
+      consumes:
+      - application/json
+      description: Create a new device with the provided information
+      parameters:
+      - description: Device information
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handler.CreateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_api_handler.DeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Create a new device
+      tags:
+      - devices
+  /api/v1/devices/{id}:
+    delete:
+      description: Delete a device by ID
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Delete a device
+      tags:
+      - devices
+    get:
+      description: Get device details by ID
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.DeviceResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Get a device by ID
+      tags:
+      - devices
+    put:
+      consumes:
+      - application/json
+      description: Update device information
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Device information to update
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handler.UpdateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.DeviceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Update a device
+      tags:
+      - devices
+  /api/v1/devices/sn/{sn}:
+    get:
+      description: Get device details by serial number
+      parameters:
+      - description: Device Serial Number
+        in: path
+        name: sn
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.DeviceResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Get a device by serial number
+      tags:
+      - devices
+  /api/v1/services/call:
+    post:
+      consumes:
+      - application/json
+      description: Invoke a service call on a device
+      parameters:
+      - description: Service call request
+        in: body
+        name: call
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handler.ServiceCallRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/internal_api_handler.ServiceCallResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Invoke a service call
+      tags:
+      - services
+  /api/v1/services/calls/{id}:
+    get:
+      description: Get service call details by ID
+      parameters:
+      - description: Service Call ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.ServiceCallResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Get a service call by ID
+      tags:
+      - services
+  /api/v1/services/calls/{id}/cancel:
+    post:
+      description: Cancel a pending service call
+      parameters:
+      - description: Service Call ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.ServiceCallResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Cancel a service call
+      tags:
+      - services
+  /api/v1/services/calls/device/{device_sn}:
+    get:
+      description: List service calls for a specific device
+      parameters:
+      - description: Device Serial Number
+        in: path
+        name: device_sn
+        required: true
+        type: string
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.ListServiceCallsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: List service calls for a device
+      tags:
+      - services
+  /api/v1/telemetry/{device_sn}:
+    get:
+      description: Query telemetry data for a device within a time range
+      parameters:
+      - description: Device Serial Number
+        in: path
+        name: device_sn
+        required: true
+        type: string
+      - default: -1h
+        description: Start time (RFC3339)
+        in: query
+        name: start
+        type: string
+      - default: now
+        description: Stop time (RFC3339)
+        in: query
+        name: stop
+        type: string
+      - description: Measurement name
+        in: query
+        name: measurement
+        type: string
+      - default: 100
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.TelemetryQueryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Query telemetry data
+      tags:
+      - telemetry
+  /api/v1/telemetry/{device_sn}/aggregate:
+    get:
+      description: Query aggregated telemetry data for a device
+      parameters:
+      - description: Device Serial Number
+        in: path
+        name: device_sn
+        required: true
+        type: string
+      - default: -24h
+        description: Start time (RFC3339)
+        in: query
+        name: start
+        type: string
+      - default: now
+        description: Stop time (RFC3339)
+        in: query
+        name: stop
+        type: string
+      - default: 1h
+        description: Aggregation window
+        in: query
+        name: window
+        type: string
+      - default: mean
+        description: Aggregation function (mean, max, min, sum)
+        in: query
+        name: fn
+        type: string
+      - description: Field to aggregate
+        in: query
+        name: field
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.TelemetryQueryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Query aggregated telemetry
+      tags:
+      - telemetry
+  /api/v1/telemetry/{device_sn}/latest:
+    get:
+      description: Get the latest telemetry data for a device
+      parameters:
+      - description: Device Serial Number
+        in: path
+        name: device_sn
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.LatestTelemetryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Get latest telemetry
+      tags:
+      - telemetry
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
+swagger: "2.0"
