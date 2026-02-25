@@ -12,6 +12,7 @@ import (
 	"github.com/utmos/utmos/internal/uplink/router"
 	"github.com/utmos/utmos/internal/uplink/storage"
 	"github.com/utmos/utmos/pkg/adapter"
+	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
@@ -60,6 +61,7 @@ type Service struct {
 	router     *router.Router
 	subscriber *rabbitmq.Subscriber
 	publisher  *rabbitmq.Publisher
+	msgMetrics *metrics.MessageMetrics
 
 	// State
 	running bool
@@ -72,6 +74,7 @@ func NewService(
 	config *ServiceConfig,
 	subscriber *rabbitmq.Subscriber,
 	publisher *rabbitmq.Publisher,
+	metricsCollector *metrics.Collector,
 	logger *logrus.Entry,
 ) *Service {
 	if config == nil {
@@ -89,6 +92,12 @@ func NewService(
 
 	// Note: Processors should be registered by the caller using RegisterProcessor()
 	// This allows for vendor-agnostic service initialization
+
+	// Create message metrics
+	var msgMetrics *metrics.MessageMetrics
+	if metricsCollector != nil {
+		msgMetrics = metrics.NewMessageMetrics(metricsCollector)
+	}
 
 	// Create storage
 	var influxStorage *storage.Storage
@@ -111,6 +120,7 @@ func NewService(
 		router:     msgRouter,
 		subscriber: subscriber,
 		publisher:  publisher,
+		msgMetrics: msgMetrics,
 	}
 
 	// Set up the processing pipeline
@@ -239,7 +249,18 @@ func (s *Service) onMessageProcessed(ctx context.Context, processed *adapter.Pro
 	}
 
 	if len(errs) > 0 {
+		if s.msgMetrics != nil {
+			s.msgMetrics.ProcessedTotal.WithLabelValues(
+				"iot-uplink", processed.Vendor, string(processed.MessageType), "error",
+			).Inc()
+		}
 		return fmt.Errorf("processing errors: %v", errs)
+	}
+
+	if s.msgMetrics != nil {
+		s.msgMetrics.ProcessedTotal.WithLabelValues(
+			"iot-uplink", processed.Vendor, string(processed.MessageType), "success",
+		).Inc()
 	}
 
 	return nil

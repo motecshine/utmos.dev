@@ -8,6 +8,9 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/internal/gateway/mqtt"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -105,6 +108,15 @@ func (b *DownlinkBridge) Start(ctx context.Context) error {
 
 // handleStandardMessage handles a StandardMessage from RabbitMQ
 func (b *DownlinkBridge) handleStandardMessage(ctx context.Context, msg *rabbitmq.StandardMessage) error {
+	// Create a span for the downlink bridge operation
+	tr := otel.Tracer("iot-gateway")
+	ctx, span := tr.Start(ctx, "gateway.bridge.downlink",
+		trace.WithAttributes(
+			attribute.String("device_sn", msg.DeviceSN),
+		),
+	)
+	defer span.End()
+
 	// Extract downlink data from StandardMessage
 	var dataMap map[string]any
 	if err := msg.GetData(&dataMap); err != nil {
@@ -171,6 +183,16 @@ func (b *DownlinkBridge) Bridge(ctx context.Context, msg *RawDownlinkMessage) er
 	if !b.mqttClient.IsConnected() {
 		return fmt.Errorf("MQTT client not connected")
 	}
+
+	// Create a span for the MQTT publish operation
+	tr := otel.Tracer("iot-gateway")
+	_, span := tr.Start(ctx, "gateway.mqtt.publish",
+		trace.WithAttributes(
+			attribute.String("mqtt.topic", msg.Topic),
+			attribute.String("device_sn", msg.DeviceSN),
+		),
+	)
+	defer span.End()
 
 	// Publish to MQTT
 	err := b.mqttClient.Publish(msg.Topic, byte(msg.QoS), msg.Retained, msg.Payload)

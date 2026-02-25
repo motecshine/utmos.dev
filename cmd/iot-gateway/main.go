@@ -90,7 +90,7 @@ func main() {
 
 	// Create gateway service
 	logEntry := log.WithService(serviceName)
-	gatewaySvc := gateway.NewService(svcConfig, publisher, subscriber, logEntry)
+	gatewaySvc := gateway.NewService(svcConfig, publisher, subscriber, metricsCollector, logEntry)
 
 	// Setup Gin router for health checks
 	if cfg.Logger.Level != "debug" {

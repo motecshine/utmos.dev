@@ -11,6 +11,9 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/pkg/adapter"
 )
@@ -94,6 +97,16 @@ func (s *Storage) WriteProcessedMessage(ctx context.Context, msg *adapter.Proces
 	if msg == nil {
 		return fmt.Errorf("message is nil")
 	}
+
+	tr := otel.Tracer("iot-uplink")
+	_, span := tr.Start(ctx, "uplink.storage.influxdb.write",
+		trace.WithAttributes(
+			attribute.String("device_sn", msg.DeviceSN),
+			attribute.String("vendor", msg.Vendor),
+			attribute.String("measurement", s.getMeasurement(msg)),
+		),
+	)
+	defer span.End()
 
 	// Create measurement name based on message type
 	measurement := s.getMeasurement(msg)

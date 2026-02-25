@@ -167,7 +167,7 @@ func (h *Service) Call(c *gin.Context) {
 		ctx := c.Request.Context()
 		result, err := h.dispatcher.Handle(ctx, dispatcherCall)
 		if err != nil {
-			h.logger.WithError(err).WithFields(logrus.Fields{
+			logWithTrace(h.logger, c.Request.Context()).WithError(err).WithFields(logrus.Fields{
 				"device_sn": req.DeviceSN,
 				"method":    req.Method,
 			}).Error("Failed to dispatch service call")
@@ -195,10 +195,10 @@ func (h *Service) Call(c *gin.Context) {
 	if h.repository != nil {
 		modelCall := h.toModelServiceCall(dispatcherCall)
 		if err := h.repository.Create(modelCall); err != nil {
-			h.logger.WithError(err).Error("Failed to persist service call")
+			logWithTrace(h.logger, c.Request.Context()).WithError(err).Error("Failed to persist service call")
 		}
 
-		h.logger.WithFields(logrus.Fields{
+		logWithTrace(h.logger, c.Request.Context()).WithFields(logrus.Fields{
 			"call_id":   modelCall.ID,
 			"device_sn": req.DeviceSN,
 			"method":    req.Method,
@@ -356,6 +356,6 @@ func (h *Service) Cancel(c *gin.Context) {
 		return
 	}
 
-	h.logger.WithField("call_id", id).Info("Service call cancelled")
+	logWithTrace(h.logger, c.Request.Context()).WithField("call_id", id).Info("Service call cancelled")
 	c.JSON(http.StatusOK, toServiceCallResponse(call))
 }

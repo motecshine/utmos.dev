@@ -134,7 +134,7 @@ func (h *Device) Create(c *gin.Context) {
 		return
 	}
 
-	h.logger.WithField("device_sn", device.DeviceSN).Info("Device created")
+	logWithTrace(h.logger, c.Request.Context()).WithField("device_sn", device.DeviceSN).Info("Device created")
 	c.JSON(http.StatusCreated, toDeviceResponse(device))
 }
 
@@ -307,7 +307,7 @@ func (h *Device) Update(c *gin.Context) {
 	// Reload device
 	h.db.First(&device, id)
 
-	h.logger.WithField("device_id", id).Info("Device updated")
+	logWithTrace(h.logger, c.Request.Context()).WithField("device_id", id).Info("Device updated")
 	c.JSON(http.StatusOK, toDeviceResponse(&device))
 }
 
@@ -337,6 +337,6 @@ func (h *Device) Delete(c *gin.Context) {
 		return
 	}
 
-	h.logger.WithField("device_id", id).Info("Device deleted")
+	logWithTrace(h.logger, c.Request.Context()).WithField("device_id", id).Info("Device deleted")
 	c.Status(http.StatusNoContent)
 }

@@ -6,6 +6,10 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/pkg/adapter"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -79,6 +83,15 @@ func (h *MessageHandler) Handle(ctx context.Context, msg *rabbitmq.StandardMessa
 		return fmt.Errorf("message is nil")
 	}
 
+	tr := otel.Tracer("iot-uplink")
+	ctx, span := tr.Start(ctx, "uplink.message.process",
+		trace.WithAttributes(
+			attribute.String("device_sn", msg.DeviceSN),
+			attribute.String("action", msg.Action),
+		),
+	)
+	defer span.End()
+
 	// Find appropriate processor
 	processor, found := h.registry.GetForMessage(msg)
 	if !found {
@@ -87,7 +100,10 @@ func (h *MessageHandler) Handle(ctx context.Context, msg *rabbitmq.StandardMessa
 			"action":    msg.Action,
 			"tid":       msg.TID,
 		}).Warn("No processor found for message")
-		return fmt.Errorf("no processor found for message")
+		err := fmt.Errorf("no processor found for message")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
 	}
 
 	// Process the message
@@ -98,6 +114,8 @@ func (h *MessageHandler) Handle(ctx context.Context, msg *rabbitmq.StandardMessa
 			"vendor":    processor.GetVendor(),
 			"tid":       msg.TID,
 		}).Error("Failed to process message")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return fmt.Errorf("failed to process message: %w", err)
 	}
 
@@ -112,6 +130,8 @@ func (h *MessageHandler) Handle(ctx context.Context, msg *rabbitmq.StandardMessa
 	if h.onProcessed != nil {
 		if err := h.onProcessed(ctx, processed); err != nil {
 			h.logger.WithError(err).WithField("tid", msg.TID).Error("Failed to handle processed message")
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return fmt.Errorf("failed to handle processed message: %w", err)
 		}
 	}

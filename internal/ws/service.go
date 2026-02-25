@@ -10,10 +10,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/internal/ws/hub"
 	"github.com/utmos/utmos/internal/ws/push"
 	"github.com/utmos/utmos/internal/ws/subscription"
+	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
@@ -56,6 +60,7 @@ type Service struct {
 	subscriber *rabbitmq.Subscriber
 	upgrader   websocket.Upgrader
 	logger     *logrus.Entry
+	msgMetrics *metrics.MessageMetrics
 
 	running   bool
 	runningMu sync.RWMutex
@@ -63,12 +68,17 @@ type Service struct {
 }
 
 // NewService creates a new WebSocket service
-func NewService(config *ServiceConfig, logger *logrus.Entry) *Service {
+func NewService(config *ServiceConfig, metricsCollector *metrics.Collector, logger *logrus.Entry) *Service {
 	if config == nil {
 		config = DefaultServiceConfig()
 	}
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
+	}
+
+	var msgMetrics *metrics.MessageMetrics
+	if metricsCollector != nil {
+		msgMetrics = metrics.NewMessageMetrics(metricsCollector)
 	}
 
 	// Create hub
@@ -105,6 +115,7 @@ func NewService(config *ServiceConfig, logger *logrus.Entry) *Service {
 		pusher:     pusher,
 		upgrader:   upgrader,
 		logger:     logger.WithField("component", "ws-service"),
+		msgMetrics: msgMetrics,
 		done:       make(chan struct{}),
 	}
 
@@ -257,7 +268,7 @@ func (s *Service) consumeMessages(ctx context.Context) {
 
 	// Subscribe to the WebSocket queue
 	err := s.subscriber.Subscribe("iot.ws.queue", func(ctx context.Context, msg *rabbitmq.StandardMessage) error {
-		s.handleRabbitMQMessage(msg)
+		s.handleRabbitMQMessage(ctx, msg)
 		return nil
 	})
 	if err != nil {
@@ -278,10 +289,19 @@ func (s *Service) consumeMessages(ctx context.Context) {
 }
 
 // handleRabbitMQMessage handles a message from RabbitMQ
-func (s *Service) handleRabbitMQMessage(msg *rabbitmq.StandardMessage) {
+func (s *Service) handleRabbitMQMessage(ctx context.Context, msg *rabbitmq.StandardMessage) {
 	if msg == nil {
 		return
 	}
+
+	tr := otel.Tracer("iot-ws")
+	_, span := tr.Start(ctx, "ws.message.push",
+		trace.WithAttributes(
+			attribute.String("device_sn", msg.DeviceSN),
+			attribute.String("action", msg.Action),
+		),
+	)
+	defer span.End()
 
 	// Determine topic from action
 	topic := s.actionToTopic(msg.Action)
@@ -310,6 +330,10 @@ func (s *Service) handleRabbitMQMessage(msg *rabbitmq.StandardMessage) {
 	if msg.DeviceSN != "" {
 		deviceTopic := "device." + msg.DeviceSN + "." + topic
 		s.pusher.PushToTopic(deviceTopic, wsMsg)
+	}
+
+	if s.msgMetrics != nil {
+		s.msgMetrics.ProcessedTotal.WithLabelValues("iot-ws", "", msg.Action, "success").Inc()
 	}
 }
 

@@ -9,6 +9,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/internal/gateway/mqtt"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -66,6 +69,17 @@ func (b *UplinkBridge) Bridge(ctx context.Context, msg *mqtt.Message, topicInfo 
 		return fmt.Errorf("publisher not initialized")
 	}
 
+	// Create a child span for the uplink bridge operation
+	tr := otel.Tracer("iot-gateway")
+	ctx, span := tr.Start(ctx, "gateway.bridge.uplink",
+		trace.WithAttributes(
+			attribute.String("device_sn", topicInfo.DeviceSN),
+			attribute.String("mqtt.topic", msg.Topic),
+			attribute.String("vendor", topicInfo.Vendor),
+		),
+	)
+	defer span.End()
+
 	// Determine routing key: iot.raw.{vendor}.uplink
 	routingKey := fmt.Sprintf("iot.raw.%s.uplink", topicInfo.Vendor)
 
@@ -116,8 +130,8 @@ func (b *UplinkBridge) Bridge(ctx context.Context, msg *mqtt.Message, topicInfo 
 
 // CreateProcessor creates a message processor for the uplink bridge
 func (b *UplinkBridge) CreateProcessor(pattern string) *mqtt.SimpleProcessor {
-	return mqtt.NewSimpleProcessor(pattern, func(msg *mqtt.Message, topicInfo *mqtt.TopicInfo) error {
-		return b.Bridge(context.Background(), msg, topicInfo)
+	return mqtt.NewSimpleProcessor(pattern, func(ctx context.Context, msg *mqtt.Message, topicInfo *mqtt.TopicInfo) error {
+		return b.Bridge(ctx, msg, topicInfo)
 	})
 }
 

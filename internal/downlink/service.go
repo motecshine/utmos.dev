@@ -13,6 +13,7 @@ import (
 	"github.com/utmos/utmos/internal/downlink/retry"
 	"github.com/utmos/utmos/internal/downlink/router"
 	"github.com/utmos/utmos/pkg/adapter"
+	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
@@ -63,10 +64,11 @@ type Service struct {
 	// Metrics
 	processedCount int64
 	failedCount    int64
+	msgMetrics     *metrics.MessageMetrics
 }
 
 // NewService creates a new downlink service
-func NewService(config *Config, publisher *rabbitmq.Publisher, logger *logrus.Entry) *Service {
+func NewService(config *Config, publisher *rabbitmq.Publisher, metricsCollector *metrics.Collector, logger *logrus.Entry) *Service {
 	if config == nil {
 		config = DefaultConfig()
 	}
@@ -94,6 +96,12 @@ func NewService(config *Config, publisher *rabbitmq.Publisher, logger *logrus.En
 		routerInstance = router.NewRouter(publisher, config.RouterConfig, serviceLogger)
 	}
 
+	// Create message metrics
+	var msgMetrics *metrics.MessageMetrics
+	if metricsCollector != nil {
+		msgMetrics = metrics.NewMessageMetrics(metricsCollector)
+	}
+
 	svc := &Service{
 		config:       config,
 		logger:       serviceLogger,
@@ -102,6 +110,7 @@ func NewService(config *Config, publisher *rabbitmq.Publisher, logger *logrus.En
 		retryHandler: retryHandler,
 		router:       routerInstance,
 		publisher:    publisher,
+		msgMetrics:   msgMetrics,
 	}
 
 	// Set up callbacks
@@ -259,18 +268,25 @@ func (s *Service) onDeadLetter(entry *retry.DeadLetterEntry) {
 	}).Warn("Service call moved to dead letter queue")
 }
 
-// incrementProcessed increments the processed counter
-func (s *Service) incrementProcessed() {
+// incrementCounter increments the given counter and records a Prometheus metric with the given status.
+func (s *Service) incrementCounter(counter *int64, status string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.processedCount++
+	*counter++
+
+	if s.msgMetrics != nil {
+		s.msgMetrics.ProcessedTotal.WithLabelValues("iot-downlink", "", "command", status).Inc()
+	}
+}
+
+// incrementProcessed increments the processed counter
+func (s *Service) incrementProcessed() {
+	s.incrementCounter(&s.processedCount, "success")
 }
 
 // incrementFailed increments the failed counter
 func (s *Service) incrementFailed() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.failedCount++
+	s.incrementCounter(&s.failedCount, "error")
 }
 
 // GetMetrics returns service metrics

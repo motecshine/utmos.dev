@@ -79,7 +79,7 @@ func main() {
 		RetryWorkerInterval: 5 * time.Second,
 	}
 
-	downlinkService := downlink.NewService(downlinkConfig, publisher, log.WithService(serviceName))
+	downlinkService := downlink.NewService(downlinkConfig, publisher, metricsCollector, log.WithService(serviceName))
 
 	// Register DJI dispatcher
 	djiDispatcher := djidownlink.NewDispatcherAdapter(publisher, log.WithService(serviceName))

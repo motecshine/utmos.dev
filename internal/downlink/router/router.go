@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/internal/downlink/dispatcher"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -83,6 +86,16 @@ func (r *Router) Route(ctx context.Context, call *dispatcher.ServiceCall, result
 	if r.publisher == nil {
 		return nil, fmt.Errorf("publisher not initialized")
 	}
+
+	tr := otel.Tracer("iot-downlink")
+	ctx, span := tr.Start(ctx, "downlink.route.gateway",
+		trace.WithAttributes(
+			attribute.String("device_sn", call.DeviceSN),
+			attribute.String("method", call.Method),
+			attribute.String("vendor", call.Vendor),
+		),
+	)
+	defer span.End()
 
 	// Determine routing key based on call type
 	routingKey := r.getRoutingKey(call)

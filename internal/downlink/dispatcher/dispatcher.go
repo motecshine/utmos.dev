@@ -8,6 +8,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/pkg/adapter"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -202,6 +206,16 @@ func (h *DispatchHandler) Handle(ctx context.Context, call *ServiceCall) (*Dispa
 		return nil, fmt.Errorf("service call is nil")
 	}
 
+	tr := otel.Tracer("iot-downlink")
+	ctx, span := tr.Start(ctx, "downlink.dispatch",
+		trace.WithAttributes(
+			attribute.String("device_sn", call.DeviceSN),
+			attribute.String("vendor", call.Vendor),
+			attribute.String("method", call.Method),
+		),
+	)
+	defer span.End()
+
 	// Find appropriate dispatcher
 	dispatcher, found := h.registry.GetForCall(call)
 	if !found {
@@ -210,7 +224,10 @@ func (h *DispatchHandler) Handle(ctx context.Context, call *ServiceCall) (*Dispa
 			"vendor":    call.Vendor,
 			"method":    call.Method,
 		}).Warn("No dispatcher found for service call")
-		return nil, fmt.Errorf("no dispatcher found for vendor: %s", call.Vendor)
+		err := fmt.Errorf("no dispatcher found for vendor: %s", call.Vendor)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	// Dispatch the call
@@ -221,7 +238,10 @@ func (h *DispatchHandler) Handle(ctx context.Context, call *ServiceCall) (*Dispa
 			"vendor":    call.Vendor,
 			"method":    call.Method,
 		}).Error("Failed to dispatch service call")
-		return result, fmt.Errorf("failed to dispatch: %w", err)
+		wrappedErr := fmt.Errorf("failed to dispatch: %w", err)
+		span.RecordError(wrappedErr)
+		span.SetStatus(codes.Error, wrappedErr.Error())
+		return result, wrappedErr
 	}
 
 	h.logger.WithFields(logrus.Fields{

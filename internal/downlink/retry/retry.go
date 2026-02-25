@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/internal/downlink/dispatcher"
 )
@@ -196,6 +199,14 @@ func (h *Handler) ProcessRetries(ctx context.Context) int {
 		retryable.Call.RetryCount++
 		retryable.Call.Status = dispatcher.ServiceCallStatusRetrying
 
+		tr := otel.Tracer("iot-downlink")
+		retryCtx, span := tr.Start(ctx, "downlink.retry",
+			trace.WithAttributes(
+				attribute.String("device_sn", retryable.Call.DeviceSN),
+				attribute.Int("retry_count", retryable.Call.RetryCount),
+			),
+		)
+
 		h.logger.WithFields(logrus.Fields{
 			"call_id":     retryable.Call.ID,
 			"device_sn":   retryable.Call.DeviceSN,
@@ -203,7 +214,7 @@ func (h *Handler) ProcessRetries(ctx context.Context) int {
 		}).Debug("Processing retry")
 
 		if h.onRetry != nil {
-			if err := h.onRetry(ctx, retryable.Call); err != nil {
+			if err := h.onRetry(retryCtx, retryable.Call); err != nil {
 				h.logger.WithError(err).WithField("call_id", retryable.Call.ID).Error("Retry failed")
 
 				// Check if we should retry again or move to dead letter
@@ -220,6 +231,7 @@ func (h *Handler) ProcessRetries(ctx context.Context) int {
 				}
 			}
 		}
+		span.End()
 		processed++
 	}
 

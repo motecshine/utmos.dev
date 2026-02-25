@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -124,9 +123,9 @@ func (h *Telemetry) Query(c *gin.Context) {
 	query := h.buildQuery(deviceSN, start, stop, measurement, limit)
 
 	// Execute query
-	result, err := h.queryAPI.Query(context.Background(), query)
+	result, err := h.queryAPI.Query(c.Request.Context(), query)
 	if err != nil {
-		respondInternalError(c, h.logger, err, "Failed to query telemetry", "Failed to query telemetry data")
+		respondInternalError(c, logWithTrace(h.logger, c.Request.Context()), err, "Failed to query telemetry", "Failed to query telemetry data")
 		return
 	}
 	defer func() { _ = result.Close() }()
@@ -156,7 +155,7 @@ func (h *Telemetry) Query(c *gin.Context) {
 	}
 
 	if result.Err() != nil {
-		h.logger.WithError(result.Err()).Error("Error reading telemetry results")
+		logWithTrace(h.logger, c.Request.Context()).WithError(result.Err()).Error("Error reading telemetry results")
 	}
 
 	c.JSON(http.StatusOK, TelemetryQueryResponse{
@@ -196,9 +195,9 @@ func (h *Telemetry) Latest(c *gin.Context) {
 			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 	`, h.bucket, deviceSN)
 
-	result, err := h.queryAPI.Query(context.Background(), query)
+	result, err := h.queryAPI.Query(c.Request.Context(), query)
 	if err != nil {
-		respondInternalError(c, h.logger, err, "Failed to query latest telemetry", "Failed to query telemetry data")
+		respondInternalError(c, logWithTrace(h.logger, c.Request.Context()), err, "Failed to query latest telemetry", "Failed to query telemetry data")
 		return
 	}
 	defer func() { _ = result.Close() }()
@@ -223,7 +222,7 @@ func (h *Telemetry) Latest(c *gin.Context) {
 	}
 
 	if result.Err() != nil {
-		h.logger.WithError(result.Err()).Error("Error reading telemetry results")
+		logWithTrace(h.logger, c.Request.Context()).WithError(result.Err()).Error("Error reading telemetry results")
 	}
 
 	respondNotFound(c, "NO_DATA", "No telemetry data found for device")
@@ -281,9 +280,9 @@ func (h *Telemetry) Aggregate(c *gin.Context) {
 			|> aggregateWindow(every: %s, fn: %s, createEmpty: false)
 	`, h.bucket, start, stop, deviceSN, field, window, fn)
 
-	result, err := h.queryAPI.Query(context.Background(), query)
+	result, err := h.queryAPI.Query(c.Request.Context(), query)
 	if err != nil {
-		respondInternalError(c, h.logger, err, "Failed to query aggregated telemetry", "Failed to query telemetry data")
+		respondInternalError(c, logWithTrace(h.logger, c.Request.Context()), err, "Failed to query aggregated telemetry", "Failed to query telemetry data")
 		return
 	}
 	defer func() { _ = result.Close() }()
@@ -301,7 +300,7 @@ func (h *Telemetry) Aggregate(c *gin.Context) {
 	}
 
 	if result.Err() != nil {
-		h.logger.WithError(result.Err()).Error("Error reading aggregated results")
+		logWithTrace(h.logger, c.Request.Context()).WithError(result.Err()).Error("Error reading aggregated results")
 	}
 
 	c.JSON(http.StatusOK, TelemetryQueryResponse{

@@ -2,14 +2,19 @@
 package mqtt
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"sync"
 	"time"
 
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	pkgtracer "github.com/utmos/utmos/pkg/tracer"
 )
 
 // Message represents a parsed MQTT message
@@ -43,12 +48,12 @@ type Handler struct {
 
 // MessageProcessor processes messages for a specific topic pattern
 type MessageProcessor interface {
-	Process(msg *Message, topicInfo *TopicInfo) error
+	Process(ctx context.Context, msg *Message, topicInfo *TopicInfo) error
 	Pattern() string
 }
 
 // MessageCallback is called when a message is processed
-type MessageCallback func(msg *Message, topicInfo *TopicInfo) error
+type MessageCallback func(ctx context.Context, msg *Message, topicInfo *TopicInfo) error
 
 // NewHandler creates a new message handler
 func NewHandler(logger *logrus.Entry) *Handler {
@@ -85,11 +90,23 @@ func (h *Handler) Handle(client pahomqtt.Client, mqttMsg pahomqtt.Message) {
 		Retained:  mqttMsg.Retained(),
 		MessageID: mqttMsg.MessageID(),
 		Timestamp: time.Now(),
-		TraceID:   uuid.New().String(),
-		SpanID:    uuid.New().String(),
 	}
 
 	topicInfo := ParseTopic(msg.Topic)
+
+	// Create a root span for the MQTT message
+	tr := otel.Tracer("iot-gateway")
+	ctx, span := tr.Start(context.Background(), "mqtt.message.received",
+		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(
+			attribute.String("mqtt.topic", msg.Topic),
+			attribute.String("device_sn", topicInfo.DeviceSN),
+		),
+	)
+	defer span.End()
+
+	msg.TraceID = pkgtracer.GetTraceID(ctx)
+	msg.SpanID = pkgtracer.GetSpanID(ctx)
 
 	h.logger.WithFields(logrus.Fields{
 		"topic":      msg.Topic,
@@ -104,7 +121,7 @@ func (h *Handler) Handle(client pahomqtt.Client, mqttMsg pahomqtt.Message) {
 
 	for pattern, processor := range h.processors {
 		if matchTopic(pattern, msg.Topic) {
-			if err := processor.Process(msg, topicInfo); err != nil {
+			if err := processor.Process(ctx, msg, topicInfo); err != nil {
 				h.logger.WithError(err).WithFields(logrus.Fields{
 					"topic":    msg.Topic,
 					"pattern":  pattern,
@@ -210,8 +227,8 @@ func NewSimpleProcessor(pattern string, callback MessageCallback) *SimpleProcess
 }
 
 // Process processes a message
-func (p *SimpleProcessor) Process(msg *Message, topicInfo *TopicInfo) error {
-	return p.callback(msg, topicInfo)
+func (p *SimpleProcessor) Process(ctx context.Context, msg *Message, topicInfo *TopicInfo) error {
+	return p.callback(ctx, msg, topicInfo)
 }
 
 // Pattern returns the topic pattern

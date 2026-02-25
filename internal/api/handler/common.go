@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +17,18 @@ import (
 type ErrorResponse struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
+}
+
+// logWithTrace enriches a logrus entry with trace context from ctx.
+func logWithTrace(logger *logrus.Entry, ctx context.Context) *logrus.Entry {
+	spanCtx := trace.SpanContextFromContext(ctx)
+	if spanCtx.IsValid() {
+		return logger.WithFields(logrus.Fields{
+			"trace_id": spanCtx.TraceID().String(),
+			"span_id":  spanCtx.SpanID().String(),
+		})
+	}
+	return logger
 }
 
 // isUniqueConstraintError checks if the error is a unique constraint violation

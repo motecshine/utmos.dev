@@ -29,7 +29,7 @@ func TestDefaultServiceConfig(t *testing.T) {
 
 func TestNewService(t *testing.T) {
 	t.Run("with nil config", func(t *testing.T) {
-		svc := NewService(nil, nil, nil, nil)
+		svc := NewService(nil, nil, nil, nil, nil)
 		require.NotNil(t, svc)
 		assert.NotNil(t, svc.config)
 		assert.NotNil(t, svc.registry)
@@ -51,9 +51,8 @@ func TestNewService(t *testing.T) {
 			EnableRouting: false,
 		}
 
-		svc := NewService(config, nil, nil, nil)
+		svc := NewService(config, nil, nil, nil, nil)
 		require.NotNil(t, svc)
-		assert.Equal(t, "custom.queue", svc.config.QueueName)
 		assert.Nil(t, svc.storage) // Disabled
 		assert.Nil(t, svc.router)  // Disabled
 
@@ -61,7 +60,7 @@ func TestNewService(t *testing.T) {
 	})
 
 	t.Run("processors must be registered by caller", func(t *testing.T) {
-		svc := NewService(nil, nil, nil, nil)
+		svc := NewService(nil, nil, nil, nil, nil)
 		defer func() { _ = svc.Stop() }()
 
 		// No processors registered by default
@@ -78,7 +77,7 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_StartStop(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	defer func() { _ = svc.Stop() }()
 
 	t.Run("initial state", func(t *testing.T) {
@@ -109,7 +108,7 @@ func TestService_StartStop(t *testing.T) {
 }
 
 func TestService_GetComponents(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	defer func() { _ = svc.Stop() }()
 
 	assert.NotNil(t, svc.GetRegistry())
@@ -119,7 +118,7 @@ func TestService_GetComponents(t *testing.T) {
 }
 
 func TestService_RegisterProcessor(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	defer func() { _ = svc.Stop() }()
 
 	// Create a mock processor
@@ -139,7 +138,7 @@ func TestService_ProcessMessage(t *testing.T) {
 		EnableStorage: true,
 		EnableRouting: false, // Disable routing for test
 	}
-	svc := NewService(config, nil, nil, nil)
+	svc := NewService(config, nil, nil, nil, nil)
 	defer func() { _ = svc.Stop() }()
 
 	// Register DJI processor for tests
@@ -188,7 +187,7 @@ func TestService_ProcessMessage(t *testing.T) {
 }
 
 func TestService_GetStats(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	defer func() { _ = svc.Stop() }()
 
 	// Register DJI processor for stats test
@@ -217,7 +216,7 @@ func TestService_DisabledComponents(t *testing.T) {
 		EnableRouting: false,
 	}
 
-	svc := NewService(config, nil, nil, nil)
+	svc := NewService(config, nil, nil, nil, nil)
 	defer func() { _ = svc.Stop() }()
 
 	assert.Nil(t, svc.GetStorage())

@@ -77,7 +77,7 @@ func main() {
 	}
 
 	// Create WebSocket service
-	wsSvc := ws.NewService(wsConfig, log.WithService(serviceName))
+	wsSvc := ws.NewService(wsConfig, metricsCollector, log.WithService(serviceName))
 	wsSvc.SetSubscriber(subscriber)
 
 	// Start WebSocket service

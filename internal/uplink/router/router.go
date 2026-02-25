@@ -7,6 +7,9 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/utmos/utmos/pkg/adapter"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -99,6 +102,16 @@ func (r *Router) Route(ctx context.Context, msg *adapter.ProcessedMessage) error
 	if r.publisher == nil {
 		return fmt.Errorf("publisher not initialized")
 	}
+
+	tr := otel.Tracer("iot-uplink")
+	ctx, span := tr.Start(ctx, "uplink.message.route",
+		trace.WithAttributes(
+			attribute.String("device_sn", msg.DeviceSN),
+			attribute.String("vendor", msg.Vendor),
+			attribute.String("message_type", string(msg.MessageType)),
+		),
+	)
+	defer span.End()
 
 	var errs []error
 

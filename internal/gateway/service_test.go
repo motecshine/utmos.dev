@@ -26,7 +26,7 @@ func TestDefaultServiceConfig(t *testing.T) {
 
 func TestNewService(t *testing.T) {
 	t.Run("with nil config", func(t *testing.T) {
-		svc := NewService(nil, nil, nil, nil)
+		svc := NewService(nil, nil, nil, nil, nil)
 		require.NotNil(t, svc)
 		assert.NotNil(t, svc.config)
 		assert.NotNil(t, svc.mqttClient)
@@ -50,7 +50,7 @@ func TestNewService(t *testing.T) {
 			SubscribeTopics: []string{"custom/#"},
 		}
 
-		svc := NewService(config, nil, nil, nil)
+		svc := NewService(config, nil, nil, nil, nil)
 		require.NotNil(t, svc)
 		assert.Equal(t, "custom-broker", svc.config.MQTT.Broker)
 		assert.Equal(t, 1884, svc.config.MQTT.Port)
@@ -59,38 +59,38 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_IsRunning(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	assert.False(t, svc.IsRunning())
 }
 
 func TestService_IsMQTTConnected(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	// Not connected initially
 	assert.False(t, svc.IsMQTTConnected())
 }
 
 func TestService_GetOnlineDeviceCount(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	assert.Equal(t, 0, svc.GetOnlineDeviceCount())
 }
 
 func TestService_GetConnectionManager(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	assert.NotNil(t, svc.GetConnectionManager())
 }
 
 func TestService_GetMQTTClient(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	assert.NotNil(t, svc.GetMQTTClient())
 }
 
 func TestService_GetMQTTHandler(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 	assert.NotNil(t, svc.GetMQTTHandler())
 }
 
 func TestService_RegisterDevice(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 
 	state := svc.RegisterDevice("device-001", "client-001", "192.168.1.100")
 
@@ -103,7 +103,7 @@ func TestService_RegisterDevice(t *testing.T) {
 }
 
 func TestService_UnregisterDevice(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 
 	// Register first
 	svc.RegisterDevice("device-001", "client-001", "192.168.1.100")
@@ -117,7 +117,7 @@ func TestService_UnregisterDevice(t *testing.T) {
 }
 
 func TestService_IsDeviceOnline(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 
 	// Initially not online
 	assert.False(t, svc.IsDeviceOnline("device-001"))
@@ -132,7 +132,7 @@ func TestService_IsDeviceOnline(t *testing.T) {
 }
 
 func TestService_Stop_NotRunning(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 
 	// Should not error when stopping a non-running service
 	err := svc.Stop()
@@ -140,7 +140,7 @@ func TestService_Stop_NotRunning(t *testing.T) {
 }
 
 func TestService_Start_AlreadyRunning(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 
 	// Manually set running state
 	svc.mu.Lock()
@@ -154,7 +154,7 @@ func TestService_Start_AlreadyRunning(t *testing.T) {
 }
 
 func TestService_MultipleDevices(t *testing.T) {
-	svc := NewService(nil, nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil, nil)
 
 	// Register multiple devices
 	svc.RegisterDevice("device-001", "client-001", "192.168.1.100")

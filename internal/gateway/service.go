@@ -13,6 +13,7 @@ import (
 	"github.com/utmos/utmos/internal/gateway/bridge"
 	"github.com/utmos/utmos/internal/gateway/connection"
 	"github.com/utmos/utmos/internal/gateway/mqtt"
+	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
@@ -64,15 +65,19 @@ type Service struct {
 	logger *logrus.Entry
 
 	// Components
-	mqttClient    *mqtt.Client
-	mqttHandler   *mqtt.Handler
-	uplinkBridge  *bridge.UplinkBridge
+	mqttClient     *mqtt.Client
+	mqttHandler    *mqtt.Handler
+	uplinkBridge   *bridge.UplinkBridge
 	downlinkBridge *bridge.DownlinkBridge
-	connManager   *connection.Manager
+	connManager    *connection.Manager
 
 	// RabbitMQ
 	publisher  *rabbitmq.Publisher
 	subscriber *rabbitmq.Subscriber
+
+	// Metrics
+	msgMetrics    *metrics.MessageMetrics
+	deviceMetrics *metrics.DeviceMetrics
 
 	// State
 	running bool
@@ -85,6 +90,7 @@ func NewService(
 	config *ServiceConfig,
 	publisher *rabbitmq.Publisher,
 	subscriber *rabbitmq.Subscriber,
+	metricsCollector *metrics.Collector,
 	logger *logrus.Entry,
 ) *Service {
 	if config == nil {
@@ -109,6 +115,14 @@ func NewService(
 	uplinkBridge := bridge.NewUplinkBridge(publisher, config.UplinkBridge, svcLogger)
 	downlinkBridge := bridge.NewDownlinkBridge(mqttClient, subscriber, config.DownlinkBridge, svcLogger)
 
+	// Create metrics
+	var msgMetrics *metrics.MessageMetrics
+	var deviceMetrics *metrics.DeviceMetrics
+	if metricsCollector != nil {
+		msgMetrics = metrics.NewMessageMetrics(metricsCollector)
+		deviceMetrics = metrics.NewDeviceMetrics(metricsCollector)
+	}
+
 	return &Service{
 		config:         config,
 		logger:         svcLogger,
@@ -119,6 +133,8 @@ func NewService(
 		connManager:    connManager,
 		publisher:      publisher,
 		subscriber:     subscriber,
+		msgMetrics:     msgMetrics,
+		deviceMetrics:  deviceMetrics,
 	}
 }
 

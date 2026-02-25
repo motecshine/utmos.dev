@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -158,7 +159,7 @@ func TestHandler_RegisterProcessor(t *testing.T) {
 	handler := NewHandler(nil)
 
 	processed := false
-	processor := NewSimpleProcessor("thing/product/#", func(msg *Message, topicInfo *TopicInfo) error {
+	processor := NewSimpleProcessor("thing/product/#", func(ctx context.Context, msg *Message, topicInfo *TopicInfo) error {
 		processed = true
 		return nil
 	})
@@ -176,7 +177,7 @@ func TestHandler_RegisterProcessor(t *testing.T) {
 func TestHandler_UnregisterProcessor(t *testing.T) {
 	handler := NewHandler(nil)
 
-	processor := NewSimpleProcessor("thing/product/#", func(msg *Message, topicInfo *TopicInfo) error {
+	processor := NewSimpleProcessor("thing/product/#", func(ctx context.Context, msg *Message, topicInfo *TopicInfo) error {
 		return nil
 	})
 
@@ -195,7 +196,7 @@ func TestSimpleProcessor(t *testing.T) {
 	var receivedMsg *Message
 	var receivedInfo *TopicInfo
 
-	processor := NewSimpleProcessor("test/+/topic", func(msg *Message, topicInfo *TopicInfo) error {
+	processor := NewSimpleProcessor("test/+/topic", func(ctx context.Context, msg *Message, topicInfo *TopicInfo) error {
 		called = true
 		receivedMsg = msg
 		receivedInfo = topicInfo
@@ -210,7 +211,7 @@ func TestSimpleProcessor(t *testing.T) {
 	}
 	topicInfo := ParseTopic(msg.Topic)
 
-	err := processor.Process(msg, topicInfo)
+	err := processor.Process(context.Background(), msg, topicInfo)
 	require.NoError(t, err)
 	assert.True(t, called)
 	assert.Equal(t, msg, receivedMsg)

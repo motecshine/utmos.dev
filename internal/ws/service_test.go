@@ -28,7 +28,7 @@ func TestDefaultServiceConfig(t *testing.T) {
 
 func TestNewService(t *testing.T) {
 	t.Run("with nil config", func(t *testing.T) {
-		svc := NewService(nil, nil)
+		svc := NewService(nil, nil, nil)
 		require.NotNil(t, svc)
 		assert.NotNil(t, svc.hub)
 		assert.NotNil(t, svc.subManager)
@@ -39,13 +39,13 @@ func TestNewService(t *testing.T) {
 		config := &ServiceConfig{
 			AllowedOrigins: []string{"http://localhost:3000"},
 		}
-		svc := NewService(config, nil)
+		svc := NewService(config, nil, nil)
 		assert.Equal(t, config.AllowedOrigins, svc.config.AllowedOrigins)
 	})
 }
 
 func TestService_StartStop(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 
 	assert.False(t, svc.IsRunning())
 
@@ -69,7 +69,7 @@ func TestService_StartStop(t *testing.T) {
 }
 
 func TestService_HandleWebSocket_NotRunning(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/ws", nil)
@@ -84,7 +84,7 @@ func TestService_HandleWebSocket(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 	err := svc.Start(context.Background())
 	require.NoError(t, err)
 	defer func() { _ = svc.Stop() }()
@@ -110,7 +110,7 @@ func TestService_WebSocketSubscription(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 	err := svc.Start(context.Background())
 	require.NoError(t, err)
 	defer func() { _ = svc.Stop() }()
@@ -162,7 +162,7 @@ func TestService_WebSocketSubscription(t *testing.T) {
 }
 
 func TestService_GetStats(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 	err := svc.Start(context.Background())
 	require.NoError(t, err)
 	defer func() { _ = svc.Stop() }()
@@ -177,7 +177,7 @@ func TestService_GetStats(t *testing.T) {
 }
 
 func TestService_ActionToTopic(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 
 	tests := []struct {
 		action   string
@@ -197,7 +197,7 @@ func TestService_ActionToTopic(t *testing.T) {
 }
 
 func TestService_HandleRabbitMQMessage(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 	err := svc.Start(context.Background())
 	require.NoError(t, err)
 	defer func() { _ = svc.Stop() }()
@@ -207,7 +207,7 @@ func TestService_HandleRabbitMQMessage(t *testing.T) {
 
 	t.Run("nil message", func(t *testing.T) {
 		// Should not panic
-		svc.handleRabbitMQMessage(nil)
+		svc.handleRabbitMQMessage(context.Background(), nil)
 	})
 
 	t.Run("valid message", func(t *testing.T) {
@@ -217,7 +217,7 @@ func TestService_HandleRabbitMQMessage(t *testing.T) {
 			TID:      "trace-123",
 			Data:     json.RawMessage(`{"temperature": 25.5}`),
 		}
-		svc.handleRabbitMQMessage(msg)
+		svc.handleRabbitMQMessage(context.Background(), msg)
 
 		// Wait for processing
 		time.Sleep(50 * time.Millisecond)
@@ -229,13 +229,13 @@ func TestService_HandleRabbitMQMessage(t *testing.T) {
 			Action:   "telemetry.update",
 			Data:     json.RawMessage(`invalid json`),
 		}
-		svc.handleRabbitMQMessage(msg)
+		svc.handleRabbitMQMessage(context.Background(), msg)
 		// Should handle gracefully
 	})
 }
 
 func TestService_Accessors(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 
 	assert.NotNil(t, svc.Hub())
 	assert.NotNil(t, svc.SubscriptionManager())
@@ -243,7 +243,7 @@ func TestService_Accessors(t *testing.T) {
 }
 
 func TestService_OnClientCallbacks(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 	err := svc.Start(context.Background())
 	require.NoError(t, err)
 	defer func() { _ = svc.Stop() }()
@@ -269,7 +269,7 @@ func TestService_OnClientCallbacks(t *testing.T) {
 }
 
 func TestService_OnClientMessage(t *testing.T) {
-	svc := NewService(nil, nil)
+	svc := NewService(nil, nil, nil)
 	err := svc.Start(context.Background())
 	require.NoError(t, err)
 	defer func() { _ = svc.Stop() }()
@@ -313,7 +313,7 @@ func TestService_OriginCheck(t *testing.T) {
 		config := &ServiceConfig{
 			AllowedOrigins: []string{"*"},
 		}
-		svc := NewService(config, nil)
+		svc := NewService(config, nil, nil)
 
 		r := httptest.NewRequest("GET", "/ws", nil)
 		r.Header.Set("Origin", "http://example.com")
@@ -325,7 +325,7 @@ func TestService_OriginCheck(t *testing.T) {
 		config := &ServiceConfig{
 			AllowedOrigins: []string{"http://localhost:3000"},
 		}
-		svc := NewService(config, nil)
+		svc := NewService(config, nil, nil)
 
 		r := httptest.NewRequest("GET", "/ws", nil)
 		r.Header.Set("Origin", "http://localhost:3000")
@@ -337,7 +337,7 @@ func TestService_OriginCheck(t *testing.T) {
 		config := &ServiceConfig{
 			AllowedOrigins: []string{"http://localhost:3000"},
 		}
-		svc := NewService(config, nil)
+		svc := NewService(config, nil, nil)
 
 		r := httptest.NewRequest("GET", "/ws", nil)
 		r.Header.Set("Origin", "http://evil.com")
@@ -349,7 +349,7 @@ func TestService_OriginCheck(t *testing.T) {
 		config := &ServiceConfig{
 			AllowedOrigins: []string{},
 		}
-		svc := NewService(config, nil)
+		svc := NewService(config, nil, nil)
 
 		r := httptest.NewRequest("GET", "/ws", nil)
 		r.Header.Set("Origin", "http://any.com")

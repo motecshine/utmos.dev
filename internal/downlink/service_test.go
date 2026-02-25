@@ -32,7 +32,7 @@ func TestNewService(t *testing.T) {
 			EnableRouting: false,
 			RetryConfig:   retry.DefaultConfig(),
 		}
-		svc := NewService(config, nil, nil)
+		svc := NewService(config, nil, nil, nil)
 
 		require.NotNil(t, svc)
 		assert.NotNil(t, svc.registry)
@@ -42,7 +42,7 @@ func TestNewService(t *testing.T) {
 	})
 
 	t.Run("without config", func(t *testing.T) {
-		svc := NewService(nil, nil, nil)
+		svc := NewService(nil, nil, nil, nil)
 
 		require.NotNil(t, svc)
 		assert.NotNil(t, svc.retryHandler)
@@ -54,7 +54,7 @@ func TestNewService(t *testing.T) {
 			EnableRetry:   false,
 			EnableRouting: false,
 		}
-		svc := NewService(config, nil, nil)
+		svc := NewService(config, nil, nil, nil)
 
 		require.NotNil(t, svc)
 		assert.Nil(t, svc.retryHandler)
@@ -62,7 +62,7 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_RegisterDispatcher(t *testing.T) {
-	svc := NewService(nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil)
 
 	// Create a mock dispatcher
 	mockDispatcher := dispatcher.NewBaseDispatcher("test-vendor", nil, nil)
@@ -85,7 +85,7 @@ func TestService_StartStop(t *testing.T) {
 		RetryConfig:         retry.DefaultConfig(),
 		RetryWorkerInterval: 100 * time.Millisecond,
 	}
-	svc := NewService(config, nil, nil)
+	svc := NewService(config, nil, nil, nil)
 
 	t.Run("start service", func(t *testing.T) {
 		err := svc.Start(context.Background())
@@ -112,7 +112,7 @@ func TestService_StartStop(t *testing.T) {
 }
 
 func TestService_Dispatch_NilCall(t *testing.T) {
-	svc := NewService(nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil)
 
 	_, err := svc.Dispatch(context.Background(), nil)
 	assert.Error(t, err)
@@ -125,7 +125,7 @@ func TestService_Dispatch_NoDispatcher(t *testing.T) {
 		EnableRouting: false,
 		RetryConfig:   retry.DefaultConfig(),
 	}
-	svc := NewService(config, nil, nil)
+	svc := NewService(config, nil, nil, nil)
 
 	call := &dispatcher.ServiceCall{
 		ID:       "call-001",
@@ -148,7 +148,7 @@ func TestService_Dispatch_WithDJIDispatcher(t *testing.T) {
 		EnableRouting: false,
 		RetryConfig:   retry.DefaultConfig(),
 	}
-	svc := NewService(config, nil, nil)
+	svc := NewService(config, nil, nil, nil)
 	djiDispatcher := djidownlink.NewDispatcherAdapter(nil, nil)
 	svc.RegisterAdapterDispatcher(djiDispatcher)
 
@@ -168,7 +168,7 @@ func TestService_Dispatch_WithDJIDispatcher(t *testing.T) {
 }
 
 func TestService_GetMetrics(t *testing.T) {
-	svc := NewService(nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil)
 
 	// Initial metrics
 	processed, failed := svc.GetMetrics()
@@ -192,7 +192,7 @@ func TestService_GetRetryMetrics(t *testing.T) {
 			EnableRouting: false,
 			RetryConfig:   retry.DefaultConfig(),
 		}
-		svc := NewService(config, nil, nil)
+		svc := NewService(config, nil, nil, nil)
 
 		pending, deadLetter := svc.GetRetryMetrics()
 		assert.Equal(t, 0, pending)
@@ -204,7 +204,7 @@ func TestService_GetRetryMetrics(t *testing.T) {
 			EnableRetry:   false,
 			EnableRouting: false,
 		}
-		svc := NewService(config, nil, nil)
+		svc := NewService(config, nil, nil, nil)
 
 		pending, deadLetter := svc.GetRetryMetrics()
 		assert.Equal(t, 0, pending)
@@ -219,7 +219,7 @@ func TestService_GetRouterMetrics(t *testing.T) {
 			EnableRouting: true,
 			RouterConfig:  router.DefaultConfig(),
 		}
-		svc := NewService(config, nil, nil)
+		svc := NewService(config, nil, nil, nil)
 
 		routed, failed := svc.GetRouterMetrics()
 		assert.Equal(t, int64(0), routed)
@@ -231,7 +231,7 @@ func TestService_GetRouterMetrics(t *testing.T) {
 			EnableRetry:   false,
 			EnableRouting: false,
 		}
-		svc := NewService(config, nil, nil)
+		svc := NewService(config, nil, nil, nil)
 
 		routed, failed := svc.GetRouterMetrics()
 		assert.Equal(t, int64(0), routed)
@@ -240,7 +240,7 @@ func TestService_GetRouterMetrics(t *testing.T) {
 }
 
 func TestService_GetRegisteredVendors(t *testing.T) {
-	svc := NewService(nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil)
 
 	// Initially empty
 	vendors := svc.GetRegisteredVendors()
@@ -256,7 +256,7 @@ func TestService_GetRegisteredVendors(t *testing.T) {
 }
 
 func TestService_SetSubscriber(t *testing.T) {
-	svc := NewService(nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil)
 
 	assert.Nil(t, svc.subscriber)
 
@@ -271,7 +271,7 @@ func TestService_OnDispatched(t *testing.T) {
 		EnableRetry:   false,
 		EnableRouting: false, // Disable routing to avoid nil publisher error
 	}
-	svc := NewService(config, nil, nil)
+	svc := NewService(config, nil, nil, nil)
 
 	call := &dispatcher.ServiceCall{
 		ID:       "call-001",
@@ -296,7 +296,7 @@ func TestService_OnRetry(t *testing.T) {
 		EnableRetry:   false,
 		EnableRouting: false,
 	}
-	svc := NewService(config, nil, nil)
+	svc := NewService(config, nil, nil, nil)
 	djiDispatcher := djidownlink.NewDispatcherAdapter(nil, nil)
 	svc.RegisterAdapterDispatcher(djiDispatcher)
 
@@ -314,7 +314,7 @@ func TestService_OnRetry(t *testing.T) {
 }
 
 func TestService_OnDeadLetter(t *testing.T) {
-	svc := NewService(nil, nil, nil)
+	svc := NewService(nil, nil, nil, nil)
 
 	entry := &retry.DeadLetterEntry{
 		Call: &dispatcher.ServiceCall{

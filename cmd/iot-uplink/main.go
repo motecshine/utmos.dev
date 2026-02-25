@@ -91,7 +91,7 @@ func main() {
 
 	// Create uplink service
 	logEntry := log.WithService(serviceName)
-	uplinkSvc := uplink.NewService(svcConfig, subscriber, publisher, logEntry)
+	uplinkSvc := uplink.NewService(svcConfig, subscriber, publisher, metricsCollector, logEntry)
 
 	// Register DJI processor
 	djiProcessor := djiuplink.NewProcessorAdapter(logEntry)
