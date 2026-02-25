@@ -1,0 +1,65 @@
+# Configuration for golangci-lint v2
+# See https://golangci-lint.run/docs/configuration/file/
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: none
+  enable:
+    # Core linters
+    - errcheck
+    - govet
+    - ineffassign
+    - unused
+    # Code quality
+    - gocyclo
+    - goconst
+    - dupl # Detect duplicated code fragments
+    # Security
+    - gosec
+    # Error handling
+    - errorlint # Catch err == ErrX instead of errors.Is(err, ErrX)
+    # Type safety
+    - forcetypeassert # Forbid bare type assertions without ok check
+    # Style
+    - revive # Exported comment format: "// ExportedName ..."
+  settings:
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - unusedwrite # Too noisy for test struct initialization patterns
+    gocyclo:
+      min-complexity: 25
+    gosec:
+      excludes:
+        - G101 # False positive: hardcoded credentials in test URLs
+        - G115 # Safe integer conversions: QoS (0-2), config batch sizes
+        - G117 # False positive: struct fields matching secret patterns
+    dupl:
+      threshold: 50
+    revive:
+      rules:
+        - name: exported
+          arguments:
+            - "checkPrivateReceivers"
+            - "sayRepetitiveInsteadOfStutters"
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - gocritic
+          - dupl
+          - revive
+          - forcetypeassert
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 10

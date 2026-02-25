@@ -1,0 +1,51 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  postgres:
+    host: ${POSTGRES_HOST}
+    port: ${POSTGRES_PORT}
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    dbname: ${POSTGRES_DB}
+    sslmode: require
+    max_idle_conns: 20
+    max_open_conns: 100
+    conn_max_lifetime: 1h
+  influxdb:
+    url: ${INFLUXDB_URL}
+    token: ${INFLUXDB_TOKEN}
+    org: ${INFLUXDB_ORG}
+    bucket: ${INFLUXDB_BUCKET}
+
+rabbitmq:
+  url: ${RABBITMQ_URL}
+  exchange_name: iot
+  exchange_type: topic
+  prefetch_count: 50
+  retry:
+    max_retries: 10
+    initial_delay: 1s
+    max_delay: 30s
+    multiplier: 2.0
+
+tracer:
+  enabled: true
+  endpoint: ${TEMPO_ENDPOINT}
+  service_name: ${SERVICE_NAME}
+  sampling_rate: 0.1
+  batch_timeout: 5s
+  max_queue_size: 4096
+
+metrics:
+  enabled: true
+  path: /metrics
+  namespace: iot
+
+logger:
+  level: info
+  format: json
+  output: stdout

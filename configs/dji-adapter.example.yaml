@@ -1,0 +1,50 @@
+# DJI Adapter Configuration Example
+# Copy this file to dji-adapter.yaml and modify as needed
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  postgres:
+    host: "localhost"
+    port: 5432
+    user: "utmos"
+    password: "utmos_password"
+    dbname: "utmos"
+    sslmode: "disable"
+    max_idle_conns: 10
+    max_open_conns: 100
+    conn_max_lifetime: 1h
+
+rabbitmq:
+  url: "amqp://guest:guest@localhost:5672/"
+  exchange_name: "iot.topic"
+  exchange_type: "topic"
+  prefetch_count: 10
+  retry:
+    max_retries: 5
+    initial_delay: 1s
+    max_delay: 30s
+    multiplier: 2.0
+
+tracer:
+  enabled: true
+  endpoint: "http://localhost:4318/v1/traces"
+  service_name: "dji-adapter"
+  sampling_rate: 1.0
+  batch_timeout: 5s
+  max_queue_size: 2048
+
+metrics:
+  enabled: true
+  port: 8080
+  path: "/metrics"
+  namespace: "utmos"
+
+logger:
+  level: "info"
+  format: "json"
+  output: "stdout"

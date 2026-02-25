@@ -1,0 +1,495 @@
+openapi: 3.0.3
+info:
+  title: UMOS IoT Platform API
+  description: IoT 平台 RESTful API
+  version: 1.0.0
+  contact:
+    name: UMOS Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+tags:
+  - name: devices
+    description: 设备管理
+  - name: services
+    description: 服务调用
+  - name: telemetry
+    description: 遥测数据
+
+paths:
+  /devices:
+    get:
+      tags:
+        - devices
+      summary: 获取设备列表
+      operationId: listDevices
+      parameters:
+        - name: vendor
+          in: query
+          schema:
+            type: string
+          description: 按厂商过滤
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [gateway, aircraft, dock, rc]
+          description: 按设备类型过滤
+        - name: online
+          in: query
+          schema:
+            type: boolean
+          description: 按在线状态过滤
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: 页码
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: 每页数量
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceListResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - devices
+      summary: 创建设备
+      operationId: createDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 设备已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /devices/{sn}:
+    get:
+      tags:
+        - devices
+      summary: 获取设备详情
+      operationId: getDevice
+      parameters:
+        - name: sn
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 设备序列号
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: 设备不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - devices
+      summary: 更新设备
+      operationId: updateDevice
+      parameters:
+        - name: sn
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: 设备不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - devices
+      summary: 删除设备
+      operationId: deleteDevice
+      parameters:
+        - name: sn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 删除成功
+        '404':
+          description: 设备不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /devices/{sn}/services/{method}:
+    post:
+      tags:
+        - services
+      summary: 调用设备服务
+      operationId: callService
+      parameters:
+        - name: sn
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 设备序列号
+        - name: method
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 服务方法名
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceCallRequest'
+      responses:
+        '202':
+          description: 服务调用已接受
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCallResponse'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 设备不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /services/{tid}:
+    get:
+      tags:
+        - services
+      summary: 查询服务调用状态
+      operationId: getServiceCall
+      parameters:
+        - name: tid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 事务 ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCallStatus'
+        '404':
+          description: 服务调用不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /devices/{sn}/telemetry:
+    get:
+      tags:
+        - telemetry
+      summary: 查询遥测数据
+      operationId: getTelemetry
+      parameters:
+        - name: sn
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 设备序列号
+        - name: start
+          in: query
+          schema:
+            type: string
+            default: '-1h'
+          description: 开始时间 (相对时间如 -1h 或 ISO8601)
+        - name: end
+          in: query
+          schema:
+            type: string
+            default: 'now'
+          description: 结束时间
+        - name: measurement
+          in: query
+          schema:
+            type: string
+          description: 指定 measurement
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryResponse'
+        '404':
+          description: 设备不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /devices/{sn}/telemetry/latest:
+    get:
+      tags:
+        - telemetry
+      summary: 获取最新遥测数据
+      operationId: getLatestTelemetry
+      parameters:
+        - name: sn
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 设备序列号
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestTelemetryResponse'
+        '404':
+          description: 设备不存在或无数据
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+        sn:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [gateway, aircraft, dock, rc]
+        vendor:
+          type: string
+        model:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        online:
+          type: boolean
+        last_online_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateDeviceRequest:
+      type: object
+      required:
+        - sn
+        - type
+        - vendor
+      properties:
+        sn:
+          type: string
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 128
+        type:
+          type: string
+          enum: [gateway, aircraft, dock, rc]
+        vendor:
+          type: string
+          maxLength: 32
+        model:
+          type: string
+          maxLength: 64
+
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+
+    DeviceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    ServiceCallRequest:
+      type: object
+      properties:
+        params:
+          type: object
+          additionalProperties: true
+        timeout:
+          type: integer
+          default: 30
+          description: 超时时间（秒）
+
+    ServiceCallResponse:
+      type: object
+      properties:
+        tid:
+          type: string
+        bid:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, success, failed, timeout]
+        message:
+          type: string
+
+    ServiceCallStatus:
+      type: object
+      properties:
+        tid:
+          type: string
+        bid:
+          type: string
+        device_sn:
+          type: string
+        method:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, success, failed, timeout]
+        result:
+          type: object
+        error_code:
+          type: integer
+        error_msg:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    TelemetryResponse:
+      type: object
+      properties:
+        device_sn:
+          type: string
+        measurement:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              values:
+                type: object
+                additionalProperties: true
+
+    LatestTelemetryResponse:
+      type: object
+      properties:
+        device_sn:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        details:
+          type: object

@@ -1,0 +1,51 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  postgres:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: postgres
+    dbname: umos_iot_dev
+    sslmode: disable
+    max_idle_conns: 10
+    max_open_conns: 50
+    conn_max_lifetime: 1h
+  influxdb:
+    url: http://localhost:8086
+    token: dev-token
+    org: umos
+    bucket: iot_dev
+
+rabbitmq:
+  url: amqp://guest:guest@localhost:5672/
+  exchange_name: iot
+  exchange_type: topic
+  prefetch_count: 10
+  retry:
+    max_retries: 10
+    initial_delay: 1s
+    max_delay: 30s
+    multiplier: 2.0
+
+tracer:
+  enabled: true
+  endpoint: http://localhost:4318/v1/traces
+  service_name: ${SERVICE_NAME}
+  sampling_rate: 1.0
+  batch_timeout: 5s
+  max_queue_size: 2048
+
+metrics:
+  enabled: true
+  path: /metrics
+  namespace: iot
+
+logger:
+  level: debug
+  format: json
+  output: stdout
