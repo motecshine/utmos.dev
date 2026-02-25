@@ -100,7 +100,7 @@
 ### Implementation for User Story 1
 
 - [x] T015 [US1] Create OSDParser in pkg/adapter/dji/integration/osd_parser.go
-  - `ParseAircraftOSD(data json.RawMessage) (*aircraft.AircraftOSD, error)`
+  - `ParseAircraftOSD(data json.RawMessage) (*aircraft.OSD, error)`
   - `ParseDockOSD(data json.RawMessage) (*aircraft.DockOSD, error)`
   - `ParseRCOSD(data json.RawMessage) (*aircraft.RCOSD, error)`
   - Handle partial updates (all pointer fields)
@@ -318,11 +318,11 @@
 ### Implementation for User Story 7
 
 - [x] T043 [US7] Register camera commands in pkg/adapter/dji/router/camera_commands.go
-  - `camera_mode_switch` with CameraModeSwitchData
-  - `camera_photo_take` with CameraPhotoTakeData
-  - `camera_recording_start`, `camera_recording_stop` with CameraRecordingData
-  - `camera_aim` with CameraAimData
-  - `camera_focal_length_set` with CameraFocalLengthData
+  - `camera_mode_switch` with ModeSwitchData
+  - `camera_photo_take` with PhotoTakeData
+  - `camera_recording_start`, `camera_recording_stop` with RecordingStartData
+  - `camera_aim` with AimData
+  - `camera_focal_length_set` with FocalLengthSetData
   - `gimbal_reset` with GimbalResetData
   - IR metering commands
 
@@ -387,7 +387,7 @@
   - Connection state tracking
 
 - [x] T053 [US8] Register DRC commands in pkg/adapter/dji/router/drc_commands.go
-  - `drc_mode_enter` with DRCModeEnterData
+  - `drc_mode_enter` with ModeEnterData
   - `drc_mode_exit`
   - `drone_control` with DroneControlData
   - `drone_emergency_stop`
@@ -417,9 +417,9 @@
 ### Implementation for User Story 9
 
 - [x] T058 [US9] Register file commands in pkg/adapter/dji/router/file_commands.go
-  - `file_upload_start` with FileUploadStartData
-  - `file_upload_finish` with FileUploadFinishData
-  - `file_upload_list` with FileUploadListData
+  - `file_upload_start` with UploadStartData
+  - `file_upload_finish` with UploadUpdateData
+  - `file_upload_list` with UploadListData
 
 - [x] T059 [US9] Register file events in pkg/adapter/dji/router/file_events.go
   - `highest_priority_upload_flighttask_media` (need_reply)
@@ -450,10 +450,10 @@
   - `ota_progress` with OTAProgressData
 
 - [x] T064 Register live commands in pkg/adapter/dji/router/live_commands.go
-  - `live_start_push` with LiveStartPushData
-  - `live_stop_push` with LiveStopPushData
-  - `live_set_quality` with LiveSetQualityData
-  - `live_lens_change` with LiveLensChangeData
+  - `live_start_push` with StartPushData
+  - `live_stop_push` with StopPushData
+  - `live_set_quality` with SetQualityData
+  - `live_lens_change` with LensChangeData
 
 **Checkpoint**: P3 高级功能完成
 
@@ -607,7 +607,7 @@ With multiple developers:
 
 ## Task Summary
 
-**Total Tasks**: 73
+**Total Tasks**: 78
 
 **Tasks per User Story**:
 
@@ -624,7 +624,7 @@ With multiple developers:
 | US8 (DRC) | 10 | 7 | P3 |
 | US9 (File) | 11 | 4 | P3 |
 | Extended (FW/Live) | 12 | 5 | P3 |
-| Polish | 13 | 9 | - |
+| Polish | 13 | 14 | - |
 
 **Priority Summary**:
 
@@ -634,7 +634,7 @@ With multiple developers:
 | P1 (Core) | US1-US5 | 25 | 3-6 |
 | P2 (Business) | US6-US7, US4-Ext | 12 | 7-9 |
 | P3 (Advanced) | US8-US9, Extended | 16 | 10-12 |
-| Polish | - | 9 | 13 |
+| Polish | - | 14 | 13 |
 
 **Parallel Opportunities**:
 
