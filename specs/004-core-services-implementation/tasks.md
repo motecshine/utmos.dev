@@ -2,7 +2,7 @@
 
 **Feature**: 004-core-services-implementation
 **Generated**: 2025-02-05
-**Total Tasks**: 50
+**Total Tasks**: 51
 
 ## Task Summary
 
@@ -12,7 +12,7 @@
 | Phase 2: iot-uplink | T011-T018 | Complete |
 | Phase 3: iot-downlink | T019-T026 | Complete |
 | Phase 4: iot-api | T027-T036 | Complete |
-| Phase 5: iot-ws | T037-T044 | Complete |
+| Phase 5: iot-ws | T037-T044 (含 T039-A) | Complete |
 | Phase 6: Integration & NFR | T045-T050 | Complete |
 
 ---
@@ -367,3 +367,15 @@ Phase 6:      T045 → [P] T046, T047, T048, T049, T050
 | 大量设备同时上线 | T007 | 连接池 + 限流 |
 | WebSocket 连接数过多 | T038 | 连接限制 (max 10000) |
 | WebSocket 心跳超时 | T039-A | 30s 超时断开 |
+
+## Cross-Cutting: Observability Integration
+
+各服务均通过以下方式集成分布式追踪和可观测性（复用 `pkg/tracer/`、`pkg/metrics/`、`pkg/logger/`）：
+
+| 服务 | 追踪集成方式 | 涉及任务 |
+|------|-------------|---------|
+| **iot-gateway** | MQTT 消息接收/转发创建 span，注入 W3C Trace Context 到 RabbitMQ headers | T004, T005, T006 |
+| **iot-uplink** | 从 RabbitMQ headers 提取 trace context，消息处理和 InfluxDB 写入创建子 span | T012, T014, T015 |
+| **iot-downlink** | 服务调用创建 span，重试携带 trace context，路由到 gateway 保持链路 | T020, T022, T023 |
+| **iot-api** | `internal/api/middleware/trace.go` 追踪中间件，所有 HTTP 请求自动创建 span | T031 |
+| **iot-ws** | WebSocket 消息推送携带 trace context，连接管理记录 span | T041, T042 |

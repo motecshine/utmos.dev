@@ -12,7 +12,7 @@
 **Language/Version**: Go 1.22+
 **Primary Dependencies**: Gin Framework, GORM, paho.mqtt.golang, gorilla/websocket, amqp091-go
 **Storage**: PostgreSQL (业务数据), InfluxDB (时序数据)
-**Testing**: go test, testify, mockery
+**Testing**: go test, testify (assert/require/mock)
 **Target Platform**: Linux server (Docker/Kubernetes)
 **Project Type**: Microservices
 **Performance Goals**: 消息处理延迟 < 100ms (P95), 1000+ 设备同时在线

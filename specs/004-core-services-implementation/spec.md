@@ -3,7 +3,7 @@
 **Feature Branch**: `004-core-services-implementation`
 **Created**: 2025-02-05
 **Updated**: 2025-02-05
-**Status**: Draft
+**Status**: Implemented
 **Input**: 实现 5 个核心微服务的业务逻辑
 **Depends On**: `001-project-setup` (基础设施), `002-protocol-adapter-design` (协议适配器框架), `003-dji-protocol-implementation` (DJI 协议实现)
 
@@ -161,11 +161,11 @@ Exchange: iot.topic (topic exchange)
 
 ### Edge Cases
 
-- MQTT 连接断开时如何处理？（自动重连，消息缓存）
-- RabbitMQ 连接断开时如何处理？（自动重连，消息持久化）
-- 消息处理失败时如何处理？（死信队列，告警通知）
-- 大量设备同时上线时如何处理？（连接池，限流）
-- WebSocket 连接数过多时如何处理？（连接限制，负载均衡）
+- MQTT 连接断开时如何处理？（自动重连，指数退避 1s/2s/4s/8s 最大 30s，消息缓存最大 1000 条）
+- RabbitMQ 连接断开时如何处理？（自动重连，消息持久化，确认机制 publisher confirm）
+- 消息处理失败时如何处理？（重试 3 次后进入死信队列 `iot.dlx`，告警通知）
+- 大量设备同时上线时如何处理？（连接池最大 1000，限流 100 连接/秒）
+- WebSocket 连接数过多时如何处理？（单节点最大 10000 连接，超限返回 503）
 
 ## Requirements
 
@@ -191,7 +191,7 @@ Exchange: iot.topic (topic exchange)
 
 - **FR-006**: 必须实现 RabbitMQ 消息订阅
 - **FR-007**: 必须实现消息解析和验证
-- **FR-008**: 必须实现物模型映射
+- **FR-008**: 必须实现物模型映射。将厂商协议数据映射到平台标准物模型(TSL)结构，通过 `product_key` 查询 `ThingModel` 表获取 TSL JSON 定义。厂商物模型属性定义参考各协议文档（如 DJI: `docs/protocol/dji/en/60.api-reference/*/properties.md`），映射维度包括 Properties（属性上报）、Services（服务调用）、Events（事件通知）
 - **FR-009**: 必须实现 InfluxDB 时序数据写入
 - **FR-010**: 必须实现消息路由到其他服务
 
@@ -221,7 +221,7 @@ Exchange: iot.topic (topic exchange)
 - **NFR-001**: 消息处理延迟 < 100ms (P95)
 - **NFR-002**: 支持 1000+ 设备同时在线
 - **NFR-003**: 支持 10000+ WebSocket 连接
-- **NFR-004**: 服务可用性 > 99.9%
+- **NFR-004**: 服务可用性 > 99.9%（通过故障注入测试验证：模拟 MQTT/RabbitMQ/PostgreSQL/InfluxDB 断连后服务自动恢复，恢复时间 < 30s）
 
 ### Test-First Development Requirements
 
@@ -246,5 +246,5 @@ Exchange: iot.topic (topic exchange)
 
 - Q: 本 Spec 与 003 的关系？ → A: 003 实现了 DJI 协议适配器，本 Spec 实现核心服务的业务逻辑，两者配合完成完整数据流
 - Q: MQTT 客户端库选择？ → A: 使用 paho.mqtt.golang，这是 Eclipse 官方维护的 Go MQTT 客户端
-- Q: WebSocket 库选择？ → A: 使用 gorilla/websocket，这是 Go 生态最成熟的 WebSocket 库
+- Q: WebSocket 库选择？ → A: 使用 gorilla/websocket（注：该库已于 2023 年归档为只读，但 API 稳定且社区广泛使用，无需替换。如需迁移可评估 nhooyr.io/websocket）
 - Q: FR-002 认证方式选择？ → A: 004 只实现用户名/密码认证，证书认证延后到 005 或后续迭代
