@@ -81,7 +81,7 @@ func (b *UplinkBridge) Bridge(ctx context.Context, msg *mqtt.Message, topicInfo 
 	defer span.End()
 
 	// Determine routing key: iot.raw.{vendor}.uplink
-	routingKey := fmt.Sprintf("iot.raw.%s.uplink", topicInfo.Vendor)
+	routingKey := rabbitmq.NewRawRoutingKey(topicInfo.Vendor, rabbitmq.DirectionUplink).String()
 
 	// Create data payload
 	dataPayload := map[string]any{
@@ -137,7 +137,7 @@ func (b *UplinkBridge) CreateProcessor(pattern string) *mqtt.SimpleProcessor {
 
 // GetUplinkRoutingKey returns the routing key for a given vendor
 func GetUplinkRoutingKey(vendor string) string {
-	return fmt.Sprintf("iot.raw.%s.uplink", vendor)
+	return rabbitmq.NewRawRoutingKey(vendor, rabbitmq.DirectionUplink).String()
 }
 
 // ParseRawUplinkMessage parses a raw uplink message from bytes

@@ -2,249 +2,144 @@
 
 **Feature Branch**: `004-core-services-implementation`
 **Created**: 2025-02-05
-**Updated**: 2025-02-05
-**Status**: Implemented
-**Input**: 实现 5 个核心微服务的业务逻辑
-**Depends On**: `001-project-setup` (基础设施), `002-protocol-adapter-design` (协议适配器框架), `003-dji-protocol-implementation` (DJI 协议实现)
+**Updated**: 2026-03-23
+**Status**: Draft
+**Input**: User description: "implement core services"
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-基于 001/002/003 实现的基础设施和协议适配器，完整实现 5 个核心微服务的业务逻辑。本 Spec 覆盖 iot-gateway、iot-uplink、iot-downlink、iot-api、iot-ws 的核心功能实现。
+### User Story 1 - Operate connected devices (Priority: P1)
 
-**数据流架构**:
+As a platform operator, I want supported devices to connect to the platform, report their status, and publish telemetry so I can monitor live operations from a single system.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           完整数据流                                         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────┐    ┌─────────┐    ┌─────────────┐    ┌─────────────┐          │
-│  │ Device  │───►│ VerneMQ │───►│ iot-gateway │───►│  RabbitMQ   │          │
-│  └─────────┘    └─────────┘    └─────────────┘    └──────┬──────┘          │
-│       ▲              │                                    │                 │
-│       │              │                                    ▼                 │
-│       │              │              ┌─────────────────────────────────┐    │
-│       │              │              │         iot-uplink              │    │
-│       │              │              │  - 消息解析验证                   │    │
-│       │              │              │  - 物模型映射                     │    │
-│       │              │              │  - 时序数据写入                   │    │
-│       │              │              │  - 消息路由                       │    │
-│       │              │              └─────────────┬───────────────────┘    │
-│       │              │                            │                         │
-│       │              │                            ▼                         │
-│       │              │              ┌─────────────────────────────────┐    │
-│       │              │              │         iot-ws                  │    │
-│       │              │              │  - WebSocket 连接管理            │    │
-│       │              │              │  - 实时消息推送                   │    │
-│       │              │              └─────────────────────────────────┘    │
-│       │              │                                                      │
-│  ┌────┴────┐    ┌────┴────┐    ┌─────────────┐    ┌─────────────┐          │
-│  │ Device  │◄───│ VerneMQ │◄───│ iot-gateway │◄───│  RabbitMQ   │          │
-│  └─────────┘    └─────────┘    └─────────────┘    └──────┬──────┘          │
-│                                                          │                  │
-│                                                          │                  │
-│              ┌─────────────────────────────────┐         │                  │
-│              │         iot-downlink            │◄────────┘                  │
-│              │  - 消息格式转换                   │                           │
-│              │  - 消息确认重试                   │                           │
-│              │  - 路由到 gateway               │                           │
-│              └─────────────┬───────────────────┘                           │
-│                            │                                                │
-│                            │                                                │
-│              ┌─────────────┴───────────────────┐                           │
-│              │         iot-api                 │                           │
-│              │  - RESTful API                  │                           │
-│              │  - 设备管理                       │                           │
-│              │  - 服务调用                       │                           │
-│              └─────────────────────────────────┘                           │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+**Why this priority**: Without reliable device onboarding and upstream data handling, the platform cannot deliver its core value.
 
-## Architecture
-
-### 服务职责划分
-
-| 服务 | 职责 | 数据访问 | 优先级 |
-|------|------|----------|--------|
-| **iot-gateway** | MQTT↔RabbitMQ 桥接，设备认证 | PostgreSQL (设备认证) | P1 |
-| **iot-uplink** | 上行消息处理，物模型映射 | PostgreSQL (读), InfluxDB (写) | P1 |
-| **iot-downlink** | 下行消息路由，确认重试 | PostgreSQL | P1 |
-| **iot-api** | RESTful API，业务逻辑 | PostgreSQL, InfluxDB | P2 |
-| **iot-ws** | WebSocket 实时推送 | 无 (通过 RabbitMQ) | P2 |
-
-### RabbitMQ 消息路由
-
-```
-Exchange: iot.topic (topic exchange)
-
-上行消息路由:
-  iot-gateway → iot.raw.{vendor}.uplink → iot-uplink
-  iot-uplink  → iot.{vendor}.{service}.{action} → iot-ws/iot-api
-
-下行消息路由:
-  iot-api     → iot.{vendor}.service.call → iot-downlink
-  iot-downlink → iot.raw.{vendor}.downlink → iot-gateway
-```
-
-## User Scenarios & Testing
-
-### User Story 1 - MQTT 消息桥接 (Priority: P1)
-
-作为平台运维人员，我需要 iot-gateway 能够将 MQTT 消息转发到 RabbitMQ，以便其他服务处理。
-
-**Why this priority**: Gateway 是整个数据流的入口，是所有其他功能的基础。
+**Independent Test**: Can be fully tested by connecting a supported device or simulator, sending valid status and telemetry messages, and confirming that current device state and recent telemetry become visible to operators.
 
 **Acceptance Scenarios**:
 
-1. **Given** DJI 设备发布 MQTT 消息到 VerneMQ, **When** iot-gateway 接收到消息, **Then** 能够转换为标准格式并发布到 RabbitMQ `iot.raw.dji.uplink`
-2. **Given** iot-downlink 发布下行消息到 RabbitMQ, **When** iot-gateway 接收到消息, **Then** 能够转换为 MQTT 格式并发布到 VerneMQ
-3. **Given** 设备连接到 VerneMQ, **When** 设备认证, **Then** iot-gateway 能够验证设备凭证
+1. **Given** a supported device with valid credentials, **When** it connects and publishes status data, **Then** the platform records the device as online and makes the updated status available to operators.
+2. **Given** a connected device publishes valid telemetry, **When** the platform processes the message, **Then** the telemetry is stored and made available for historical lookup and downstream consumption.
+3. **Given** a device publishes a malformed or unsupported message, **When** the platform receives it, **Then** the message is rejected safely, the failure is traceable, and other device traffic continues to flow.
 
 ---
 
-### User Story 2 - 上行消息处理 (Priority: P1)
+### User Story 2 - Send commands to devices (Priority: P1)
 
-作为平台运维人员，我需要 iot-uplink 能够处理上行消息，解析物模型并存储时序数据。
+As a platform operator, I want to send service requests to a device and track whether each request succeeds, fails, or times out so I can control field equipment with confidence.
 
-**Why this priority**: 上行消息处理是 IoT 平台的核心功能。
+**Why this priority**: Command execution is the primary control loop for managed devices and is required for meaningful platform operations.
+
+**Independent Test**: Can be fully tested by submitting a service request for a supported device, observing immediate acknowledgement, and verifying that the final request outcome is recorded and visible.
 
 **Acceptance Scenarios**:
 
-1. **Given** iot-gateway 发布上行消息到 RabbitMQ, **When** iot-uplink 接收到消息, **Then** 能够解析消息并验证格式
-2. **Given** 上行消息包含遥测数据, **When** iot-uplink 处理消息, **Then** 能够写入 InfluxDB 时序数据库
-3. **Given** 上行消息需要推送到客户端, **When** iot-uplink 处理完成, **Then** 能够发布到 RabbitMQ 供 iot-ws 消费
+1. **Given** an authorized client submits a valid service request for an online device, **When** the platform accepts the request, **Then** it returns a tracking identifier and records the request as pending.
+2. **Given** a device acknowledges and completes a service request, **When** the platform receives the response, **Then** the final outcome is recorded and made available to the requesting client.
+3. **Given** a device does not respond within the allowed window, **When** retry attempts are exhausted, **Then** the platform marks the request as timed out or failed and preserves the failure details for review.
+4. **Given** a service request has already reached a terminal timeout outcome, **When** a late device response arrives with the same tracking identifiers, **Then** the platform records the late response for audit purposes without reopening or overwriting the terminal state.
 
 ---
 
-### User Story 3 - 下行消息路由 (Priority: P1)
+### User Story 3 - Manage device inventory and history (Priority: P2)
 
-作为平台操作员，我需要 iot-downlink 能够将服务调用路由到设备。
+As an operations user, I want to manage device records and review historical telemetry so I can keep the fleet inventory accurate and investigate device behavior over time.
 
-**Why this priority**: 下行消息是平台控制设备的核心能力。
+**Why this priority**: Operational teams need authoritative device records and historical context, but the platform still provides baseline value before this workflow is added.
+
+**Independent Test**: Can be fully tested by creating and updating a device record, retrieving device details, and querying recent telemetry history for a supported device.
 
 **Acceptance Scenarios**:
 
-1. **Given** iot-api 发布服务调用请求, **When** iot-downlink 接收到消息, **Then** 能够路由到正确的 gateway
-2. **Given** 服务调用需要确认, **When** 设备未响应, **Then** iot-downlink 能够重试
-3. **Given** 服务调用超时, **When** 超过配置时间, **Then** iot-downlink 能够返回超时错误
+1. **Given** an authorized client creates or updates a device record, **When** the request is validated, **Then** the platform stores the change and returns the current device data.
+2. **Given** telemetry has been collected for a device, **When** an authorized client requests historical data for a time range, **Then** the platform returns the matching records in a consistent format.
+3. **Given** a client requests a device that does not exist, **When** the platform processes the request, **Then** it returns a clear not-found response without affecting other records.
 
 ---
 
-### User Story 4 - RESTful API (Priority: P2)
+### User Story 4 - Receive realtime updates (Priority: P2)
 
-作为平台用户，我需要通过 HTTP API 管理设备和调用服务。
+As a monitoring client, I want to subscribe to realtime device updates so I can react to status changes, telemetry, and events without polling.
 
-**Why this priority**: API 是用户与平台交互的主要方式。
+**Why this priority**: Realtime visibility improves operator responsiveness, but it builds on the core ingestion and routing capabilities delivered earlier.
+
+**Independent Test**: Can be fully tested by opening a realtime session, subscribing to a device topic, generating device activity, and confirming only matching updates are delivered.
 
 **Acceptance Scenarios**:
 
-1. **Given** 用户请求设备列表, **When** 调用 GET /api/v1/devices, **Then** 返回设备列表
-2. **Given** 用户请求调用设备服务, **When** 调用 POST /api/v1/devices/{sn}/services/{method}, **Then** 能够下发服务调用
-3. **Given** 用户请求设备遥测数据, **When** 调用 GET /api/v1/devices/{sn}/telemetry, **Then** 返回时序数据
-
----
-
-### User Story 5 - WebSocket 实时推送 (Priority: P2)
-
-作为平台用户，我需要通过 WebSocket 接收实时消息推送。
-
-**Why this priority**: 实时推送是监控场景的核心需求。
-
-**Acceptance Scenarios**:
-
-1. **Given** 客户端建立 WebSocket 连接, **When** 连接成功, **Then** 能够订阅设备消息
-2. **Given** 设备上报遥测数据, **When** iot-uplink 处理完成, **Then** iot-ws 能够推送到订阅的客户端
-3. **Given** 客户端断开连接, **When** 连接关闭, **Then** 能够清理订阅关系
-
----
+1. **Given** an authorized client opens a realtime session, **When** it subscribes to supported device topics, **Then** the platform confirms the subscription and begins delivering matching updates.
+2. **Given** subscribed devices publish new status, telemetry, or event data, **When** the platform processes those updates, **Then** subscribed clients receive the updates in near real time.
+3. **Given** a realtime client becomes unresponsive, **When** the heartbeat window is missed, **Then** the platform closes the stale session and releases its subscriptions.
 
 ### Edge Cases
 
-- MQTT 连接断开时如何处理？（自动重连，指数退避 1s/2s/4s/8s 最大 30s，消息缓存最大 1000 条）
-- RabbitMQ 连接断开时如何处理？（自动重连，消息持久化，确认机制 publisher confirm）
-- 消息处理失败时如何处理？（重试 3 次后进入死信队列 `iot.dlx`，告警通知）
-- 大量设备同时上线时如何处理？（连接池最大 1000，限流 100 连接/秒）
-- WebSocket 连接数过多时如何处理？（单节点最大 10000 连接，超限返回 503）
+- Duplicate upstream messages or duplicate command responses reusing the same `tid` and `bid` are handled idempotently per FR-011 — no duplicate records or duplicate state transitions are created.
+- Late command responses arriving after a terminal timeout outcome are recorded for audit purposes without reopening or overwriting the terminal state (per US2-Scenario-4).
+- When many devices reconnect simultaneously after a broker or network interruption, the gateway applies a token-bucket rate limit on incoming connections; excess MQTT connects receive a CONNACK error and rely on standard MQTT client reconnect backoff.
+- When a realtime client subscribes to device topics it is not authorized to observe, the platform validates each topic individually, returns accepted topics in the subscription ack, and returns rejected topics with an authorization error. Valid topics in the same request still activate.
+- When a storage or messaging dependency is temporarily unavailable while commands or telemetry are in flight, services nack and requeue messages up to a configurable retry ceiling, then route exhausted messages to a dead-letter queue for operator review.
 
-## Requirements
-
-### Technology Stack Requirements
-
-- **TS-001**: 必须使用 Go 1.22+ 开发
-- **TS-002**: 必须使用 Gin Framework 处理 HTTP/WebSocket
-- **TS-003**: 必须使用 GORM 访问 PostgreSQL
-- **TS-004**: 必须使用 paho.mqtt.golang 连接 VerneMQ
-- **TS-005**: 必须复用 001/002/003 实现的基础设施
+## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-#### iot-gateway (P1)
-
-- **FR-001**: 必须实现 MQTT 客户端连接 VerneMQ
-- **FR-002**: 必须实现设备认证（用户名/密码）
-- **FR-003**: 必须实现 MQTT 消息到 RabbitMQ 的转发
-- **FR-004**: 必须实现 RabbitMQ 消息到 MQTT 的转发
-- **FR-005**: 必须实现设备连接状态管理
-
-#### iot-uplink (P1)
-
-- **FR-006**: 必须实现 RabbitMQ 消息订阅
-- **FR-007**: 必须实现消息解析和验证
-- **FR-008**: 必须实现物模型映射。将厂商协议数据映射到平台标准物模型(TSL)结构，通过 `product_key` 查询 `ThingModel` 表获取 TSL JSON 定义。厂商物模型属性定义参考各协议文档（如 DJI: `docs/protocol/dji/en/60.api-reference/*/properties.md`），映射维度包括 Properties（属性上报）、Services（服务调用）、Events（事件通知）
-- **FR-009**: 必须实现 InfluxDB 时序数据写入
-- **FR-010**: 必须实现消息路由到其他服务
-
-#### iot-downlink (P1)
-
-- **FR-011**: 必须实现 RabbitMQ 消息订阅
-- **FR-012**: 必须实现消息格式转换
-- **FR-013**: 必须实现消息确认和重试机制
-- **FR-014**: 必须实现消息路由到 gateway
-
-#### iot-api (P2)
-
-- **FR-015**: 必须实现设备管理 API (CRUD)
-- **FR-016**: 必须实现服务调用 API
-- **FR-017**: 必须实现遥测数据查询 API
-- **FR-018**: 必须实现 OpenAPI 文档
-
-#### iot-ws (P2)
-
-- **FR-019**: 必须实现 WebSocket 连接管理
-- **FR-020**: 必须实现消息订阅机制
-- **FR-021**: 必须实现实时消息推送
-- **FR-022**: 必须实现连接心跳检测
+- **FR-001**: The platform MUST authenticate supported devices before allowing them to exchange operational messages.
+- **FR-002**: The platform MUST maintain current connectivity status for each managed device and update that status when devices connect, disconnect, or stop sending expected heartbeats.
+- **FR-003**: The platform MUST accept upstream device messages and normalize them into a standard platform message model that preserves transaction identity, business identity, event time, device identity, vendor context, and trace context.
+- **FR-004**: The platform MUST validate supported upstream messages against the registered device capability model before storing or forwarding business data.
+- **FR-005**: The platform MUST store supported telemetry and event data so authorized clients can review device history.
+- **FR-006**: The platform MUST route validated upstream updates to the appropriate downstream consumers, including realtime delivery channels and business-facing interfaces.
+- **FR-007**: The platform MUST allow authorized clients to create, view, update, and remove managed device records.
+- **FR-008**: The platform MUST allow authorized clients to submit service requests for supported devices and immediately receive a tracking identifier for each accepted request.
+- **FR-009**: The platform MUST track each device service request through the authoritative lifecycle states `pending`, `sent`, `retrying`, `success`, `failed`, and `timeout`.
+- **FR-010**: The platform MUST retry unacknowledged or failed service deliveries according to a defined retry policy and preserve the final failure outcome for operator review.
+- **FR-011**: The platform MUST process duplicate upstream messages and duplicate service responses idempotently when they repeat the same `tid` and `bid`, so duplicate deliveries do not create duplicate telemetry/history records or duplicate terminal service-request transitions.
+- **FR-012**: The platform MUST deliver downlink device requests only through the designated gateway path rather than direct service-to-device calls.
+- **FR-013**: The platform MUST allow authorized clients to establish realtime sessions, manage subscriptions to supported device topics, and receive matching updates.
+- **FR-014**: The platform MUST detect stale realtime sessions and close them after missed heartbeat expectations.
+- **FR-015**: The platform MUST provide integration-ready interface documentation for device management, telemetry retrieval, service requests, and realtime subscriptions.
+- **FR-016**: The platform MUST expose service health and operational readiness information for each core service so operators can determine whether the end-to-end flow is available.
+- **FR-017**: The platform MUST record auditable operational events for authentication attempts, message processing failures, retries, and final command outcomes.
 
 ### Non-Functional Requirements
 
-- **NFR-001**: 消息处理延迟 < 100ms (P95)
-- **NFR-002**: 支持 1000+ 设备同时在线
-- **NFR-003**: 支持 10000+ WebSocket 连接
-- **NFR-004**: 服务可用性 > 99.9%（通过故障注入测试验证：模拟 MQTT/RabbitMQ/PostgreSQL/InfluxDB 断连后服务自动恢复，恢复时间 < 30s）
+- **NFR-001**: At least 95% of valid device telemetry updates MUST become available for subscribed clients or downstream consumers within 1 second during representative acceptance testing.
+- **NFR-002**: The platform MUST support at least 1,000 simultaneously connected devices during controlled load testing without dropping authenticated sessions.
+- **NFR-003**: The platform MUST support at least 10,000 simultaneous realtime client connections per node during controlled load testing.
+- **NFR-004**: Core platform services MUST recover from transient messaging or storage dependency interruptions within 30 seconds without manual intervention.
+- **NFR-005**: The end-to-end operational flow MUST demonstrate at least 99.9% availability during controlled resilience testing windows.
+- **NFR-006**: Release readiness MUST require passing unit, integration, end-to-end, and contract tests, with unit test coverage of at least 80%.
 
-### Test-First Development Requirements
+### Key Entities *(include if feature involves data)*
 
-- **TDD-001**: 所有功能开发必须遵循 TDD 原则
-- **TDD-002**: 单元测试覆盖率必须 >= 80%
-- **TDD-003**: 必须提供集成测试验证完整消息流程
-- **TDD-004**: 必须提供端到端测试验证完整数据流
+- **Managed Device**: A supported field asset known to the platform, including its identity, type, vendor, status, connectivity state, and relationship to any parent gateway.
+- **Device Credential**: The authentication record that determines whether a device is allowed to connect and exchange messages with the platform.
+- **Capability Model**: The normalized description of a device's properties, services, and events that the platform uses to validate and interpret device traffic.
+- **Telemetry Record**: A timestamped snapshot of reported device measurements or state used for monitoring, history, and downstream processing.
+- **Service Request**: A tracked command issued to a device, including its target device, requested operation, status history, retries, and final outcome.
+- **Realtime Subscription**: A client-managed registration describing which device topics should be delivered over an active realtime session.
 
-## Success Criteria
+### Assumptions
 
-### Measurable Outcomes
-
-- **SC-001**: 5 个核心服务全部实现业务逻辑
-- **SC-002**: 完整的上行数据流（设备→VerneMQ→gateway→uplink→ws）
-- **SC-003**: 完整的下行数据流（api→downlink→gateway→VerneMQ→设备）
-- **SC-004**: 单元测试覆盖率 >= 80%
-- **SC-005**: 集成测试通过率 100%
+- Existing platform foundations already provide supported device protocol translation and baseline infrastructure for core services to build upon.
+- The initial scope targets supported vendor/device families already modeled by the platform's capability definitions.
+- Clients interacting with device management, command, and realtime features already use the platform's standard authorization model.
+- This feature covers the five core runtime services and their end-to-end behavior, not new device family onboarding.
 
 ## Clarifications
 
-### Session 2025-02-05
+### Session 2026-03-23
 
-- Q: 本 Spec 与 003 的关系？ → A: 003 实现了 DJI 协议适配器，本 Spec 实现核心服务的业务逻辑，两者配合完成完整数据流
-- Q: MQTT 客户端库选择？ → A: 使用 paho.mqtt.golang，这是 Eclipse 官方维护的 Go MQTT 客户端
-- Q: WebSocket 库选择？ → A: 使用 gorilla/websocket（注：该库已于 2023 年归档为只读，但 API 稳定且社区广泛使用，无需替换。如需迁移可评估 nhooyr.io/websocket）
-- Q: FR-002 认证方式选择？ → A: 004 只实现用户名/密码认证，证书认证延后到 005 或后续迭代
+- Q: When a storage or messaging dependency is temporarily unavailable during in-flight processing, what should the service do? → A: Nack + requeue with max retries → dead-letter queue for operator review.
+- Q: When many devices reconnect simultaneously after a broker/network interruption, how should the gateway handle the surge? → A: Token-bucket rate limit; excess MQTT connects get CONNACK error and use standard client backoff.
+- Q: When a realtime client subscribes to device topics it is not authorized to observe, how should the platform respond? → A: Per-topic accept/reject; valid topics activate, rejected topics return authorization error.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Operators can connect a supported device and observe its online status in the platform within 60 seconds of successful authentication.
+- **SC-002**: During acceptance testing, at least 95% of valid telemetry reports become queryable and eligible for realtime delivery within 1 second of ingestion.
+- **SC-003**: For 100% of accepted service requests, the platform returns a tracking identifier immediately and records a final outcome within the configured execution window.
+- **SC-004**: All four primary user stories can be demonstrated end to end without manual data correction or out-of-band service intervention.
+- **SC-005**: Controlled verification demonstrates support for 1,000 device connections and 10,000 realtime client connections while maintaining the required recovery and availability thresholds.

@@ -6,6 +6,8 @@ import (
 
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/utmos/utmos/internal/gateway/connection"
+	"github.com/utmos/utmos/internal/gateway/mqtt"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
 )
@@ -52,6 +54,27 @@ func TestRoutingKeyGeneration(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestGatewayAuthentication tests device authentication flow
+// Full integration coverage is in TestGatewayAuthenticationFlow (gateway_auth_test.go).
+func TestGatewayAuthentication(t *testing.T) {
+	t.Run("auth module exists", func(t *testing.T) {
+		// Smoke test: verify the Authenticator type can be instantiated
+		_ = mqtt.NewAuthenticator(nil, nil)
+	})
+}
+
+// TestDeviceConnectivity tests online/offline tracking
+// Full integration coverage is in TestDeviceOnlineOfflineTracking (gateway_auth_test.go).
+func TestDeviceConnectivity(t *testing.T) {
+	t.Run("connection tracking exists", func(t *testing.T) {
+		// Smoke test: verify the Manager type can be instantiated
+		mgr := connection.NewManager(nil)
+		if mgr == nil {
+			t.Fatal("expected non-nil connection manager")
+		}
+	})
 }
 
 // TestRoutingKeyParsing tests parsing routing keys back to components

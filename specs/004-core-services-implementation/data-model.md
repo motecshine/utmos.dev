@@ -1,379 +1,259 @@
 # Data Model: Core Services Implementation
 
 **Feature**: 004-core-services-implementation
-**Date**: 2025-02-05
+**Date**: 2026-03-23
 
-## Entity Relationship Diagram
+## Entity Relationship Overview
 
-```
-┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│ DeviceCredential│       │     Device      │       │  DeviceTopology │
-├─────────────────┤       ├─────────────────┤       ├─────────────────┤
-│ id              │       │ id              │       │ id              │
-│ device_sn (UK)  │──────►│ sn (UK)         │◄──────│ device_id (FK)  │
-│ username        │       │ name            │       │ parent_id (FK)  │
-│ password_hash   │       │ type            │       │ relation_type   │
-│ enabled         │       │ vendor          │       │ created_at      │
-│ created_at      │       │ model           │       └─────────────────┘
-│ updated_at      │       │ status          │
-└─────────────────┘       │ online          │       ┌─────────────────┐
-                          │ last_online_at  │       │  ServiceCall    │
-                          │ created_at      │       ├─────────────────┤
-                          │ updated_at      │       │ id              │
-                          └────────┬────────┘       │ tid (UK)        │
-                                   │                │ bid             │
-                                   │                │ device_sn       │
-                                   ▼                │ method          │
-                          ┌─────────────────┐       │ params (JSON)   │
-                          │  ThingModel     │       │ status          │
-                          ├─────────────────┤       │ result (JSON)   │
-                          │ id              │       │ error_code      │
-                          │ device_id (FK)  │       │ error_msg       │
-                          │ version         │       │ created_at      │
-                          │ properties      │       │ completed_at    │
-                          │ services        │       └─────────────────┘
-                          │ events          │
-                          │ created_at      │       ┌─────────────────┐
-                          │ updated_at      │       │  WSConnection   │
-                          └─────────────────┘       ├─────────────────┤
-                                                    │ id              │
-                                                    │ client_id (UK)  │
-                                                    │ user_id         │
-                                                    │ subscriptions   │
-                                                    │ connected_at    │
-                                                    │ last_ping_at    │
-                                                    └─────────────────┘
+```text
+ThingModel ──────< ManagedDevice >────── DeviceCredential
+                     │      │
+                     │      └──────< TelemetryRecord
+                     │
+                     ├──────< DeviceTopology
+                     │
+                     └──────< ServiceRequest
+
+RealtimeSession ──────< RealtimeSubscription
 ```
 
-## PostgreSQL Entities
+## Entities
+
+### ThingModel
+
+Represents the TSL-based capability definition used to validate and interpret device traffic.
+
+**Fields**:
+- `id`: unique identifier
+- `product_key`: unique product/capability key
+- `product_name`: human-readable product name
+- `version`: capability model version
+- `tsl_json`: full TSL JSON definition
+- `description`: optional description
+- `created_at`, `updated_at`, `deleted_at`
+
+**Validation rules**:
+- `product_key` is required and unique
+- `version` is required
+- `tsl_json` is required and must contain properties, services, and events required by the platform constitution
+
+**Relationships**:
+- One thing model can be associated with many managed devices
+
+### ManagedDevice
+
+Represents a device known to the platform and tracked across authentication, connectivity, telemetry, and command execution.
+
+**Fields**:
+- `id`: unique identifier
+- `device_sn`: unique device serial number
+- `device_name`: display name
+- `device_type`: gateway, aircraft, dock, rc, or other supported platform type
+- `vendor`: supported vendor identifier
+- `status`: current connectivity/operational status
+- `gateway_sn`: optional parent gateway serial number
+- `thing_model_id`: optional reference to the capability model
+- `last_online_time`: latest observed online time
+- `created_at`, `updated_at`, `deleted_at`
+
+**Validation rules**:
+- `device_sn` is required and unique
+- `device_name` is required for operator-facing inventory management
+- `device_type` is required
+- `vendor` is required
+- `status` defaults to `unknown` until connectivity is observed
+
+**Relationships**:
+- Many devices belong to one thing model
+- One device can have one active credential record
+- One device can have many telemetry records
+- One device can have many service requests
+- One device can participate in zero or more topology links
 
 ### DeviceCredential
 
-设备认证凭证，用于 MQTT 连接认证。
+Represents the authentication material used to decide whether a device may connect.
 
-```go
-// internal/gateway/model/credential.go
-type DeviceCredential struct {
-    ID           uint      `gorm:"primaryKey"`
-    DeviceSN     string    `gorm:"uniqueIndex;size:64;not null"`
-    Username     string    `gorm:"size:64;not null"`
-    PasswordHash string    `gorm:"size:256;not null"`
-    Enabled      bool      `gorm:"default:true"`
-    CreatedAt    time.Time `gorm:"autoCreateTime"`
-    UpdatedAt    time.Time `gorm:"autoUpdateTime"`
-}
+**Fields**:
+- `id`: unique identifier
+- `device_sn`: device serial number
+- `username`: credential username
+- `password_hash`: stored secret representation
+- `enabled`: whether the credential is active
+- `created_at`, `updated_at`
 
-func (DeviceCredential) TableName() string {
-    return "device_credentials"
-}
-```
+**Validation rules**:
+- `device_sn` is required and unique within the credential store
+- `username` is required
+- `password_hash` is required
+- disabled credentials must be rejected for new device sessions
 
-### Device
-
-设备基本信息。
-
-```go
-// pkg/models/device.go (已存在，需扩展)
-type Device struct {
-    ID           uint      `gorm:"primaryKey"`
-    SN           string    `gorm:"uniqueIndex;size:64;not null"`
-    Name         string    `gorm:"size:128"`
-    Type         string    `gorm:"size:32;not null"` // gateway, aircraft, dock, rc
-    Vendor       string    `gorm:"size:32;not null"` // dji, etc.
-    Model        string    `gorm:"size:64"`
-    Status       string    `gorm:"size:32;default:'inactive'"` // active, inactive, maintenance
-    Online       bool      `gorm:"default:false"`
-    LastOnlineAt *time.Time
-    CreatedAt    time.Time `gorm:"autoCreateTime"`
-    UpdatedAt    time.Time `gorm:"autoUpdateTime"`
-}
-```
+**Relationships**:
+- One credential record belongs to one managed device
 
 ### DeviceTopology
 
-设备拓扑关系（网关-子设备）。
+Represents parent-child device relationships for gateway-managed deployments.
 
-```go
-// pkg/models/topology.go
-type DeviceTopology struct {
-    ID           uint      `gorm:"primaryKey"`
-    DeviceID     uint      `gorm:"not null;index"`
-    Device       Device    `gorm:"foreignKey:DeviceID"`
-    ParentID     *uint     `gorm:"index"`
-    Parent       *Device   `gorm:"foreignKey:ParentID"`
-    RelationType string    `gorm:"size:32;not null"` // gateway_aircraft, dock_aircraft
-    CreatedAt    time.Time `gorm:"autoCreateTime"`
-}
+**Fields**:
+- `id`: unique identifier
+- `device_id`: child device reference
+- `parent_device_id`: optional parent device reference
+- `relation_type`: relationship classification
+- `created_at`
 
-func (DeviceTopology) TableName() string {
-    return "device_topologies"
-}
-```
+**Validation rules**:
+- `device_id` is required
+- parent and child must not reference the same device
+- relation type must be one of the supported topology patterns
 
-### ServiceCall
+**Relationships**:
+- A managed device can have zero or one parent link in the active topology
+- A managed device can have many child links when acting as a gateway
 
-服务调用记录，用于追踪和重试。
+### TelemetryRecord
 
-```go
-// internal/downlink/model/service_call.go
-type ServiceCall struct {
-    ID          uint            `gorm:"primaryKey"`
-    TID         string          `gorm:"uniqueIndex;size:64;not null"` // Transaction ID
-    BID         string          `gorm:"size:64;not null"`             // Business ID
-    DeviceSN    string          `gorm:"index;size:64;not null"`
-    Method      string          `gorm:"size:128;not null"`
-    Params      datatypes.JSON  `gorm:"type:jsonb"`
-    Status      string          `gorm:"size:32;default:'pending'"` // pending, sent, success, failed, timeout
-    Result      datatypes.JSON  `gorm:"type:jsonb"`
-    ErrorCode   *int
-    ErrorMsg    *string         `gorm:"size:512"`
-    RetryCount  int             `gorm:"default:0"`
-    CreatedAt   time.Time       `gorm:"autoCreateTime"`
-    CompletedAt *time.Time
-}
+Represents a stored upstream measurement, state update, or event for history and downstream use.
 
-func (ServiceCall) TableName() string {
-    return "service_calls"
-}
-```
+**Fields**:
+- `measurement`: logical telemetry/event stream name
+- `device_sn`: source device serial number
+- `gateway_sn`: optional gateway serial number
+- `vendor`: source vendor identifier
+- `message_type`: property, event, status, or other supported category
+- `payload`: normalized business data
+- `timestamp`: event time from the source message
+- `trace_id`: distributed trace identifier when present
 
-### WSConnection (内存结构)
+**Validation rules**:
+- `device_sn` is required
+- `message_type` is required
+- `timestamp` is required
+- payload must satisfy the registered capability model for supported measurements
 
-WebSocket 连接信息，存储在内存中。
+**Relationships**:
+- Many telemetry records belong to one managed device
 
-```go
-// internal/ws/model/connection.go
-type WSConnection struct {
-    ID            string
-    ClientID      string
-    UserID        string
-    Subscriptions []string  // 订阅的主题列表
-    ConnectedAt   time.Time
-    LastPingAt    time.Time
-    Conn          *websocket.Conn
-}
-```
+### ServiceRequest
 
-## InfluxDB Measurements
+Represents a tracked command or property/configuration change request sent toward a device.
 
-### dji_aircraft_osd
+**Fields**:
+- `id`: unique request identifier
+- `device_sn`: target device serial number
+- `vendor`: target vendor identifier
+- `method`: requested operation
+- `params`: request payload
+- `call_type`: command, property, or config
+- `status`: pending, sent, success, failed, timeout, or retrying
+- `tid`: transaction identifier
+- `bid`: business identifier
+- `retry_count`: current retry count
+- `max_retries`: retry limit
+- `error`: final or latest error text
+- `response`: response payload when available
+- `sent_at`, `completed_at`, `created_at`, `updated_at`
 
-飞行器遥测数据。
+**Validation rules**:
+- `device_sn`, `vendor`, and `method` are required
+- `status` defaults to `pending`
+- `max_retries` defaults to 3 when not provided
+- `tid` and `bid` should be preserved across retries for traceability
 
-```
-Measurement: dji_aircraft_osd
-Tags:
-  - device_sn: string      # 飞行器 SN
-  - gateway_sn: string     # 网关 SN
-  - vendor: string         # 厂商 (dji)
-Fields:
-  - latitude: float        # 纬度
-  - longitude: float       # 经度
-  - altitude: float        # 高度 (m)
-  - height: float          # 相对高度 (m)
-  - speed_x: float         # X 轴速度 (m/s)
-  - speed_y: float         # Y 轴速度 (m/s)
-  - speed_z: float         # Z 轴速度 (m/s)
-  - attitude_pitch: float  # 俯仰角 (deg)
-  - attitude_roll: float   # 横滚角 (deg)
-  - attitude_yaw: float    # 偏航角 (deg)
-  - battery_percent: int   # 电池电量 (%)
-  - flight_mode: int       # 飞行模式
-  - gear: int              # 起落架状态
-Timestamp: message timestamp (nanoseconds)
-```
+**Relationships**:
+- Many service requests belong to one managed device
 
-### dji_dock_osd
+### RealtimeSession
 
-机场遥测数据。
+Represents an active client session receiving live platform updates.
 
-```
-Measurement: dji_dock_osd
-Tags:
-  - device_sn: string      # 机场 SN
-  - vendor: string         # 厂商 (dji)
-Fields:
-  - network_state: int     # 网络状态
-  - drone_in_dock: bool    # 飞行器是否在舱内
-  - drone_charge_state: int # 充电状态
-  - cover_state: int       # 舱盖状态
-  - putter_state: int      # 推杆状态
-  - supplement_light_state: int # 补光灯状态
-  - temperature: float     # 温度 (°C)
-  - humidity: float        # 湿度 (%)
-  - rainfall: int          # 降雨量
-  - wind_speed: float      # 风速 (m/s)
-Timestamp: message timestamp (nanoseconds)
-```
+**Fields**:
+- `session_id`: unique client/session identifier
+- `user_id`: authenticated platform user or client principal
+- `device_scope`: optional device-scoping metadata from the request context
+- `connected_at`: session start time
+- `last_heartbeat_at`: latest successful heartbeat time
+- `state`: active or closed
 
-### dji_device_event
+**Validation rules**:
+- `session_id` is required
+- sessions without valid heartbeat progression must be closed
 
-设备事件记录。
+**Relationships**:
+- One realtime session can have many subscriptions
 
-```
-Measurement: dji_device_event
-Tags:
-  - device_sn: string      # 设备 SN
-  - gateway_sn: string     # 网关 SN
-  - vendor: string         # 厂商 (dji)
-  - event_type: string     # 事件类型
-Fields:
-  - event_data: string     # 事件数据 (JSON)
-  - need_reply: bool       # 是否需要回复
-Timestamp: message timestamp (nanoseconds)
-```
+### RealtimeSubscription
 
-## RabbitMQ Message Formats
+Represents an authorized topic subscription attached to a realtime session.
 
-### Raw Uplink Message
+**Fields**:
+- `session_id`: owning session identifier
+- `topic_pattern`: subscribed topic or pattern
+- `created_at`: subscription creation time
 
-从 iot-gateway 发送到 iot-uplink 的原始消息。
+**Validation rules**:
+- `topic_pattern` is required
+- subscriptions must only target supported device topics
+- subscriptions must pass authorization checks for the owning client
 
-```go
-// pkg/rabbitmq/message.go (扩展)
-type RawUplinkMessage struct {
-    Vendor    string          `json:"vendor"`     // dji
-    Topic     string          `json:"topic"`      // MQTT topic
-    Payload   json.RawMessage `json:"payload"`    // 原始 payload
-    QoS       int             `json:"qos"`
-    Timestamp int64           `json:"timestamp"`
-    TraceID   string          `json:"trace_id"`
-    SpanID    string          `json:"span_id"`
-}
-```
-
-### Standard Message
-
-标准化消息格式，用于服务间通信。
-
-```go
-// pkg/rabbitmq/message.go (已存在)
-type StandardMessage struct {
-    TID          string                 `json:"tid"`
-    BID          string                 `json:"bid"`
-    Timestamp    int64                  `json:"timestamp"`
-    DeviceSN     string                 `json:"device_sn"`
-    GatewaySN    string                 `json:"gateway_sn,omitempty"`
-    Service      string                 `json:"service"`
-    Action       string                 `json:"action"`
-    Data         map[string]interface{} `json:"data"`
-    ProtocolMeta ProtocolMeta           `json:"protocol_meta"`
-}
-
-type ProtocolMeta struct {
-    Vendor        string `json:"vendor"`
-    OriginalTopic string `json:"original_topic"`
-    QoS           int    `json:"qos"`
-    Method        string `json:"method,omitempty"`
-}
-```
-
-### Service Call Request
-
-服务调用请求消息。
-
-```go
-// pkg/rabbitmq/message.go (扩展)
-type ServiceCallRequest struct {
-    TID       string                 `json:"tid"`
-    BID       string                 `json:"bid"`
-    DeviceSN  string                 `json:"device_sn"`
-    Method    string                 `json:"method"`
-    Params    map[string]interface{} `json:"params"`
-    Timeout   int                    `json:"timeout"` // seconds
-    TraceID   string                 `json:"trace_id"`
-    SpanID    string                 `json:"span_id"`
-}
-```
-
-### Service Call Response
-
-服务调用响应消息。
-
-```go
-// pkg/rabbitmq/message.go (扩展)
-type ServiceCallResponse struct {
-    TID       string                 `json:"tid"`
-    BID       string                 `json:"bid"`
-    DeviceSN  string                 `json:"device_sn"`
-    Method    string                 `json:"method"`
-    Result    int                    `json:"result"` // 0 = success
-    Output    map[string]interface{} `json:"output,omitempty"`
-    ErrorCode *int                   `json:"error_code,omitempty"`
-    ErrorMsg  *string                `json:"error_msg,omitempty"`
-    TraceID   string                 `json:"trace_id"`
-    SpanID    string                 `json:"span_id"`
-}
-```
-
-## WebSocket Message Formats
-
-### Client Subscribe
-
-客户端订阅消息。
-
-```go
-// internal/ws/message/subscribe.go
-type SubscribeMessage struct {
-    Type    string   `json:"type"`    // "subscribe"
-    Topics  []string `json:"topics"`  // ["device.osd.device-001", "device.event.*"]
-}
-```
-
-### Server Push
-
-服务器推送消息。
-
-```go
-// internal/ws/message/push.go
-type PushMessage struct {
-    Type      string                 `json:"type"`      // "message"
-    Topic     string                 `json:"topic"`     // "device.osd.device-001"
-    DeviceSN  string                 `json:"device_sn"`
-    Timestamp int64                  `json:"timestamp"`
-    Data      map[string]interface{} `json:"data"`
-}
-```
-
-## Validation Rules
-
-### DeviceCredential
-
-- `device_sn`: 必填，唯一，最大 64 字符
-- `username`: 必填，最大 64 字符
-- `password_hash`: 必填，bcrypt 哈希
-
-### Device
-
-- `sn`: 必填，唯一，最大 64 字符
-- `type`: 必填，枚举值 (gateway, aircraft, dock, rc)
-- `vendor`: 必填，枚举值 (dji)
-
-### ServiceCall
-
-- `tid`: 必填，唯一，UUID 格式
-- `bid`: 必填，UUID 格式
-- `device_sn`: 必填，必须存在于 devices 表
-- `method`: 必填，最大 128 字符
-- `status`: 枚举值 (pending, sent, success, failed, timeout)
+**Relationships**:
+- Many subscriptions belong to one realtime session
 
 ## State Transitions
 
-### ServiceCall Status
+### ManagedDevice connectivity status
 
-```
-pending ──► sent ──► success
-              │
-              └──► failed
-              │
-              └──► timeout
+```text
+unknown -> online
+online  -> offline
+offline -> online
 ```
 
-### Device Online Status
+**Rules**:
+- A successful authenticated connection can move a device to `online`
+- Missing expected traffic or explicit disconnect can move a device to `offline`
+- Devices begin in `unknown` until the platform observes activity
 
+### ServiceRequest lifecycle
+
+```text
+pending -> sent -> success
+              \-> failed -> retrying -> sent
+              \-> timeout -> retrying -> sent
 ```
-offline ──► online (收到消息)
-   ▲           │
-   │           │
-   └───────────┘ (心跳超时)
+
+**Rules**:
+- Requests start as `pending`
+- A request moves to `sent` once accepted for device delivery
+- Final terminal states are `success`, `failed`, and `timeout`
+- `retrying` is transitional and increments `retry_count`
+- Requests cannot retry after reaching `max_retries`
+
+### RealtimeSession lifecycle
+
+```text
+active -> closed
 ```
+
+**Rules**:
+- A session becomes active after a successful WebSocket upgrade
+- A missed heartbeat, client disconnect, or explicit shutdown closes the session and removes all subscriptions
+
+## Message and trace envelope requirements
+
+All normalized inter-service messages must preserve:
+- `tid`: transaction identifier
+- `bid`: business identifier
+- `timestamp`: source or processing time
+- `device_sn`: source or target device serial number
+- `service`: logical producing service name
+- `action`: logical business action
+- `protocol_meta.vendor`: vendor identifier when available
+- W3C trace context headers (`traceparent`, `tracestate`) when propagated through RabbitMQ
+
+## Design notes
+
+- Shared repository models already exist for `ThingModel` and `Device`; planning should extend rather than duplicate them.
+- `ServiceRequest` persistence is necessary for operator-facing auditability and retry tracking.
+- `TelemetryRecord` is represented operationally in time-series storage rather than a single relational table, but its logical fields must remain stable for API and realtime consumers.
+- `RealtimeSession` and `RealtimeSubscription` may remain memory-backed at runtime if that satisfies current scope, but their behavior is part of the feature contract and must be tested.

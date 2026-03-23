@@ -60,7 +60,12 @@ func (a *Authenticator) findCredential(ctx context.Context, field, value string)
 // It returns ErrInvalidCredentials when the password does not match.
 func (a *Authenticator) verifyPassword(credential *model.DeviceCredential, password, logField, logValue string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(credential.PasswordHash), []byte(password)); err != nil {
-		a.logger.WithField(logField, logValue).Debug("Invalid password")
+		a.logger.WithFields(logrus.Fields{
+			logField:      logValue,
+			"device_sn":   credential.DeviceSN,
+			"auth_result": "failed",
+			"reason":      "invalid_password",
+		}).Warn("Authentication failed")
 		return ErrInvalidCredentials
 	}
 	return nil

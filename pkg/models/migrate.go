@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/utmos/utmos/internal/downlink/model"
 	"gorm.io/gorm"
 )
 
@@ -12,5 +13,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&DeviceProperty{},
 		&DeviceEvent{},
 		&MessageLog{},
+		&model.ServiceCall{},
 	)
 }

@@ -33,7 +33,6 @@ func setupServiceTestRouter(handler *Service) *gin.Engine {
 	router.POST("/api/v1/services/call", handler.Call)
 	router.GET("/api/v1/services/calls/:id", handler.Get)
 	router.GET("/api/v1/services/calls/device/:device_sn", handler.ListByDevice)
-	router.POST("/api/v1/services/calls/:id/cancel", handler.Cancel)
 
 	return router
 }
@@ -164,59 +163,6 @@ func TestService_ListByDevice(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &resp)
 		require.NoError(t, err)
 		assert.Len(t, resp.ServiceCalls, 1)
-	})
-}
-
-func TestService_Cancel(t *testing.T) {
-	db := setupServiceTestDB(t)
-	handler := NewService(db, nil, nil)
-	router := setupServiceTestRouter(handler)
-
-	t.Run("cancel pending call", func(t *testing.T) {
-		call := &model.ServiceCall{
-			ID:       "call-cancel-001",
-			DeviceSN: "DEVICE001",
-			Vendor:   "dji",
-			Method:   "takeoff",
-			Status:   model.ServiceCallStatusPending,
-		}
-		db.Create(call)
-
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/api/v1/services/calls/call-cancel-001/cancel", nil)
-		router.ServeHTTP(w, r)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		var resp ServiceCallResponse
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		require.NoError(t, err)
-		assert.Equal(t, "cancelled", resp.Status)
-	})
-
-	t.Run("cannot cancel completed call", func(t *testing.T) {
-		call := &model.ServiceCall{
-			ID:       "call-cancel-002",
-			DeviceSN: "DEVICE001",
-			Vendor:   "dji",
-			Method:   "takeoff",
-			Status:   model.ServiceCallStatusSuccess,
-		}
-		db.Create(call)
-
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/api/v1/services/calls/call-cancel-002/cancel", nil)
-		router.ServeHTTP(w, r)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-	})
-
-	t.Run("call not found", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/api/v1/services/calls/nonexistent/cancel", nil)
-		router.ServeHTTP(w, r)
-
-		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
 

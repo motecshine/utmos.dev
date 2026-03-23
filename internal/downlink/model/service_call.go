@@ -24,8 +24,6 @@ const (
 	ServiceCallStatusTimeout ServiceCallStatus = "timeout"
 	// ServiceCallStatusRetrying indicates the service call is being retried.
 	ServiceCallStatusRetrying ServiceCallStatus = "retrying"
-	// ServiceCallStatusCancelled indicates the service call was cancelled.
-	ServiceCallStatusCancelled ServiceCallStatus = "cancelled"
 )
 
 // ServiceCallType represents the type of service call
@@ -186,8 +184,7 @@ func (s *ServiceCall) IsPending() bool {
 func (s *ServiceCall) IsCompleted() bool {
 	return s.Status == ServiceCallStatusSuccess ||
 		s.Status == ServiceCallStatusFailed ||
-		s.Status == ServiceCallStatusTimeout ||
-		s.Status == ServiceCallStatusCancelled
+		s.Status == ServiceCallStatusTimeout
 }
 
 // ServiceCallRepository provides database operations for ServiceCall

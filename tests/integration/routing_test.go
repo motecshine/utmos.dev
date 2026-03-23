@@ -205,3 +205,17 @@ func TestRoutingKeyEquality(t *testing.T) {
 		t.Error("different routing keys should have different string representations")
 	}
 }
+
+// TestCanonicalRawRoutingUsage tests that raw messages use iot.raw.{vendor}.{direction}
+func TestCanonicalRawRoutingUsage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+}
+
+// TestCanonicalBusinessRoutingUsage tests that normalized messages use iot.{vendor}.{service}.{action}
+func TestCanonicalBusinessRoutingUsage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+}

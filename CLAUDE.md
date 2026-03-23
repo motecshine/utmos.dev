@@ -95,5 +95,10 @@ See `.specify/memory/constitution.md` for complete architectural principles. Key
 - Microservice Architecture (5 services, RabbitMQ communication)
 
 ## Recent Changes
+- 004-core-services-implementation: Added Go 1.22+ + Gin Framework, GORM, RabbitMQ client utilities in `pkg/rabbitmq`, existing vendor adapter packages under `pkg/adapter/*`, logrus-based logging, OpenTelemetry-based tracing
 - 003-dji-protocol-implementation: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 003-dji-protocol-implementation: Added Go 1.22+
+
+## Active Technologies
+- Go 1.22+ + Gin Framework, GORM, RabbitMQ client utilities in `pkg/rabbitmq`, existing vendor adapter packages under `pkg/adapter/*`, logrus-based logging, OpenTelemetry-based tracing (004-core-services-implementation)
+- PostgreSQL for relational platform data, InfluxDB for telemetry/time-series data (004-core-services-implementation)

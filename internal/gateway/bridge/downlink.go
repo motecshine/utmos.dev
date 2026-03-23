@@ -52,7 +52,7 @@ func DefaultDownlinkBridgeConfig() *DownlinkBridgeConfig {
 	return &DownlinkBridgeConfig{
 		Exchange:   "iot.topic",
 		Queue:      "iot.gateway.downlink",
-		RoutingKey: "iot.raw.*.downlink",
+		RoutingKey: rabbitmq.BuildRawBindingPattern("", rabbitmq.DirectionDownlink),
 	}
 }
 

@@ -1,381 +1,258 @@
 # Tasks: Core Services Implementation
 
-**Feature**: 004-core-services-implementation
-**Generated**: 2025-02-05
-**Total Tasks**: 51
+**Input**: Design documents from `/specs/004-core-services-implementation/`
+**Prerequisites**: `plan.md`, `spec.md`, `research.md`, `data-model.md`, `contracts/openapi.yaml`, `quickstart.md`
 
-## Task Summary
+**Tests**: Required. The constitution and `NFR-006` require unit, integration, end-to-end, and contract coverage. Write the failing tests for each story before implementation.
 
-| Phase | Tasks | Status |
-|-------|-------|--------|
-| Phase 1: iot-gateway | T001-T010 | Complete |
-| Phase 2: iot-uplink | T011-T018 | Complete |
-| Phase 3: iot-downlink | T019-T026 | Complete |
-| Phase 4: iot-api | T027-T036 | Complete |
-| Phase 5: iot-ws | T037-T044 (含 T039-A) | Complete |
-| Phase 6: Integration & NFR | T045-T050 | Complete |
+**Organization**: Tasks are grouped by user story so each story can be implemented and verified independently.
 
----
+## Format: `[ID] [P?] [Story] Description`
 
-## Phase 1: iot-gateway (P1)
+- **[P]**: Can run in parallel (different files, no dependency on incomplete tasks)
+- **[Story]**: User story label (`[US1]`, `[US2]`, `[US3]`, `[US4]`)
+- Every task includes the exact file paths it changes when those paths are knowable in advance; repository-wide validation tasks may reference the command-reported files they reconcile
 
-### T001: 添加 MQTT 客户端依赖
-- [x] **Description**: 添加 paho.mqtt.golang 依赖到 go.mod
-- **Files**: `go.mod`
-- **Acceptance**: `go mod tidy` 成功
+## Phase 1: Setup (Shared Infrastructure)
 
-### T002: 实现 MQTT 客户端连接管理
-- [x] **Description**: 实现 MQTT 客户端连接 VerneMQ，支持自动重连
-- **Files**: `internal/gateway/mqtt/client.go`, `internal/gateway/mqtt/client_test.go`
-- **Depends**: T001
-- **Acceptance**: 单元测试通过，能够连接 VerneMQ
+**Purpose**: Align the existing repository scaffolding with the current plan before story work starts.
 
-### T003: 实现设备认证
-- [x] **Description**: 实现设备用户名/密码认证，查询 PostgreSQL 验证凭证
-- **Files**: `internal/gateway/mqtt/auth.go`, `internal/gateway/mqtt/auth_test.go`, `internal/gateway/model/credential.go`
-- **Depends**: T002
-- **Acceptance**: 单元测试通过，能够验证设备凭证
-
-### T004: 实现 MQTT 消息处理器
-- [x] **Description**: 实现 MQTT 消息接收和处理逻辑
-- **Files**: `internal/gateway/mqtt/handler.go`, `internal/gateway/mqtt/handler_test.go`
-- **Depends**: T002
-- **Acceptance**: 单元测试通过，能够接收 MQTT 消息
-
-### T005: 实现上行消息桥接
-- [x] **Description**: 实现 MQTT 消息到 RabbitMQ 的转发
-- **Files**: `internal/gateway/bridge/uplink.go`, `internal/gateway/bridge/uplink_test.go`
-- **Depends**: T004
-- **Acceptance**: 单元测试通过，MQTT 消息能够转发到 RabbitMQ
-
-### T006: 实现下行消息桥接
-- [x] **Description**: 实现 RabbitMQ 消息到 MQTT 的转发
-- **Files**: `internal/gateway/bridge/downlink.go`, `internal/gateway/bridge/downlink_test.go`
-- **Depends**: T002
-- **Acceptance**: 单元测试通过，RabbitMQ 消息能够转发到 MQTT
-
-### T007: 实现设备连接状态管理
-- [x] **Description**: 实现设备在线/离线状态跟踪
-- **Files**: `internal/gateway/connection/manager.go`, `internal/gateway/connection/manager_test.go`
-- **Depends**: T004
-- **Acceptance**: 单元测试通过，能够跟踪设备连接状态
-
-### T008: 实现 Gateway 服务层
-- [x] **Description**: 整合 MQTT 客户端、桥接、连接管理到服务层
-- **Files**: `internal/gateway/service.go`, `internal/gateway/service_test.go`
-- **Depends**: T005, T006, T007
-- **Acceptance**: 单元测试通过
-
-### T009: 更新 Gateway main.go
-- [x] **Description**: 更新 cmd/iot-gateway/main.go 集成业务逻辑
-- **Files**: `cmd/iot-gateway/main.go`
-- **Depends**: T008
-- **Acceptance**: 服务能够启动并连接 VerneMQ
-
-### T010: Gateway 集成测试
-- [x] **Description**: 编写 Gateway 集成测试
-- **Files**: `tests/integration/gateway_test.go`
-- **Depends**: T009
-- **Acceptance**: 集成测试通过
+- [X] T001 Update shared model migration coverage in `pkg/models/migrate.go` and `internal/downlink/model/service_call.go` so the planned core-service entities are migratable.
+- [X] T002 [P] Align canonical RabbitMQ routing and message-envelope helpers with the plan in `pkg/rabbitmq/routing.go`, `pkg/rabbitmq/message.go`, `pkg/rabbitmq/routing_test.go`, and `pkg/rabbitmq/message_test.go`.
+- [X] T003 [P] Standardize service startup wiring and dependency configuration entry points in `cmd/iot-gateway/main.go`, `cmd/iot-uplink/main.go`, `cmd/iot-downlink/main.go`, `cmd/iot-api/main.go`, and `cmd/iot-ws/main.go`.
 
 ---
 
-## Phase 2: iot-uplink (P1)
+## Phase 2: Foundational (Blocking Prerequisites)
 
-### T011: 实现消息处理器接口
-- [x] **Description**: 定义消息处理器接口和基础实现
-- **Files**: `internal/uplink/processor/processor.go`, `internal/uplink/processor/processor_test.go`
-- **Acceptance**: 单元测试通过
+**Purpose**: Core infrastructure that must be complete before user stories can be delivered safely.
 
-### T012: 实现 DJI 消息处理器
-- [x] **Description**: 订阅 RabbitMQ 队列 `iot.dji.#` (dji-adapter 输出)，处理标准化后的 DJI 消息。包含物模型映射逻辑：将 DJI 协议数据映射到标准物模型结构 (FR-008)。注意：iot-uplink 不直接调用 pkg/adapter/dji，而是消费 dji-adapter 服务的输出。
-- **Files**: `internal/uplink/processor/dji.go`, `internal/uplink/processor/dji_test.go`
-- **Depends**: T011
-- **Acceptance**: 单元测试通过，能够处理 DJI 消息
+**⚠️ CRITICAL**: No user story work should be considered done until this phase is complete.
 
-### T013: 添加 InfluxDB 客户端依赖
-- [x] **Description**: 添加 influxdb-client-go 依赖到 go.mod
-- **Files**: `go.mod`
-- **Acceptance**: `go mod tidy` 成功
+- [X] T004 Add failing foundational integration coverage for canonical routing-key usage and trace propagation in `tests/integration/routing_test.go` and `tests/integration/tracing_test.go`.
+- [X] T005 [P] Normalize RabbitMQ queue bindings and publisher/subscriber setup for raw and business traffic in `internal/gateway/bridge/uplink.go`, `internal/uplink/service.go`, `internal/downlink/service.go`, and `internal/ws/push/pusher.go`.
+- [X] T006 [P] Implement dependency-aware readiness responses and required metrics labels across `cmd/iot-gateway/main.go`, `cmd/iot-uplink/main.go`, `cmd/iot-downlink/main.go`, `cmd/iot-api/main.go`, `cmd/iot-ws/main.go`, and `tests/integration/metrics_test.go`.
+- [X] T007 Establish shared audit/logging hooks for authentication failures, uplink processing failures, retry attempts, and final command outcomes in `internal/gateway/service.go`, `internal/uplink/service.go`, `internal/downlink/service.go`, and `internal/api/handler/service.go`.
 
-### T014: 实现 InfluxDB 时序数据写入
-- [x] **Description**: 实现遥测数据写入 InfluxDB
-- **Files**: `internal/uplink/storage/influx.go`, `internal/uplink/storage/influx_test.go`
-- **Depends**: T013
-- **Acceptance**: 单元测试通过，能够写入 InfluxDB
-
-### T015: 实现消息路由
-- [x] **Description**: 实现消息路由到其他服务（iot-ws, iot-api）
-- **Files**: `internal/uplink/router/router.go`, `internal/uplink/router/router_test.go`
-- **Depends**: T012
-- **Acceptance**: 单元测试通过
-
-### T016: 实现 Uplink 服务层
-- [x] **Description**: 整合处理器、存储、路由到服务层
-- **Files**: `internal/uplink/service.go`, `internal/uplink/service_test.go`
-- **Depends**: T012, T014, T015
-- **Acceptance**: 单元测试通过
-
-### T017: 更新 Uplink main.go
-- [x] **Description**: 更新 cmd/iot-uplink/main.go 集成业务逻辑
-- **Files**: `cmd/iot-uplink/main.go`
-- **Depends**: T016
-- **Acceptance**: 服务能够启动并处理消息
-
-### T018: Uplink 集成测试
-- [x] **Description**: 编写 Uplink 集成测试
-- **Files**: `tests/integration/uplink_test.go`
-- **Depends**: T017
-- **Acceptance**: 集成测试通过
+**Checkpoint**: Canonical routing, shared readiness, migrations, and audit hooks are in place.
 
 ---
 
-## Phase 3: iot-downlink (P1)
+## Phase 3: User Story 1 - Operate connected devices (Priority: P1) 🎯 MVP
 
-### T019: 实现消息分发器接口
-- [x] **Description**: 定义消息分发器接口和基础实现
-- **Files**: `internal/downlink/dispatcher/dispatcher.go`, `internal/downlink/dispatcher/dispatcher_test.go`
-- **Acceptance**: 单元测试通过
+**Goal**: Authenticate devices, track connectivity, normalize upstream traffic, and persist telemetry/event history.
 
-### T020: 实现 DJI 消息分发器
-- [x] **Description**: 发布服务调用到 RabbitMQ 队列 `iot.dji.service.call`，由 dji-adapter 服务转换为 DJI 协议格式。注意：iot-downlink 不直接调用 pkg/adapter/dji，而是发布消息供 dji-adapter 服务消费。
-- **Files**: `internal/downlink/dispatcher/dji.go`, `internal/downlink/dispatcher/dji_test.go`
-- **Depends**: T019
-- **Acceptance**: 单元测试通过
+**Independent Test**: Connect a supported simulator or device with valid credentials, publish status and telemetry, then confirm the device becomes visible as online and telemetry/history becomes available without breaking other traffic.
 
-### T021: 实现服务调用记录模型
-- [x] **Description**: 实现 ServiceCall 数据模型和数据库迁移
-- **Files**: `internal/downlink/model/service_call.go`
-- **Acceptance**: 数据库迁移成功
+### Tests for User Story 1 ⚠️
 
-### T022: 实现重试机制
-- [x] **Description**: 实现指数退避重试和死信队列
-- **Files**: `internal/downlink/retry/retry.go`, `internal/downlink/retry/retry_test.go`
-- **Depends**: T021
-- **Acceptance**: 单元测试通过
+> **NOTE: Write these tests first, ensure they fail, then implement the story.**
 
-### T023: 实现消息路由到 Gateway
-- [x] **Description**: 实现下行消息路由到 iot-gateway
-- **Files**: `internal/downlink/router/router.go`, `internal/downlink/router/router_test.go`
-- **Depends**: T020
-- **Acceptance**: 单元测试通过
+- [X] T008 [P] [US1] Add failing gateway authentication and connectivity integration coverage in `tests/integration/message_flow_test.go` and `tests/integration/routing_test.go`.
+- [X] T009 [P] [US1] Add failing uplink normalization, malformed-message, and duplicate-transaction-id coverage in `tests/integration/dji_osd_test.go` and `tests/integration/message_flow_test.go`.
+- [X] T010 [P] [US1] Add failing unit coverage for gateway auth/connection and uplink routing/storage in `internal/gateway/mqtt/auth_test.go`, `internal/gateway/connection/manager_test.go`, `internal/uplink/router/router_test.go`, and `internal/uplink/storage/influx_test.go`.
 
-### T024: 实现 Downlink 服务层
-- [x] **Description**: 整合分发器、重试、路由到服务层
-- **Files**: `internal/downlink/service.go`, `internal/downlink/service_test.go`
-- **Depends**: T020, T022, T023
-- **Acceptance**: 单元测试通过
+### Implementation for User Story 1
 
-### T025: 更新 Downlink main.go
-- [x] **Description**: 更新 cmd/iot-downlink/main.go 集成业务逻辑
-- **Files**: `cmd/iot-downlink/main.go`
-- **Depends**: T024
-- **Acceptance**: 服务能够启动并处理消息
+- [X] T011 [US1] Implement device credential lookup and authenticated MQTT admission in `internal/gateway/model/credential.go` and `internal/gateway/mqtt/auth.go`.
+- [X] T012 [US1] Implement online/offline connection tracking and stale-device transitions in `internal/gateway/connection/manager.go` and `internal/gateway/service.go`.
+- [X] T013 [US1] Implement canonical raw uplink bridging from MQTT to RabbitMQ in `internal/gateway/mqtt/handler.go` and `internal/gateway/bridge/uplink.go`.
+- [X] T014 [US1] Implement thing-model-aware uplink validation, duplicate-message idempotency, and normalization in `internal/uplink/processor/processor.go` and `internal/uplink/service.go`.
+- [X] T015 [US1] Implement idempotent telemetry/event persistence and canonical downstream routing in `internal/uplink/storage/influx.go` and `internal/uplink/router/router.go`.
+- [X] T016 [US1] Wire gateway and uplink runtime readiness to the authenticated ingestion flow in `cmd/iot-gateway/main.go` and `cmd/iot-uplink/main.go`.
 
-### T026: Downlink 集成测试
-- [x] **Description**: 编写 Downlink 集成测试
-- **Files**: `tests/integration/downlink_test.go`
-- **Depends**: T025
-- **Acceptance**: 集成测试通过
+**Checkpoint**: Supported devices can authenticate, publish upstream traffic, and produce persisted normalized history.
 
 ---
 
-## Phase 4: iot-api (P2)
+## Phase 4: User Story 2 - Send commands to devices (Priority: P1)
 
-### T027: 实现设备管理 Handler
-- [x] **Description**: 实现设备 CRUD API Handler
-- **Files**: `internal/api/handler/device.go`, `internal/api/handler/device_test.go`
-- **Acceptance**: 单元测试通过
+**Goal**: Accept tracked service requests through the API, route them through `iot-downlink`, retry failures, and expose auditable request state.
 
-### T028: 实现服务调用 Handler
-- [x] **Description**: 实现服务调用 API Handler
-- **Files**: `internal/api/handler/service.go`, `internal/api/handler/service_test.go`
-- **Depends**: T027
-- **Acceptance**: 单元测试通过
+**Independent Test**: Submit a service request for an online device, receive an immediate tracking identifier, observe the request flow through downlink and gateway, and confirm the final status is queryable.
 
-### T029: 实现遥测查询 Handler
-- [x] **Description**: 实现遥测数据查询 API Handler
-- **Files**: `internal/api/handler/telemetry.go`, `internal/api/handler/telemetry_test.go`
-- **Depends**: T014
-- **Acceptance**: 单元测试通过
+### Tests for User Story 2 ⚠️
 
-### T030: 实现认证中间件
-- [x] **Description**: 实现 API 认证中间件
-- **Files**: `internal/api/middleware/auth.go`, `internal/api/middleware/auth_test.go`
-- **Acceptance**: 单元测试通过
+- [X] T017 [P] [US2] Add failing contract coverage for `POST /api/v1/service-requests` and `GET /api/v1/service-requests/{requestID}` in `tests/contract/service_requests_contract_test.go` and `specs/004-core-services-implementation/contracts/openapi.yaml`.
+- [X] T018 [P] [US2] Add failing integration coverage for API-to-downlink-to-gateway request flow, timeout handling, late replies after timeout, and retry exhaustion in `tests/integration/dji_e2e_service_test.go` and `tests/integration/message_flow_test.go`.
+- [X] T019 [P] [US2] Add failing unit coverage for request persistence, routing, retry behavior, and terminal-state idempotency in `internal/api/handler/service_test.go`, `internal/downlink/router/router_test.go`, `internal/downlink/retry/retry_test.go`, and `internal/downlink/model/service_call_test.go`.
 
-### T031: 实现追踪中间件
-- [x] **Description**: 实现分布式追踪中间件
-- **Files**: `internal/api/middleware/trace.go`, `internal/api/middleware/trace_test.go`
-- **Acceptance**: 单元测试通过
+### Implementation for User Story 2
 
-### T032: 实现路由配置
-- [x] **Description**: 配置 API 路由
-- **Files**: `internal/api/router.go`, `internal/api/router_test.go`
-- **Depends**: T027, T028, T029, T030, T031
-- **Acceptance**: 单元测试通过
+- [X] T020 [US2] Refactor tracked service-request persistence to match the current contract in `internal/downlink/model/service_call.go` and `pkg/models/migrate.go`.
+- [X] T021 [US2] Move API command submission from direct dispatcher execution to RabbitMQ-backed downlink orchestration in `internal/api/handler/service.go`, `internal/api/router.go`, and `cmd/iot-api/main.go`.
+- [X] T022 [US2] Implement downlink consumer flow that loads pending requests, updates lifecycle state idempotently, and handles replies in `internal/downlink/service.go` and `internal/downlink/dispatcher/dispatcher.go`.
+- [X] T023 [US2] Align downlink-to-gateway routing keys and outbound payloads with `pkg/rabbitmq` helpers in `internal/downlink/router/router.go` and `internal/gateway/bridge/downlink.go`.
+- [X] T024 [US2] Implement retry, timeout, dead-letter, and audit visibility for tracked requests in `internal/downlink/retry/retry.go`, `internal/downlink/service.go`, and `cmd/iot-downlink/main.go`.
+- [X] T025 [US2] Expose service-request status lookup on the contract paths in `internal/api/handler/service.go`, `internal/api/router.go`, and `specs/004-core-services-implementation/contracts/openapi.yaml`.
 
-### T033: 更新 API main.go
-- [x] **Description**: 更新 cmd/iot-api/main.go 集成业务逻辑
-- **Files**: `cmd/iot-api/main.go`
-- **Depends**: T032
-- **Acceptance**: 服务能够启动并响应 API 请求
-
-### T034: 生成 OpenAPI 文档
-- [x] **Description**: 使用 swag 生成 OpenAPI 文档
-- **Files**: `docs/swagger.json`, `docs/swagger.yaml`
-- **Depends**: T033
-- **Acceptance**: 文档生成成功
-
-### T035: API 集成测试
-- [x] **Description**: 编写 API 集成测试
-- **Files**: `tests/integration/api_test.go`
-- **Depends**: T033
-- **Acceptance**: 集成测试通过
-
-### T036: API 契约测试
-- [x] **Description**: 编写 API 契约测试验证 OpenAPI 规范
-- **Files**: `tests/contract/api_contract_test.go`
-- **Depends**: T034
-- **Acceptance**: 契约测试通过
+**Checkpoint**: `iot-api` no longer bypasses `iot-downlink`, and request lifecycle state is fully tracked.
 
 ---
 
-## Phase 5: iot-ws (P2)
+## Phase 5: User Story 3 - Manage device inventory and history (Priority: P2)
 
-### T037: 添加 WebSocket 依赖
-- [x] **Description**: 添加 gorilla/websocket 依赖到 go.mod
-- **Files**: `go.mod`
-- **Acceptance**: `go mod tidy` 成功
+**Goal**: Support contract-aligned device CRUD and historical telemetry lookup for operations users.
 
-### T038: 实现 WebSocket Hub
-- [x] **Description**: 实现 WebSocket 连接中心
-- **Files**: `internal/ws/hub/hub.go`, `internal/ws/hub/hub_test.go`
-- **Depends**: T037
-- **Acceptance**: 单元测试通过
+**Independent Test**: Create and update a managed device, retrieve it by serial number, and query historical telemetry for a time range using the documented API contract.
 
-### T039: 实现 WebSocket Client
-- [x] **Description**: 实现 WebSocket 客户端连接管理
-- **Files**: `internal/ws/hub/client.go`, `internal/ws/hub/client_test.go`
-- **Depends**: T038
-- **Acceptance**: 单元测试通过
+### Tests for User Story 3 ⚠️
 
-### T039-A: 实现 WebSocket 心跳检测
-- [x] **Description**: 实现 ping/pong 心跳机制，30s 超时断开无响应连接 (FR-022)
-- **Files**: `internal/ws/hub/heartbeat.go`, `internal/ws/hub/heartbeat_test.go`
-- **Depends**: T039
-- **Acceptance**: 单元测试通过，超时连接能够正确断开
+- [X] T026 [P] [US3] Add failing contract coverage for device inventory and telemetry history endpoints in `tests/contract/devices_contract_test.go`, `tests/contract/telemetry_contract_test.go`, and `specs/004-core-services-implementation/contracts/openapi.yaml`.
+- [X] T027 [P] [US3] Add failing integration coverage for device CRUD and telemetry lookup by serial number in `tests/integration/api_inventory_test.go` and `tests/integration/message_flow_test.go`.
+- [X] T028 [P] [US3] Add failing unit coverage for device and telemetry handlers in `internal/api/handler/device_test.go` and `internal/api/handler/telemetry_test.go`.
 
-### T040: 实现订阅管理器
-- [x] **Description**: 实现消息订阅管理
-- **Files**: `internal/ws/subscription/manager.go`, `internal/ws/subscription/manager_test.go`
-- **Depends**: T039, T039-A
-- **Acceptance**: 单元测试通过
+### Implementation for User Story 3
 
-### T041: 实现消息推送
-- [x] **Description**: 实现从 RabbitMQ 接收消息并推送到 WebSocket 客户端
-- **Files**: `internal/ws/push/pusher.go`, `internal/ws/push/pusher_test.go`
-- **Depends**: T040
-- **Acceptance**: 单元测试通过
+- [X] T029 [US3] Implement managed-device CRUD by serial number and contract-aligned not-found responses in `internal/api/handler/device.go` and `internal/api/router.go`.
+- [X] T030 [US3] Extend managed-device persistence for gateway relationships, thing-model linkage, and status updates in `pkg/models/device.go` and `pkg/models/migrate.go`.
+- [X] T031 [US3] Implement contract-aligned telemetry time-range queries for `/api/v1/devices/{deviceSN}/telemetry` in `internal/api/handler/telemetry.go` and `internal/api/router.go`.
+- [X] T032 [US3] Wire API readiness to PostgreSQL and InfluxDB availability for inventory and history workflows in `cmd/iot-api/main.go` and `internal/api/router.go`.
 
-### T042: 实现 WS 服务层
-- [x] **Description**: 整合 Hub、订阅、推送到服务层
-- **Files**: `internal/ws/service.go`, `internal/ws/service_test.go`
-- **Depends**: T038, T040, T041
-- **Acceptance**: 单元测试通过
-
-### T043: 更新 WS main.go
-- [x] **Description**: 更新 cmd/iot-ws/main.go 集成业务逻辑
-- **Files**: `cmd/iot-ws/main.go`
-- **Depends**: T042
-- **Acceptance**: 服务能够启动并处理 WebSocket 连接
-
-### T044: WS 集成测试
-- [x] **Description**: 编写 WebSocket 集成测试
-- **Files**: `tests/integration/ws_test.go`
-- **Depends**: T043
-- **Acceptance**: 集成测试通过
+**Checkpoint**: Operations users can manage device inventory and query consistent telemetry history through the documented API.
 
 ---
 
-## Phase 6: Integration & NFR Testing
+## Phase 6: User Story 4 - Receive realtime updates (Priority: P2)
 
-### T045: 端到端测试
-- [x] **Description**: 编写完整数据流端到端测试
-- **Files**: `tests/integration/e2e_test.go`
-- **Depends**: T010, T018, T026, T035, T044
-- **Acceptance**: 端到端测试通过，验证完整上下行数据流
+**Goal**: Deliver authorized realtime updates over WebSocket with subscription management and heartbeat cleanup.
 
-### T046: 性能测试
-- [x] **Description**: 验证消息处理延迟 < 100ms (P95) (NFR-001)
-- **Files**: `tests/integration/performance_test.go`
-- **Depends**: T045
-- **Acceptance**: P95 延迟 < 100ms，测试报告生成
+**Independent Test**: Open a realtime session, subscribe to supported device topics, generate matching activity, confirm only authorized updates are delivered, and verify stale clients are disconnected.
 
-### T047: 设备负载测试
-- [x] **Description**: 验证支持 1000+ 设备同时在线 (NFR-002)
-- **Files**: `tests/integration/load_device_test.go`
-- **Depends**: T010
-- **Acceptance**: 1000 设备并发连接测试通过
+### Tests for User Story 4 ⚠️
 
-### T048: WebSocket 负载测试
-- [x] **Description**: 验证支持 10000+ WebSocket 连接 (NFR-003)
-- **Files**: `tests/integration/load_ws_test.go`
-- **Depends**: T044
-- **Acceptance**: 10000 WebSocket 连接测试通过
+- [X] T033 [P] [US4] Add failing contract coverage for realtime subscription registration in `tests/contract/realtime_contract_test.go` and `specs/004-core-services-implementation/contracts/openapi.yaml`.
+- [X] T034 [P] [US4] Add failing integration coverage for subscription delivery and heartbeat cleanup in `tests/integration/ws_realtime_test.go` and `tests/integration/message_flow_test.go`.
+- [X] T035 [P] [US4] Add failing unit coverage for topic authorization, fan-out, and heartbeat cleanup in `internal/ws/subscription/manager_test.go`, `internal/ws/push/pusher_test.go`, and `internal/ws/hub/client_test.go`.
 
-### T049: 覆盖率验证
-- [x] **Description**: 验证单元测试覆盖率 >= 80% (TDD-002)
-- **Files**: `Makefile` (coverage target)
-- **Depends**: T045
-- **Acceptance**: `make coverage` 报告显示 >= 80%
+### Implementation for User Story 4
 
-### T050: 可用性测试
-- [x] **Description**: 验证服务可用性 > 99.9% (NFR-004)，包括故障恢复测试
-- **Files**: `tests/integration/availability_test.go`
-- **Depends**: T045
-- **Acceptance**: 服务故障恢复测试通过
+- [X] T036 [US4] Implement authorized topic validation and scoped subscription management in `internal/ws/subscription/manager.go` and `internal/ws/service.go`.
+- [X] T037 [US4] Implement canonical RabbitMQ bindings and message fan-out for realtime updates in `internal/ws/push/pusher.go` and `cmd/iot-ws/main.go`.
+- [X] T038 [US4] Implement heartbeat-driven stale-session cleanup and realtime stats in `internal/ws/hub/client.go`, `internal/ws/hub/hub.go`, and `internal/ws/service.go`.
+- [X] T039 [US4] Expose realtime subscription registration through the contract path in `internal/api/handler/realtime.go`, `internal/api/router.go`, and `specs/004-core-services-implementation/contracts/openapi.yaml`.
+- [X] T040 [US4] Wire WebSocket readiness to RabbitMQ consumer health and active session state in `cmd/iot-ws/main.go` and `tests/integration/metrics_test.go`.
+
+**Checkpoint**: Authorized clients receive realtime updates without polling, and stale sessions are cleaned up automatically.
 
 ---
 
-## Execution Order
+## Phase 7: Polish & Cross-Cutting Concerns
 
+**Purpose**: Final validation and repository-wide quality gates.
+
+- [X] T041 [P] Refresh API documentation and Swagger annotations for implemented contract paths in `cmd/iot-api/main.go`, `internal/api/handler/device.go`, `internal/api/handler/service.go`, `internal/api/handler/telemetry.go`, and `internal/api/handler/realtime.go`.
+- [X] T042 [P] Add end-to-end validation for the quickstart flows in `tests/integration/message_flow_test.go`, `tests/integration/dji_e2e_event_test.go`, and `tests/integration/dji_e2e_service_test.go`.
+- [X] T043 [P] Add resilience and performance coverage for telemetry latency, device concurrency, realtime fan-out, 99.9% availability, and 30-second recovery objectives in `tests/integration/dji_performance_test.go` and `tests/integration/metrics_test.go`.
+- [X] T044 Run `make test`, `make lint`, and `make coverage`, then reconcile failures in `Makefile` and the specific Go files reported by those commands.
+- [X] T045 Validate the documented startup and operational flow in `specs/004-core-services-implementation/quickstart.md` against the final service behavior and update any drift in `cmd/iot-gateway/main.go`, `cmd/iot-uplink/main.go`, `cmd/iot-downlink/main.go`, `cmd/iot-api/main.go`, and `cmd/iot-ws/main.go`.
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Phase 1: Setup** — no dependencies.
+- **Phase 2: Foundational** — depends on Phase 1 and blocks story completion.
+- **Phase 3: US1** — depends on Phase 2; this is the MVP.
+- **Phase 4: US2** — depends on Phase 2 and the canonical routing work from US1.
+- **Phase 5: US3** — depends on Phase 2; telemetry history validation benefits from US1 but inventory CRUD is independently testable with seeded data.
+- **Phase 6: US4** — depends on Phase 2 and downstream routing from US1.
+- **Phase 7: Polish** — depends on all desired stories being complete.
+
+### User Story Dependencies
+
+- **US1 (P1)**: First delivery slice; no dependency on other stories.
+- **US2 (P1)**: Requires the shared routing/message foundation and uses the same canonical gateway path validated by US1.
+- **US3 (P2)**: Can proceed after Phase 2, but full telemetry-history verification depends on US1 data flow.
+- **US4 (P2)**: Requires canonical uplink routing so subscribed updates can be delivered consistently.
+
+### Within Each User Story
+
+- Write contract, integration, and unit tests first and ensure they fail.
+- Persistence/model work before service orchestration.
+- Service orchestration before API/WebSocket endpoints.
+- Readiness, metrics, and audit visibility before story sign-off.
+
+### Parallel Opportunities
+
+- `T002` and `T003` can run in parallel once `T001` is understood.
+- `T005`, `T006`, and `T007` can run in parallel during the foundational phase.
+- In each story, the listed test tasks can run in parallel.
+- US3 can progress in parallel with US2 after Phase 2 if seeded telemetry data is acceptable for interim testing.
+
+---
+
+## Parallel Example: User Story 1
+
+```bash
+# Launch failing US1 tests together:
+Task: "Add failing gateway authentication and connectivity integration coverage in tests/integration/message_flow_test.go and tests/integration/routing_test.go"
+Task: "Add failing uplink normalization, malformed-message, and duplicate-transaction-id coverage in tests/integration/dji_osd_test.go and tests/integration/message_flow_test.go"
+Task: "Add failing unit coverage for gateway auth/connection and uplink routing/storage in internal/gateway/mqtt/auth_test.go, internal/gateway/connection/manager_test.go, internal/uplink/router/router_test.go, and internal/uplink/storage/influx_test.go"
 ```
-Phase 1 (P1): T001 → T002 → [P] T003, T004 → [P] T005, T006, T007 → T008 → T009 → T010
-Phase 2 (P1): T011 → T012, T013 → [P] T014, T015 → T016 → T017 → T018
-Phase 3 (P1): T019 → T020, T021 → [P] T022, T023 → T024 → T025 → T026
-Phase 4 (P2): T027 → [P] T028, T029, T030, T031 → T032 → T033 → [P] T034, T035, T036
-Phase 5 (P2): T037 → T038 → T039 → T039-A → T040 → T041 → T042 → T043 → T044
-Phase 6:      T045 → [P] T046, T047, T048, T049, T050
+
+## Parallel Example: User Story 2
+
+```bash
+# Launch failing US2 tests together:
+Task: "Add failing contract coverage for POST /api/v1/service-requests and GET /api/v1/service-requests/{requestID} in tests/contract/service_requests_contract_test.go and specs/004-core-services-implementation/contracts/openapi.yaml"
+Task: "Add failing integration coverage for API-to-downlink-to-gateway request flow, timeout handling, late replies after timeout, and retry exhaustion in tests/integration/dji_e2e_service_test.go and tests/integration/message_flow_test.go"
+Task: "Add failing unit coverage for request persistence, routing, retry behavior, and terminal-state idempotency in internal/api/handler/service_test.go, internal/downlink/router/router_test.go, internal/downlink/retry/retry_test.go, and internal/downlink/model/service_call_test.go"
 ```
+
+## Parallel Example: User Story 3
+
+```bash
+# Launch failing US3 tests together:
+Task: "Add failing contract coverage for device inventory and telemetry history endpoints in tests/contract/devices_contract_test.go, tests/contract/telemetry_contract_test.go, and specs/004-core-services-implementation/contracts/openapi.yaml"
+Task: "Add failing integration coverage for device CRUD and telemetry lookup by serial number in tests/integration/api_inventory_test.go and tests/integration/message_flow_test.go"
+Task: "Add failing unit coverage for device and telemetry handlers in internal/api/handler/device_test.go and internal/api/handler/telemetry_test.go"
+```
+
+## Parallel Example: User Story 4
+
+```bash
+# Launch failing US4 tests together:
+Task: "Add failing contract coverage for realtime subscription registration in tests/contract/realtime_contract_test.go and specs/004-core-services-implementation/contracts/openapi.yaml"
+Task: "Add failing integration coverage for subscription delivery and heartbeat cleanup in tests/integration/ws_realtime_test.go and tests/integration/message_flow_test.go"
+Task: "Add failing unit coverage for topic authorization, fan-out, and heartbeat cleanup in internal/ws/subscription/manager_test.go, internal/ws/push/pusher_test.go, and internal/ws/hub/client_test.go"
+```
+
+---
+
+## Implementation Strategy
+
+### MVP First (User Story 1 Only)
+
+1. Complete Phase 1: Setup.
+2. Complete Phase 2: Foundational.
+3. Complete Phase 3: User Story 1.
+4. Validate authenticated ingestion, normalized routing, and telemetry persistence before moving on.
+
+### Incremental Delivery
+
+1. Setup + Foundational establish the shared contracts.
+2. Deliver **US1** for authenticated device ingress and telemetry.
+3. Deliver **US2** for tracked downlink orchestration without API bypass.
+4. Deliver **US3** for inventory and telemetry history APIs.
+5. Deliver **US4** for realtime subscriptions and push delivery.
+6. Finish with cross-cutting validation, performance, and quality gates.
+
+### Parallel Team Strategy
+
+1. Complete Setup + Foundational together.
+2. After Phase 2:
+   - Developer A: US1/US2 messaging path
+   - Developer B: US3 inventory/history APIs
+   - Developer C: US4 realtime delivery
+3. Rejoin for Phase 7 validation and hardening.
+
+---
 
 ## Notes
 
-- P1 任务（Phase 1-3）是核心功能，必须优先完成
-- P2 任务（Phase 4-5）可以在 P1 完成后并行开发
-- 所有任务必须遵循 TDD 原则：先写测试，再实现功能
-- 单元测试覆盖率目标 >= 80%
-- [P] 标记表示可并行执行的任务
-
-## Edge Case Handling
-
-| Edge Case | Handling Task | Strategy |
-|-----------|---------------|----------|
-| MQTT 连接断开 | T002 | 自动重连 (paho.mqtt SetAutoReconnect) |
-| RabbitMQ 连接断开 | T005, T006 | 自动重连 (amqp091-go reconnect) |
-| 消息处理失败 | T022 | 死信队列 + 告警 |
-| 大量设备同时上线 | T007 | 连接池 + 限流 |
-| WebSocket 连接数过多 | T038 | 连接限制 (max 10000) |
-| WebSocket 心跳超时 | T039-A | 30s 超时断开 |
-
-## Cross-Cutting: Observability Integration
-
-各服务均通过以下方式集成分布式追踪和可观测性（复用 `pkg/tracer/`、`pkg/metrics/`、`pkg/logger/`）：
-
-| 服务 | 追踪集成方式 | 涉及任务 |
-|------|-------------|---------|
-| **iot-gateway** | MQTT 消息接收/转发创建 span，注入 W3C Trace Context 到 RabbitMQ headers | T004, T005, T006 |
-| **iot-uplink** | 从 RabbitMQ headers 提取 trace context，消息处理和 InfluxDB 写入创建子 span | T012, T014, T015 |
-| **iot-downlink** | 服务调用创建 span，重试携带 trace context，路由到 gateway 保持链路 | T020, T022, T023 |
-| **iot-api** | `internal/api/middleware/trace.go` 追踪中间件，所有 HTTP 请求自动创建 span | T031 |
-| **iot-ws** | WebSocket 消息推送携带 trace context，连接管理记录 span | T041, T042 |
+- `[P]` tasks touch separate files and can be split across contributors.
+- Every user story remains independently testable even when it reuses foundational routing or storage work.
+- The highest-risk items from the plan are explicitly covered: canonical routing alignment, removal of the `iot-api` downlink bypass, readiness based on real dependencies, and authorization-aware realtime subscriptions.

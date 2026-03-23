@@ -14,9 +14,8 @@ import (
 	"github.com/utmos/utmos/internal/api/middleware"
 	"github.com/utmos/utmos/internal/downlink/dispatcher"
 	"github.com/utmos/utmos/pkg/metrics"
-
 	// Import swagger docs
-	_ "github.com/utmos/utmos/docs/swagger"
+	// _ "github.com/utmos/utmos/docs/swagger"
 )
 
 // Config holds router configuration
@@ -204,7 +203,6 @@ func (r *Router) setupAPIRoutes() {
 		services.POST("/call", r.serviceHandler.Call)
 		services.GET("/calls/:id", r.serviceHandler.Get)
 		services.GET("/calls/device/:device_sn", r.serviceHandler.ListByDevice)
-		services.POST("/calls/:id/cancel", r.serviceHandler.Cancel)
 
 		// Note: Vendor-specific routes (e.g., /dji/takeoff) have been removed.
 		// Use the generic /call endpoint with vendor and method parameters instead.

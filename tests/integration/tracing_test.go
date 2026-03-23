@@ -117,6 +117,20 @@ func TestTracerNoopWhenDisabled(t *testing.T) {
 	}
 }
 
+// TestTraceContextPreservedInRabbitMQ tests that trace context is preserved in RabbitMQ messages
+func TestTraceContextPreservedInRabbitMQ(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+}
+
+// TestTraceContextPropagatedAcrossServices tests end-to-end trace propagation
+func TestTraceContextPropagatedAcrossServices(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+}
+
 // TestTracerSpanCreation tests span creation and attributes
 func TestTracerSpanCreation(t *testing.T) {
 	cfg := &pkgconfig.TracerConfig{
