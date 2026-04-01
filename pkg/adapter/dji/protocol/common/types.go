@@ -44,14 +44,20 @@ func (f *FlexInt64) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements json.Marshaler
-func (f FlexInt64) MarshalJSON() ([]byte, error) {
-	return json.Marshal(int64(f))
+// MarshalJSON implements json.Marshaler.
+func (f *FlexInt64) MarshalJSON() ([]byte, error) {
+	if f == nil {
+		return json.Marshal(nil)
+	}
+	return json.Marshal(int64(*f))
 }
 
-// Int64 returns the underlying int64 value
-func (f FlexInt64) Int64() int64 {
-	return int64(f)
+// Int64 returns the underlying int64 value.
+func (f *FlexInt64) Int64() int64 {
+	if f == nil {
+		return 0
+	}
+	return int64(*f)
 }
 
 // FlexInt is a flexible int that can unmarshal from both string and number JSON values
@@ -68,14 +74,20 @@ func (f *FlexInt) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements json.Marshaler
-func (f FlexInt) MarshalJSON() ([]byte, error) {
-	return json.Marshal(int(f))
+// MarshalJSON implements json.Marshaler.
+func (f *FlexInt) MarshalJSON() ([]byte, error) {
+	if f == nil {
+		return json.Marshal(nil)
+	}
+	return json.Marshal(int(*f))
 }
 
-// Int returns the underlying int value
-func (f FlexInt) Int() int {
-	return int(f)
+// Int returns the underlying int value.
+func (f *FlexInt) Int() int {
+	if f == nil {
+		return 0
+	}
+	return int(*f)
 }
 
 // FileInfo represents file information for file upload/download

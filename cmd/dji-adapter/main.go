@@ -19,9 +19,10 @@ import (
 
 	"github.com/utmos/utmos/internal/shared/config"
 	"github.com/utmos/utmos/pkg/adapter"
+	"github.com/utmos/utmos/pkg/adapter/dji"
+	djiinit "github.com/utmos/utmos/pkg/adapter/dji/init"
 	pkgconfig "github.com/utmos/utmos/pkg/config"
 	"github.com/utmos/utmos/pkg/logger"
-	"github.com/utmos/utmos/pkg/adapter/dji"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
@@ -71,10 +72,23 @@ func main() {
 	log.Info("DJI adapter registered")
 
 	// Get adapter instance
-	djiAdapter, err := adapter.Get(dji.VendorDJI)
+	protoAdapter, err := adapter.Get(dji.VendorDJI)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to get DJI adapter")
 	}
+
+	// Type assert to get the concrete *dji.Adapter for full initialization
+	djiAdapter, ok := protoAdapter.(*dji.Adapter)
+	if !ok {
+		log.Fatal("Failed to get concrete DJI adapter")
+	}
+
+	// Initialize full adapter with handler registry (ServiceRouter, EventRouter, all handlers)
+	// This enables full protocol handling: OSD, State, Status, Service, Event, Request, DRC
+	if err := djiinit.InitializeAdapter(djiAdapter); err != nil {
+		log.WithError(err).Fatal("Failed to initialize DJI adapter with handlers")
+	}
+	log.Info("DJI adapter initialized with full handler registry")
 
 	// Initialize RabbitMQ client
 	rmqClient := rabbitmq.NewClient(&cfg.RabbitMQ)
@@ -95,13 +109,16 @@ func main() {
 		log.WithError(err).Fatal("Failed to declare exchange")
 	}
 
+	// Create RabbitMQ publisher for trace-injected publishing
+	publisher := rabbitmq.NewPublisher(rmqClient)
+
 	// Create context for graceful shutdown
 	shutdownCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Start message processing
-	go processUplinkMessages(shutdownCtx, log, rmqClient, djiAdapter, &cfg.RabbitMQ)
-	go processDownlinkMessages(shutdownCtx, log, rmqClient, djiAdapter, &cfg.RabbitMQ)
+	go processUplinkMessages(shutdownCtx, log, rmqClient, publisher, djiAdapter, &cfg.RabbitMQ)
+	go processDownlinkMessages(shutdownCtx, log, rmqClient, publisher, djiAdapter, &cfg.RabbitMQ)
 
 	// Setup HTTP server for health check and metrics
 	router := setupRouter(log, rmqClient)
@@ -178,7 +195,7 @@ func setupRouter(_ *logger.Logger, rmqClient *rabbitmq.Client) *gin.Engine {
 	return router
 }
 
-func processUplinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig) {
+func processUplinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, publisher *rabbitmq.Publisher, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig) {
 	log.Info("Starting uplink message processor")
 
 	// Declare and bind queue for raw DJI uplink messages
@@ -226,12 +243,12 @@ func processUplinkMessages(ctx context.Context, log *logger.Logger, rmqClient *r
 				log.Warn("Uplink message channel closed")
 				return
 			}
-			processUplinkMessage(log, rmqClient, djiAdapter, rmqCfg, msg)
+			processUplinkMessage(ctx, log, rmqClient, publisher, djiAdapter, rmqCfg, msg)
 		}
 	}
 }
 
-func processUplinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig, msg amqp.Delivery) {
+func processUplinkMessage(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, publisher *rabbitmq.Publisher, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig, msg amqp.Delivery) {
 	start := time.Now()
 
 	// Extract topic from message headers
@@ -269,34 +286,8 @@ func processUplinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAda
 	// Build routing key for standard message
 	routingKey := rabbitmq.NewRoutingKey(dji.VendorDJI, "device", stdMsg.Action)
 
-	// Publish standard message
-	payload, err := json.Marshal(stdMsg)
-	if err != nil {
-		log.WithError(err).Error("Failed to marshal standard message")
-		messagesProcessed.WithLabelValues("uplink", string(pm.MessageType), "error").Inc()
-		_ = msg.Nack(false, false)
-		return
-	}
-
-	// Publish to exchange
-	channel := rmqClient.Channel()
-	if channel == nil {
-		log.Error("Channel is nil")
-		_ = msg.Nack(false, true)
-		return
-	}
-
-	err = channel.PublishWithContext(
-		context.Background(),
-		rmqCfg.ExchangeName,
-		routingKey.String(),
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        payload,
-		},
-	)
+	// Publish to exchange using publisher which auto-injects W3C trace context
+	err = publisher.Publish(ctx, routingKey.String(), stdMsg)
 	if err != nil {
 		log.WithError(err).Error("Failed to publish standard message")
 		messagesProcessed.WithLabelValues("uplink", string(pm.MessageType), "error").Inc()
@@ -318,11 +309,12 @@ func processUplinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAda
 	}).Debug("Processed uplink message")
 }
 
-func processDownlinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig) {
+func processDownlinkMessages(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, publisher *rabbitmq.Publisher, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig) {
 	log.Info("Starting downlink message processor")
 
 	// Declare and bind queue for standard messages for DJI devices (service calls)
-	bindingPattern := rabbitmq.BuildBindingPattern(dji.VendorDJI, "", "service.#")
+	// Uses canonical iot.{vendor}.{service}.{action} format with service=downlink
+	bindingPattern := rabbitmq.BuildBindingPattern(dji.VendorDJI, "downlink", "")
 	queueName := "dji-adapter-downlink"
 
 	if _, err := rmqClient.DeclareQueue(queueName, true); err != nil {
@@ -366,12 +358,12 @@ func processDownlinkMessages(ctx context.Context, log *logger.Logger, rmqClient 
 				log.Warn("Downlink message channel closed")
 				return
 			}
-			processDownlinkMessage(log, rmqClient, djiAdapter, rmqCfg, msg)
+			processDownlinkMessage(ctx, log, rmqClient, publisher, djiAdapter, rmqCfg, msg)
 		}
 	}
 }
 
-func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig, msg amqp.Delivery) {
+func processDownlinkMessage(ctx context.Context, log *logger.Logger, rmqClient *rabbitmq.Client, publisher *rabbitmq.Publisher, djiAdapter adapter.ProtocolAdapter, rmqCfg *pkgconfig.RabbitMQConfig, msg amqp.Delivery) {
 	start := time.Now()
 
 	// Parse standard message
@@ -394,7 +386,7 @@ func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiA
 		return
 	}
 
-	// Get raw payload
+	// Get raw payload for MQTT publish
 	payload, err := djiAdapter.GetRawPayload(pm)
 	if err != nil {
 		log.WithError(err).Error("Failed to get raw payload")
@@ -403,10 +395,36 @@ func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiA
 		return
 	}
 
-	// Build raw routing key for downlink
+	// Build standard message for gateway bridge
+	// Gateway's DownlinkBridge.handleStandardMessage expects StandardMessage with
+	// Data containing {topic, payload, qos} fields
+	dataPayload := map[string]any{
+		"topic":   pm.Topic,
+		"payload": json.RawMessage(payload),
+		"qos":     1,
+	}
+
+	// Create new StandardMessage preserving tid/bid from original, with corrected data format
+	// for gateway bridge which expects {topic, payload, qos} in Data
+	downlinkMsg, err := rabbitmq.NewStandardMessageWithIDs(
+		stdMsg.TID,
+		stdMsg.BID,
+		"dji-adapter",
+		"downlink",
+		pm.DeviceSN,
+		dataPayload,
+	)
+	if err != nil {
+		log.WithError(err).Error("Failed to create standard message")
+		messagesProcessed.WithLabelValues("downlink", string(pm.MessageType), "error").Inc()
+		_ = msg.Nack(false, false)
+		return
+	}
+
+	// Build raw routing key for downlink: iot.raw.dji.downlink
 	rawRoutingKey := rabbitmq.NewRawRoutingKey(dji.VendorDJI, rabbitmq.DirectionDownlink)
 
-	// Publish to exchange
+	// Publish to exchange using rabbitmq publisher for trace injection
 	channel := rmqClient.Channel()
 	if channel == nil {
 		log.Error("Channel is nil")
@@ -414,21 +432,8 @@ func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiA
 		return
 	}
 
-	err = channel.PublishWithContext(
-		context.Background(),
-		rmqCfg.ExchangeName,
-		rawRoutingKey.String(),
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        payload,
-			Headers: amqp.Table{
-				"original_topic": pm.Topic,
-				"device_sn":      pm.DeviceSN,
-			},
-		},
-	)
+	// Publish to exchange using publisher which auto-injects W3C trace context
+	err = publisher.Publish(ctx, rawRoutingKey.String(), downlinkMsg)
 	if err != nil {
 		log.WithError(err).Error("Failed to publish raw message")
 		messagesProcessed.WithLabelValues("downlink", string(pm.MessageType), "error").Inc()
@@ -443,9 +448,9 @@ func processDownlinkMessage(log *logger.Logger, rmqClient *rabbitmq.Client, djiA
 	_ = msg.Ack(false)
 
 	log.WithFields(map[string]any{
-		"tid":      stdMsg.TID,
-		"device":   stdMsg.DeviceSN,
-		"action":   stdMsg.Action,
+		"tid":      downlinkMsg.TID,
+		"device":   downlinkMsg.DeviceSN,
+		"action":   downlinkMsg.Action,
 		"duration": duration,
 	}).Debug("Processed downlink message")
 }

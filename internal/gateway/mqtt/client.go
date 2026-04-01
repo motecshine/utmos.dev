@@ -9,6 +9,8 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
+
+	"github.com/utmos/utmos/pkg/ratelimit"
 )
 
 // MQTT client configuration defaults
@@ -45,6 +47,11 @@ type Config struct {
 	PingTimeout      time.Duration
 	MaxReconnectWait time.Duration
 	QoS              byte
+
+	// Rate limiting for connections
+	EnableRateLimit       bool
+	RateLimitConnections  float64 // connections per second
+	RateLimitBurst        int     // max burst of connections
 }
 
 // DefaultConfig returns default MQTT client configuration
@@ -65,15 +72,16 @@ func DefaultConfig() *Config {
 
 // Client wraps the MQTT client with additional functionality
 type Client struct {
-	config         *Config
-	client         mqtt.Client
-	logger         *logrus.Entry
-	messageHandler MessageHandler
-	connectHandler ConnectHandler
-	lostHandler    ConnectionLostHandler
-	mu             sync.RWMutex
-	connected      bool
-	subscriptions  map[string]byte
+	config           *Config
+	client           mqtt.Client
+	logger           *logrus.Entry
+	messageHandler   MessageHandler
+	connectHandler   ConnectHandler
+	lostHandler      ConnectionLostHandler
+	connLimiter      *ratelimit.ConnectionLimiter
+	mu               sync.RWMutex
+	connected        bool
+	subscriptions    map[string]byte
 }
 
 // MessageHandler handles incoming MQTT messages
@@ -94,11 +102,22 @@ func NewClient(config *Config, logger *logrus.Entry) *Client {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 
-	return &Client{
+	client := &Client{
 		config:        config,
 		logger:        logger.WithField("component", "mqtt-client"),
 		subscriptions: make(map[string]byte),
 	}
+
+	// Initialize connection rate limiter if enabled
+	if config.EnableRateLimit {
+		client.connLimiter = ratelimit.NewConnectionLimiter(
+			config.RateLimitConnections, float64(config.RateLimitBurst),
+			config.RateLimitConnections, float64(config.RateLimitBurst),
+		)
+		logger.Info("Connection rate limiting enabled")
+	}
+
+	return client
 }
 
 // SetMessageHandler sets the message handler
@@ -118,6 +137,15 @@ func (c *Client) SetConnectionLostHandler(handler ConnectionLostHandler) {
 
 // Connect establishes connection to the MQTT broker
 func (c *Client) Connect(ctx context.Context) error {
+	// Apply rate limiting if enabled
+	if c.connLimiter != nil {
+		// Use clientID as the client identifier for rate limiting
+		if !c.connLimiter.Allow(c.config.ClientID) {
+			c.logger.Warnf("Connection rate limited for client %s", c.config.ClientID)
+			return fmt.Errorf("connection rate limited")
+		}
+	}
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", c.config.Broker, c.config.Port))
 	opts.SetClientID(c.config.ClientID)
@@ -297,4 +325,9 @@ func (c *Client) resubscribe() {
 // GetConfig returns the client configuration
 func (c *Client) GetConfig() *Config {
 	return c.config
+}
+
+// IsRateLimited returns true if rate limiting is enabled
+func (c *Client) IsRateLimited() bool {
+	return c.connLimiter != nil
 }

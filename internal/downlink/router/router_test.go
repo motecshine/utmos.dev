@@ -10,12 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/utmos/utmos/internal/downlink/dispatcher"
+	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
 func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
 
-	assert.Equal(t, RoutingKeyGatewayDownlink, config.DefaultRoutingKey)
+	assert.Equal(t, "iot.generic.gateway.service.call", config.DefaultRoutingKey)
 	assert.True(t, config.EnableMetrics)
 }
 
@@ -34,7 +35,7 @@ func TestNewRouter(t *testing.T) {
 		router := NewRouter(nil, nil, nil)
 
 		require.NotNil(t, router)
-		assert.Equal(t, RoutingKeyGatewayDownlink, router.config.DefaultRoutingKey)
+		assert.Equal(t, "iot.generic.gateway.service.call", router.config.DefaultRoutingKey)
 	})
 }
 
@@ -65,18 +66,21 @@ func TestRouter_GetRoutingKey(t *testing.T) {
 	router := NewRouter(nil, nil, nil)
 
 	testCases := []struct {
-		callType dispatcher.ServiceCallType
-		expected string
+		vendor    string
+		callType  dispatcher.ServiceCallType
+		expected  string
 	}{
-		{dispatcher.ServiceCallTypeCommand, RoutingKeyGatewayCommand},
-		{dispatcher.ServiceCallTypeProperty, RoutingKeyGatewayProperty},
-		{dispatcher.ServiceCallTypeConfig, RoutingKeyGatewayDownlink}, // Default
+		{"dji", dispatcher.ServiceCallTypeCommand, "iot.dji.gateway.command.send"},
+		{"dji", dispatcher.ServiceCallTypeProperty, "iot.dji.gateway.property.set"},
+		{"generic", dispatcher.ServiceCallTypeCommand, "iot.generic.gateway.command.send"},
+		{"tuya", dispatcher.ServiceCallTypeProperty, "iot.tuya.gateway.property.set"},
+		{"dji", dispatcher.ServiceCallTypeConfig, "iot.dji.gateway.config.update"}, // Default for unknown type
 	}
 
 	for _, tc := range testCases {
-		call := &dispatcher.ServiceCall{CallType: tc.callType}
+		call := &dispatcher.ServiceCall{Vendor: tc.vendor, CallType: tc.callType}
 		result := router.getRoutingKey(call)
-		assert.Equal(t, tc.expected, result, "call type %s", tc.callType)
+		assert.Equal(t, tc.expected, result, "vendor=%s, call type %s", tc.vendor, tc.callType)
 	}
 }
 
@@ -189,10 +193,8 @@ func TestRouter_Metrics(t *testing.T) {
 	assert.Equal(t, int64(0), failed)
 }
 
-func TestRoutingKeyConstants(t *testing.T) {
-	assert.Equal(t, "iot.gateway.downlink", RoutingKeyGatewayDownlink)
-	assert.Equal(t, "iot.gateway.command", RoutingKeyGatewayCommand)
-	assert.Equal(t, "iot.gateway.property", RoutingKeyGatewayProperty)
+func TestServiceGatewayConstant(t *testing.T) {
+	assert.Equal(t, "gateway", ServiceGateway)
 }
 
 func TestNewBatchRouter(t *testing.T) {
@@ -233,12 +235,12 @@ func TestBatchRouter_RouteBatch_NoPublisher(t *testing.T) {
 func TestRouteResult(t *testing.T) {
 	result := &RouteResult{
 		Success:    true,
-		RoutingKey: "iot.gateway.command",
+		RoutingKey: "iot.dji.gateway.command.send",
 		Error:      nil,
 	}
 
 	assert.True(t, result.Success)
-	assert.Equal(t, "iot.gateway.command", result.RoutingKey)
+	assert.Equal(t, "iot.dji.gateway.command.send", result.RoutingKey)
 	assert.Nil(t, result.Error)
 }
 
@@ -260,4 +262,13 @@ func TestBatchRouteResult(t *testing.T) {
 	assert.Equal(t, 3, result.Succeeded)
 	assert.Equal(t, 2, result.Failed)
 	assert.Len(t, result.Results, 5)
+}
+
+func TestRoutingKeyConstruction(t *testing.T) {
+	// Test that canonical routing key format is iot.{vendor}.{service}.{action}
+	rk := rabbitmq.NewRoutingKey("dji", "gateway", "command.send")
+	assert.Equal(t, "iot.dji.gateway.command.send", rk.String())
+
+	rk2 := rabbitmq.NewRoutingKey("generic", "ws", "property.report")
+	assert.Equal(t, "iot.generic.ws.property.report", rk2.String())
 }

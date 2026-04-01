@@ -135,11 +135,13 @@ curl -H "X-API-Key: local-dev-key" \
 ## 7. Verify realtime subscription flow
 
 Open a WebSocket session to the realtime service and subscribe to relevant topics.
+Capture the `X-Session-ID` response header from the WebSocket upgrade, or provide your own `session_id` query parameter when opening `/ws`.
 
 Example subscription payload:
 
 ```json
 {
+  "sessionID": "session-from-websocket",
   "topics": ["property.processed", "event.processed", "device.device-001.property.processed"]
 }
 ```

@@ -1,0 +1,377 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "UMOS IoT Platform API",
+    "version": "1.0.0",
+    "description": "REST API for device management, telemetry queries, and service calls."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "device_sn": {
+            "type": "string"
+          },
+          "device_name": {
+            "type": "string"
+          },
+          "device_type": {
+            "type": "string"
+          },
+          "vendor": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "TelemetryQueryResponse": {
+        "type": "object",
+        "properties": {
+          "device_sn": {
+            "type": "string"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "ServiceRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "device_sn": {
+            "type": "string"
+          },
+          "vendor": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy"
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Readiness check",
+        "responses": {
+          "200": {
+            "description": "Service is ready"
+          },
+          "503": {
+            "description": "Service is not ready"
+          }
+        }
+      }
+    },
+    "/api/v1/devices": {
+      "get": {
+        "summary": "List devices",
+        "responses": {
+          "200": {
+            "description": "Devices returned"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create device",
+        "responses": {
+          "201": {
+            "description": "Device created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/devices/{id}": {
+      "get": {
+        "summary": "Get device by numeric ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Device not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update device by numeric ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete device by numeric ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Device removed"
+          }
+        }
+      }
+    },
+    "/api/v1/devices/sn/{sn}": {
+      "get": {
+        "summary": "Get device by serial number",
+        "parameters": [
+          {
+            "name": "sn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Device not found"
+          }
+        }
+      }
+    },
+    "/api/v1/telemetry/{device_sn}": {
+      "get": {
+        "summary": "Query historical telemetry",
+        "parameters": [
+          {
+            "name": "device_sn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Telemetry returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelemetryQueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/telemetry/{device_sn}/latest": {
+      "get": {
+        "summary": "Get latest telemetry snapshot",
+        "parameters": [
+          {
+            "name": "device_sn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest telemetry returned"
+          }
+        }
+      }
+    },
+    "/api/v1/telemetry/{device_sn}/aggregate": {
+      "get": {
+        "summary": "Query aggregated telemetry",
+        "parameters": [
+          {
+            "name": "device_sn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated telemetry returned"
+          }
+        }
+      }
+    },
+    "/api/v1/services/call": {
+      "post": {
+        "summary": "Submit service request",
+        "responses": {
+          "202": {
+            "description": "Service request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/calls/{id}": {
+      "get": {
+        "summary": "Get service request status",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service request returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/calls/device/{device_sn}": {
+      "get": {
+        "summary": "List service requests by device serial number",
+        "parameters": [
+          {
+            "name": "device_sn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service requests returned"
+          }
+        }
+      }
+    }
+  }
+}

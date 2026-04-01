@@ -208,6 +208,14 @@ func (s *Service) Stop() error {
 
 // subscribeToQueues subscribes to the configured message queues
 func (s *Service) subscribeToQueues() error {
+	if client := s.subscriber.Client(); client != nil {
+		for _, routingKey := range s.config.RoutingKeys {
+			if err := client.SetupQueueWithBinding(s.config.QueueName, routingKey); err != nil {
+				return fmt.Errorf("failed to setup queue binding %s: %w", routingKey, err)
+			}
+		}
+	}
+
 	return s.subscriber.Subscribe(s.config.QueueName, func(ctx context.Context, msg *rabbitmq.StandardMessage) error {
 		return s.handler.Handle(ctx, msg)
 	})

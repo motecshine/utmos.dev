@@ -11,11 +11,14 @@ import (
 
 	"github.com/utmos/utmos/internal/gateway"
 	"github.com/utmos/utmos/internal/gateway/bridge"
+	gatewayhttp "github.com/utmos/utmos/internal/gateway/http"
 	"github.com/utmos/utmos/internal/gateway/mqtt"
 	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/internal/shared/database"
 	"github.com/utmos/utmos/internal/shared/server"
 	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/metrics"
+	"github.com/utmos/utmos/pkg/models"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
 )
@@ -45,20 +48,32 @@ func main() {
 
 	// Initialize RabbitMQ client
 	rmqClient := rabbitmq.NewClient(&cfg.RabbitMQ)
-	if err := rmqClient.Connect(context.Background()); err != nil {
-		log.WithService(serviceName).Warnf("failed to connect to RabbitMQ: %v", err)
+	if connectErr := rmqClient.Connect(context.Background()); connectErr != nil {
+		log.WithService(serviceName).Warnf("failed to connect to RabbitMQ: %v", connectErr)
 	}
 
 	// Setup Exchange and Queue
 	if rmqClient.IsConnected() {
-		if err := rmqClient.SetupExchange(); err != nil {
-			log.WithService(serviceName).Warnf("failed to setup exchange: %v", err)
+		if setupErr := rmqClient.SetupExchange(); setupErr != nil {
+			log.WithService(serviceName).Warnf("failed to setup exchange: %v", setupErr)
 		}
 	}
 
 	// Initialize RabbitMQ subscriber and publisher
 	subscriber := rabbitmq.NewSubscriber(rmqClient)
 	publisher := rabbitmq.NewPublisher(rmqClient)
+
+	// Initialize PostgreSQL database for device registry
+	db, err := database.NewPostgresDB(&cfg.Database.Postgres)
+	if err != nil {
+		log.WithService(serviceName).Warnf("failed to connect to database: %v (vendor resolution disabled)", err)
+		db = nil
+	} else {
+		// Run database migrations
+		if err := models.AutoMigrate(db); err != nil {
+			log.WithService(serviceName).Warnf("failed to run migrations: %v", err)
+		}
+	}
 
 	// Create gateway service configuration
 	mqttConfig := &mqtt.Config{
@@ -90,7 +105,10 @@ func main() {
 
 	// Create gateway service
 	logEntry := log.WithService(serviceName)
-	gatewaySvc := gateway.NewService(svcConfig, publisher, subscriber, metricsCollector, logEntry)
+	gatewaySvc := gateway.NewService(svcConfig, publisher, subscriber, metricsCollector, logEntry, db)
+
+	// Create and register auth webhook handler for VerneMQ authentication
+	authWebhookHandler := gatewayhttp.NewAuthWebhookHandler(gatewaySvc.GetAuthenticator(), gatewaySvc.GetMessageLogRepository(), logEntry)
 
 	// Setup Gin router for health checks
 	if cfg.Logger.Level != "debug" {
@@ -134,6 +152,14 @@ func main() {
 
 	// Metrics endpoint
 	router.GET(cfg.Metrics.Path, metrics.Handler(metricsCollector))
+
+	// Auth webhook endpoints for VerneMQ authentication
+	if gatewaySvc.IsAuthenticatorEnabled() {
+		authWebhookHandler.RegisterRoutes(router)
+		log.WithService(serviceName).Info("MQTT auth webhook enabled at /api/v1/auth/mqtt")
+	} else {
+		log.WithService(serviceName).Warn("MQTT auth webhook disabled - database not available")
+	}
 
 	// Device status endpoint
 	router.GET("/devices/online", func(c *gin.Context) {
@@ -184,6 +210,12 @@ func main() {
 		log.WithService(serviceName).Info("Closing RabbitMQ connection")
 		return rmqClient.Close()
 	})
+	if db != nil {
+		shutdown.Register(func(_ context.Context) error {
+			log.WithService(serviceName).Info("Closing database connection")
+			return database.Close(db)
+		})
+	}
 	shutdown.Register(func(ctx context.Context) error {
 		log.WithService(serviceName).Info("Shutting down tracer")
 		return tracerProvider.Shutdown(ctx)

@@ -4,6 +4,7 @@ package ws
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -65,6 +66,13 @@ type Service struct {
 	running   bool
 	runningMu sync.RWMutex
 	done      chan struct{}
+}
+
+// SubscriptionRegistrationResult captures per-topic realtime subscription outcomes.
+type SubscriptionRegistrationResult struct {
+	SessionID string   `json:"sessionID"`
+	Accepted  []string `json:"accepted"`
+	Rejected  []string `json:"rejected,omitempty"`
 }
 
 // NewService creates a new WebSocket service
@@ -195,14 +203,19 @@ func (s *Service) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := s.upgrader.Upgrade(w, r, nil)
+	clientID := r.URL.Query().Get("session_id")
+	if clientID == "" {
+		clientID = uuid.New().String()
+	}
+
+	headers := http.Header{}
+	headers.Set("X-Session-ID", clientID)
+
+	conn, err := s.upgrader.Upgrade(w, r, headers)
 	if err != nil {
 		s.logger.WithError(err).Warn("Failed to upgrade WebSocket connection")
 		return
 	}
-
-	// Generate client ID
-	clientID := uuid.New().String()
 
 	// Extract metadata from request
 	deviceSN := r.URL.Query().Get("device_sn")
@@ -251,11 +264,24 @@ func (s *Service) onClientMessage(client *hub.Client, msg *hub.Message) {
 	switch msg.Type {
 	case hub.MessageTypeSubscribe:
 		if msg.Event != "" {
-			s.subManager.Subscribe(client.ID, msg.Event)
+			result, err := s.registerSubscriptionsForClient(client, []string{msg.Event})
+			if err != nil {
+				s.logger.WithError(err).WithField("client_id", client.ID).Warn("Failed to register subscription")
+				client.SendNack(msg.Event, err.Error())
+				break
+			}
+			if len(result.Accepted) > 0 {
+				client.SendAck(result.Accepted[0])
+			}
+			if len(result.Rejected) > 0 {
+				client.SendNack(msg.Event, "not authorized for this topic")
+			}
 		}
 	case hub.MessageTypeUnsubscribe:
 		if msg.Event != "" {
-			s.subManager.Unsubscribe(client.ID, msg.Event)
+			topic := subscription.NormalizeTopic(msg.Event)
+			client.Unsubscribe(topic)
+			s.subManager.Unsubscribe(client.ID, topic)
 		}
 	}
 }
@@ -264,6 +290,13 @@ func (s *Service) onClientMessage(client *hub.Client, msg *hub.Message) {
 func (s *Service) consumeMessages(ctx context.Context) {
 	if s.subscriber == nil {
 		return
+	}
+
+	if client := s.subscriber.Client(); client != nil {
+		if err := client.SetupQueueWithBinding("iot.ws.queue", rabbitmq.BuildBindingPattern("", "ws", "")); err != nil {
+			s.logger.WithError(err).Error("Failed to setup WebSocket queue binding")
+			return
+		}
 	}
 
 	// Subscribe to the WebSocket queue
@@ -350,6 +383,48 @@ func (s *Service) Hub() *hub.Hub {
 // SubscriptionManager returns the subscription manager
 func (s *Service) SubscriptionManager() *subscription.Manager {
 	return s.subManager
+}
+
+// RegisterSubscriptions validates and activates topics for an active session.
+func (s *Service) RegisterSubscriptions(sessionID string, topics []string) (*SubscriptionRegistrationResult, error) {
+	client, ok := s.hub.GetClient(sessionID)
+	if !ok {
+		return nil, fmt.Errorf("session not found")
+	}
+
+	return s.registerSubscriptionsForClient(client, topics)
+}
+
+func (s *Service) registerSubscriptionsForClient(client *hub.Client, topics []string) (*SubscriptionRegistrationResult, error) {
+	if client == nil {
+		return nil, fmt.Errorf("client is nil")
+	}
+
+	result := &SubscriptionRegistrationResult{
+		SessionID: client.ID,
+		Accepted:  make([]string, 0, len(topics)),
+		Rejected:  make([]string, 0),
+	}
+
+	for _, topic := range topics {
+		normalized := subscription.NormalizeTopic(topic)
+		authResult := s.subManager.AuthorizeSubscribe(client.ID, normalized, client.DeviceSN, client.UserID)
+		if !authResult.Authorized {
+			result.Rejected = append(result.Rejected, normalized)
+			s.logger.WithFields(logrus.Fields{
+				"client_id": client.ID,
+				"topic":     normalized,
+				"reason":    authResult.Error,
+			}).Warn("Subscription rejected: unauthorized topic")
+			continue
+		}
+
+		client.Subscribe(normalized)
+		s.subManager.Subscribe(client.ID, normalized)
+		result.Accepted = append(result.Accepted, normalized)
+	}
+
+	return result, nil
 }
 
 // Pusher returns the message pusher

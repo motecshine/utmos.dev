@@ -90,6 +90,15 @@ func (b *DownlinkBridge) Start(ctx context.Context) error {
 		return fmt.Errorf("subscriber not initialized")
 	}
 
+	if client := b.subscriber.Client(); client != nil {
+		if err := client.SetupQueueWithBinding(b.queue, b.routingKey); err != nil {
+			b.mu.Lock()
+			b.running = false
+			b.mu.Unlock()
+			return fmt.Errorf("failed to setup queue binding: %w", err)
+		}
+	}
+
 	b.logger.Info("Starting downlink bridge")
 
 	// Subscribe to downlink queue
@@ -128,9 +137,9 @@ func (b *DownlinkBridge) handleStandardMessage(ctx context.Context, msg *rabbitm
 		return fmt.Errorf("missing topic in message data")
 	}
 
-	payload, err := json.Marshal(dataMap["payload"])
+	payload, err := buildMQTTPayload(dataMap["payload"])
 	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
+		return fmt.Errorf("failed to build payload: %w", err)
 	}
 
 	qos := 1
@@ -154,6 +163,21 @@ func (b *DownlinkBridge) handleStandardMessage(ctx context.Context, msg *rabbitm
 	}
 
 	return b.Bridge(ctx, downlinkMsg)
+}
+
+func buildMQTTPayload(v any) (json.RawMessage, error) {
+	switch payload := v.(type) {
+	case nil:
+		return nil, nil
+	case string:
+		return json.RawMessage([]byte(payload)), nil
+	default:
+		data, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+		return json.RawMessage(data), nil
+	}
 }
 
 // Stop stops the downlink bridge

@@ -3,18 +3,23 @@ package downlink
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"github.com/utmos/utmos/internal/downlink/dispatcher"
+	"github.com/utmos/utmos/internal/downlink/model"
 	"github.com/utmos/utmos/internal/downlink/retry"
 	"github.com/utmos/utmos/internal/downlink/router"
 	"github.com/utmos/utmos/pkg/adapter"
 	"github.com/utmos/utmos/pkg/metrics"
+	"github.com/utmos/utmos/pkg/models"
 	"github.com/utmos/utmos/pkg/rabbitmq"
+	"github.com/utmos/utmos/pkg/repository"
 )
 
 // Config holds downlink service configuration
@@ -48,14 +53,17 @@ func DefaultConfig() *Config {
 
 // Service is the main downlink service
 type Service struct {
-	config     *Config
-	logger     *logrus.Entry
-	registry   *dispatcher.Registry
-	handler    *dispatcher.DispatchHandler
+	config       *Config
+	logger       *logrus.Entry
+	db           *gorm.DB
+	registry     *dispatcher.Registry
+	handler      *dispatcher.DispatchHandler
 	retryHandler *retry.Handler
-	router     *router.Router
-	publisher  *rabbitmq.Publisher
-	subscriber *rabbitmq.Subscriber
+	router       *router.Router
+	publisher    *rabbitmq.Publisher
+	subscriber   *rabbitmq.Subscriber
+	repository   *model.ServiceCallRepository
+	msgLogRepo   *repository.MessageLogRepository
 
 	mu       sync.RWMutex
 	running  bool
@@ -68,7 +76,7 @@ type Service struct {
 }
 
 // NewService creates a new downlink service
-func NewService(config *Config, publisher *rabbitmq.Publisher, metricsCollector *metrics.Collector, logger *logrus.Entry) *Service {
+func NewService(config *Config, publisher *rabbitmq.Publisher, metricsCollector *metrics.Collector, logger *logrus.Entry, db *gorm.DB) *Service {
 	if config == nil {
 		config = DefaultConfig()
 	}
@@ -102,15 +110,26 @@ func NewService(config *Config, publisher *rabbitmq.Publisher, metricsCollector 
 		msgMetrics = metrics.NewMessageMetrics(metricsCollector)
 	}
 
+	// Create repository if DB is available
+	var repo *model.ServiceCallRepository
+	var msgLogRepo *repository.MessageLogRepository
+	if db != nil {
+		repo = model.NewServiceCallRepository(db)
+		msgLogRepo = repository.NewMessageLogRepository(db)
+	}
+
 	svc := &Service{
 		config:       config,
 		logger:       serviceLogger,
+		db:           db,
 		registry:     registry,
 		handler:      handler,
 		retryHandler: retryHandler,
 		router:       routerInstance,
 		publisher:    publisher,
 		msgMetrics:   msgMetrics,
+		repository:   repo,
+		msgLogRepo:   msgLogRepo,
 	}
 
 	// Set up callbacks
@@ -223,14 +242,175 @@ func (s *Service) Dispatch(ctx context.Context, call *dispatcher.ServiceCall) (*
 	return result, nil
 }
 
-// consumeMessages consumes messages from RabbitMQ
+// consumeMessages consumes service reply messages from RabbitMQ
 func (s *Service) consumeMessages(ctx context.Context) {
-	s.logger.Info("Starting message consumer")
+	s.logger.Info("Starting service reply consumer")
 
-	// This would be implemented based on the actual consumer interface
-	// For now, we'll just wait for context cancellation
+	// Set up the service reply queue
+	queueName := "iot.downlink.service.reply"
+	routingKeyPattern := "iot.*.device.service.reply"
+
+	// Setup queue with binding if subscriber has access to client
+	if s.subscriber != nil && s.publisher != nil {
+		// Get the underlying client from subscriber to setup queue
+		// The subscriber holds a reference to the client
+		if err := s.setupServiceReplyQueue(queueName, routingKeyPattern); err != nil {
+			s.logger.WithError(err).Warn("Failed to setup service reply queue, will rely on existing queue")
+		}
+	}
+
+	// Subscribe to consume service replies
+	if err := s.subscriber.Subscribe(queueName, s.handleServiceReply); err != nil {
+		s.logger.WithError(err).Error("Failed to subscribe to service reply queue")
+		return
+	}
+
+	s.logger.WithFields(logrus.Fields{
+		"queue":       queueName,
+		"routing_key": routingKeyPattern,
+	}).Info("Subscribed to service reply queue")
+
+	// Wait for context cancellation
 	<-ctx.Done()
-	s.logger.Info("Message consumer stopped")
+
+	// Unsubscribe when done
+	if err := s.subscriber.Unsubscribe(queueName); err != nil {
+		s.logger.WithError(err).Warn("Failed to unsubscribe from service reply queue")
+	}
+
+	s.logger.Info("Service reply consumer stopped")
+}
+
+// setupServiceReplyQueue declares and binds the service reply queue
+func (s *Service) setupServiceReplyQueue(queueName, routingKeyPattern string) error {
+	if s.subscriber == nil {
+		return fmt.Errorf("subscriber not configured")
+	}
+
+	client := s.subscriber.Client()
+	if client == nil {
+		return fmt.Errorf("rabbitmq client not available")
+	}
+
+	return client.SetupQueueWithBinding(queueName, routingKeyPattern)
+}
+
+// handleServiceReply handles incoming service reply messages
+func (s *Service) handleServiceReply(ctx context.Context, msg *rabbitmq.StandardMessage) error {
+	if msg == nil {
+		return nil
+	}
+
+	s.logger.WithFields(logrus.Fields{
+		"tid":       msg.TID,
+		"bid":       msg.BID,
+		"device_sn": msg.DeviceSN,
+		"service":   msg.Service,
+		"action":    msg.Action,
+	}).Debug("Received service reply")
+
+	// If we have a repository, look up the ServiceCall by TID and update status
+	if s.repository != nil {
+		return s.handleServiceReplyWithDB(ctx, msg)
+	}
+
+	// If no repository, just log and acknowledge
+	s.logger.WithField("tid", msg.TID).Debug("No repository available, skipping correlation")
+	return nil
+}
+
+// handleServiceReplyWithDB handles service reply with database correlation
+func (s *Service) handleServiceReplyWithDB(ctx context.Context, msg *rabbitmq.StandardMessage) error {
+	if msg.TID == "" {
+		s.logger.Warn("Service reply has no TID, skipping")
+		return nil
+	}
+
+	// Find the service call by TID
+	call, err := s.repository.FindByTID(msg.TID)
+	if err != nil {
+		s.logger.WithError(err).WithField("tid", msg.TID).Warn("Failed to find service call by TID")
+		// Don't return error to avoid Nack - the message might be for a different correlation ID
+		return nil
+	}
+
+	if call == nil {
+		s.logger.WithField("tid", msg.TID).Warn("No service call found for TID")
+		return nil
+	}
+
+	s.logger.WithFields(logrus.Fields{
+		"call_id": call.ID,
+		"tid":     msg.TID,
+		"status":  call.Status,
+	}).Debug("Found service call for reply")
+
+	// Check if the call is already in a terminal state
+	if call.IsCompleted() {
+		// Late response - log for audit but don't reopen terminal state
+		s.logger.WithFields(logrus.Fields{
+			"call_id":  call.ID,
+			"tid":      msg.TID,
+			"status":   call.Status,
+			"response": string(msg.Data),
+		}).Info("Late service reply received for completed call - audited but not processed")
+
+		// Log late response to MessageLog for audit (FR-019)
+		if s.msgLogRepo != nil {
+			errMsg := "late response after terminal state"
+			_ = s.msgLogRepo.CreateLateResponseRecord(ctx, call.DeviceSN, msg.TID, call.BID,
+				"iot-downlink", "service.reply", models.MessageDirectionDownlink, errMsg)
+		}
+		return nil
+	}
+
+	// Parse response data
+	var responseData map[string]any
+	if msg.Data != nil {
+		if err := json.Unmarshal(msg.Data, &responseData); err != nil {
+			s.logger.WithError(err).Warn("Failed to parse response data")
+		}
+	}
+
+	// Determine success/failure based on response content
+	// A response with error field indicates failure
+	var terminalStatus models.MessageStatus
+	if errStr, hasError := responseData["error"].(string); hasError && errStr != "" {
+		call.MarkFailed(errStr)
+		terminalStatus = models.MessageStatusFailed
+	} else {
+		if err := call.MarkSuccess(responseData); err != nil {
+			s.logger.WithError(err).WithField("call_id", call.ID).Error("Failed to mark service call as success")
+			return err
+		}
+		terminalStatus = models.MessageStatusSuccess
+	}
+
+	// Update in database
+	if err := s.repository.Update(call); err != nil {
+		s.logger.WithError(err).WithField("call_id", call.ID).Error("Failed to update service call")
+		return err
+	}
+
+	// Log terminal state to MessageLog (FR-017)
+	if s.msgLogRepo != nil {
+		var errMsg string
+		if terminalStatus == models.MessageStatusFailed {
+			if errStr, ok := responseData["error"].(string); ok {
+				errMsg = errStr
+			}
+		}
+		_ = s.msgLogRepo.CreateTerminalStateRecord(ctx, call.DeviceSN, msg.TID, call.BID,
+			"iot-downlink", "service.reply", models.MessageDirectionDownlink, terminalStatus, errMsg)
+	}
+
+	s.logger.WithFields(logrus.Fields{
+		"call_id": call.ID,
+		"tid":     msg.TID,
+		"status":  call.Status,
+	}).Info("Service call status updated from reply")
+
+	return nil
 }
 
 // onDispatched is called when a service call is dispatched
@@ -254,6 +434,13 @@ func (s *Service) onRetry(ctx context.Context, call *dispatcher.ServiceCall) err
 		"retry_count": call.RetryCount,
 	}).Debug("Retrying service call")
 
+	// Log retry attempt to MessageLog
+	if s.msgLogRepo != nil {
+		errMsg := fmt.Sprintf("retry attempt %d", call.RetryCount)
+		_ = s.msgLogRepo.CreateRetryRecord(ctx, call.DeviceSN, call.TID, call.BID,
+			"iot-downlink", "service.request", models.MessageDirectionDownlink, call.RetryCount, errMsg)
+	}
+
 	_, err := s.handler.Handle(ctx, call)
 	return err
 }
@@ -266,6 +453,13 @@ func (s *Service) onDeadLetter(entry *retry.DeadLetterEntry) {
 		"error":     entry.Error,
 		"retries":   entry.Retries,
 	}).Warn("Service call moved to dead letter queue")
+
+	// Log to MessageLog for audit
+	if s.msgLogRepo != nil {
+		ctx := context.Background()
+		_ = s.msgLogRepo.CreateTerminalStateRecord(ctx, entry.Call.DeviceSN, entry.Call.TID, entry.Call.BID,
+			"iot-downlink", "service.request", models.MessageDirectionDownlink, models.MessageStatusFailed, entry.Error)
+	}
 }
 
 // incrementCounter increments the given counter and records a Prometheus metric with the given status.

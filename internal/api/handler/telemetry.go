@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -333,4 +334,23 @@ func (h *Telemetry) Close() {
 	if h.client != nil {
 		h.client.Close()
 	}
+}
+
+// Health checks whether the InfluxDB client is reachable.
+func (h *Telemetry) Health(ctx context.Context) error {
+	if h.client == nil {
+		return fmt.Errorf("telemetry client not configured")
+	}
+
+	health, err := h.client.Health(ctx)
+	if err != nil {
+		return err
+	}
+	if health == nil {
+		return fmt.Errorf("telemetry health check returned no result")
+	}
+	if health.Status != "pass" {
+		return fmt.Errorf("telemetry backend status: %s", health.Status)
+	}
+	return nil
 }

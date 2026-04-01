@@ -16,7 +16,7 @@ Implement and align the five UMOS core services so the platform can authenticate
 **Target Platform**: Linux containerized services running via Docker Compose and deployable to Kubernetes-compatible environments
 **Project Type**: Go microservices repository
 **Performance Goals**: 95% of valid telemetry available to downstream consumers within 1 second; support 1,000 connected devices and 10,000 realtime connections per node; recover from transient dependency interruptions within 30 seconds; demonstrate 99.9% availability during controlled resilience testing windows
-**Constraints**: Only `iot-gateway` may connect to VerneMQ/MQTT; all inter-service communication must use RabbitMQ; normalized routing should follow `iot.{vendor}.{service}.{action}` and raw bridge traffic should follow `iot.raw.{vendor}.{direction}`; all inter-service messages must preserve `tid`, `bid`, `timestamp`, `device_sn`, and W3C trace context; all database access must use GORM; OpenAPI documentation and contract tests are required for API behavior; consumers handling RabbitMQ traffic must process duplicate deliveries idempotently using `tid` and `bid`
+**Constraints**: Only `iot-gateway` may connect to VerneMQ/MQTT; all inter-service communication must use RabbitMQ; normalized routing should follow `iot.{vendor}.{service}.{action}` and raw bridge traffic should follow `iot.raw.{vendor}.{direction}`; all inter-service messages must preserve `tid`, `bid`, `timestamp`, `device_sn`, and W3C trace context; all database access must use GORM; OpenAPI documentation and contract tests are required for API behavior; consumers handling RabbitMQ traffic must process duplicate deliveries idempotently using `tid` and `bid`; downlink routing key: `iot.{vendor}.downlink.command` for device-bound commands, following the `iot.{vendor}.{service}.{action}` pattern where service=downlink and action=command; `iot.raw.{vendor}.downlink` is NOT used for business traffic
 **Scale/Scope**: Five core services (`iot-gateway`, `iot-uplink`, `iot-downlink`, `iot-api`, `iot-ws`) plus their shared contracts, runtime health/readiness behavior, and end-to-end operational flow
 
 ## Constitution Check
@@ -178,6 +178,7 @@ See `quickstart.md` for the validation flow that brings up the five services, ve
 - persist and update service-request lifecycle state idempotently, including protection against late replies after timeout
 - apply retry and dead-letter behavior with audit visibility
 - route device-bound requests to gateway through canonical downlink routing
+- **Lifecycle states**: pending → sent → (success | failed | timeout), with retrying as transient. Late replies after terminal state MUST be recorded but MUST NOT change terminal state.
 
 ### Phase 4: API surface and inventory workflows
 - expose versioned inventory and telemetry APIs aligned with the contract
@@ -192,6 +193,8 @@ See `quickstart.md` for the validation flow that brings up the five services, ve
 - expose operational stats and readiness aligned with actual dependencies
 
 ### Phase 6: Cross-service verification
+
+> **Note**: plan.md uses Phase 1-6 for implementation phases. tasks.md uses Phase 1-7 where Phase 1=Setup, Phase 2=Foundational, Phase 3-6=User Stories, Phase 7=Polish. The phase numbering differs but the content is aligned.
 - verify full upstream and downlink flows
 - validate resilience, readiness, and recovery behavior
 - enforce linting, contract checks, and coverage thresholds

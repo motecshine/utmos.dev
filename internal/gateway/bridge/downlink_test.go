@@ -185,3 +185,17 @@ func TestDownlinkBridge_HandleMessage(t *testing.T) {
 		assert.Contains(t, err.Error(), "MQTT client not initialized")
 	})
 }
+
+func TestBuildMQTTPayload(t *testing.T) {
+	t.Run("string payload remains raw bytes", func(t *testing.T) {
+		payload, err := buildMQTTPayload(`{"result":0}`)
+		require.NoError(t, err)
+		assert.JSONEq(t, `{"result":0}`, string(payload))
+	})
+
+	t.Run("object payload marshals to json", func(t *testing.T) {
+		payload, err := buildMQTTPayload(map[string]any{"result": 0})
+		require.NoError(t, err)
+		assert.JSONEq(t, `{"result":0}`, string(payload))
+	})
+}

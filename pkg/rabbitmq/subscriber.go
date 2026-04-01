@@ -2,9 +2,11 @@ package rabbitmq
 
 import (
 	"context"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
+	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/tracer"
 )
 
@@ -14,8 +16,10 @@ type MessageHandler func(ctx context.Context, msg *StandardMessage) error
 
 // Subscriber provides message subscription functionality.
 type Subscriber struct {
-	client   *Client
-	handlers map[string]chan struct{}
+	client      *Client
+	handlers    map[string]chan struct{}
+	rmqMetrics  *metrics.RabbitMQMetrics
+	serviceName string
 }
 
 // NewSubscriber creates a new Subscriber.
@@ -23,6 +27,16 @@ func NewSubscriber(client *Client) *Subscriber {
 	return &Subscriber{
 		client:   client,
 		handlers: make(map[string]chan struct{}),
+	}
+}
+
+// NewSubscriberWithMetrics creates a new Subscriber with RabbitMQ metrics.
+func NewSubscriberWithMetrics(client *Client, rmqMetrics *metrics.RabbitMQMetrics, serviceName string) *Subscriber {
+	return &Subscriber{
+		client:      client,
+		handlers:    make(map[string]chan struct{}),
+		rmqMetrics:  rmqMetrics,
+		serviceName: serviceName,
 	}
 }
 
@@ -71,6 +85,8 @@ func (s *Subscriber) processMessages(msgs <-chan amqp.Delivery, handler MessageH
 
 // handleDelivery handles a single message delivery.
 func (s *Subscriber) handleDelivery(delivery amqp.Delivery, handler MessageHandler) {
+	start := time.Now()
+
 	// Extract trace context from headers
 	headerMap := make(map[string]any)
 	for k, v := range delivery.Headers {
@@ -82,6 +98,7 @@ func (s *Subscriber) handleDelivery(delivery amqp.Delivery, handler MessageHandl
 	msg, err := FromBytes(delivery.Body)
 	if err != nil {
 		// Nack invalid messages without requeue
+		s.recordConsumeError("parse_error")
 		_ = delivery.Nack(false, false)
 		return
 	}
@@ -89,11 +106,13 @@ func (s *Subscriber) handleDelivery(delivery amqp.Delivery, handler MessageHandl
 	// Call handler
 	if err := handler(ctx, msg); err != nil {
 		// Nack with requeue on handler error
+		s.recordConsumeError("handler_error")
 		_ = delivery.Nack(false, true)
 		return
 	}
 
 	// Ack on success
+	s.recordConsumeSuccess(time.Since(start))
 	_ = delivery.Ack(false)
 }
 
@@ -111,4 +130,27 @@ func (s *Subscriber) UnsubscribeAll() {
 	for queueName := range s.handlers {
 		_ = s.Unsubscribe(queueName)
 	}
+}
+
+// Client returns the underlying RabbitMQ client.
+func (s *Subscriber) Client() *Client {
+	return s.client
+}
+
+// recordConsumeSuccess records successful consume metrics
+func (s *Subscriber) recordConsumeSuccess(duration time.Duration) {
+	if s.rmqMetrics == nil {
+		return
+	}
+	s.rmqMetrics.ConsumeTotal.WithLabelValues(s.serviceName, "success").Inc()
+	s.rmqMetrics.MessageDuration.WithLabelValues(s.serviceName).Observe(duration.Seconds())
+}
+
+// recordConsumeError records failed consume metrics
+func (s *Subscriber) recordConsumeError(status string) {
+	if s.rmqMetrics == nil {
+		return
+	}
+	s.rmqMetrics.ConsumeTotal.WithLabelValues(s.serviceName, status).Inc()
+	s.rmqMetrics.ErrorTotal.WithLabelValues(s.serviceName).Inc()
 }

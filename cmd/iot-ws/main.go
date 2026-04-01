@@ -11,10 +11,10 @@ import (
 
 	"github.com/utmos/utmos/internal/shared/config"
 	"github.com/utmos/utmos/internal/shared/server"
-	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/internal/ws"
 	"github.com/utmos/utmos/internal/ws/hub"
 	"github.com/utmos/utmos/internal/ws/push"
+	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
@@ -98,11 +98,27 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
 	router.GET("/ready", func(c *gin.Context) {
-		if wsSvc.IsRunning() {
-			c.JSON(http.StatusOK, gin.H{"status": "ready"})
+		// Check RabbitMQ connection as required by spec FR-016
+		rmqReady := rmqClient.IsConnected()
+		svcReady := wsSvc.IsRunning()
+
+		if rmqReady && svcReady {
+			c.JSON(http.StatusOK, gin.H{
+				"status":   "ready",
+				"rabbitmq": "connected",
+				"service":  "running",
+			})
 			return
 		}
-		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "not ready"})
+
+		status := gin.H{"status": "not ready"}
+		if !rmqReady {
+			status["rabbitmq"] = "disconnected"
+		}
+		if !svcReady {
+			status["service"] = "stopped"
+		}
+		c.JSON(http.StatusServiceUnavailable, status)
 	})
 
 	// Metrics endpoint
@@ -117,6 +133,29 @@ func main() {
 	// WebSocket endpoint
 	router.GET("/ws", func(c *gin.Context) {
 		wsSvc.HandleWebSocket(c.Writer, c.Request)
+	})
+	router.POST("/internal/realtime/subscriptions", func(c *gin.Context) {
+		var req struct {
+			SessionID string   `json:"sessionID" binding:"required"`
+			Topics    []string `json:"topics" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
+		}
+
+		result, err := wsSvc.RegisterSubscriptions(req.SessionID, req.Topics)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"sessionID": result.SessionID,
+			"topics":    result.Accepted,
+			"accepted":  result.Accepted,
+			"rejected":  result.Rejected,
+		})
 	})
 
 	// Create HTTP server

@@ -89,18 +89,21 @@ func TestRouter_GetWSRoutingKey(t *testing.T) {
 	router := NewRouter(nil, nil, nil)
 
 	testCases := []struct {
+		vendor   string
 		msgType  adapter.MessageType
 		expected string
 	}{
-		{adapter.MessageTypeProperty, RoutingKeyWSProperty},
-		{adapter.MessageTypeEvent, RoutingKeyWSEvent},
-		{adapter.MessageTypeStatus, RoutingKeyWSStatus},
-		{adapter.MessageType("unknown"), RoutingKeyWSProperty},
+		{"dji", adapter.MessageTypeProperty, "iot.dji.ws.property.report"},
+		{"dji", adapter.MessageTypeEvent, "iot.dji.ws.event.notify"},
+		{"dji", adapter.MessageTypeStatus, "iot.dji.ws.status.report"},
+		{"generic", adapter.MessageTypeProperty, "iot.generic.ws.property.report"},
+		{"tuya", adapter.MessageTypeEvent, "iot.tuya.ws.event.notify"},
+		{"dji", adapter.MessageType("unknown"), "iot.dji.ws.property.report"}, // default
 	}
 
 	for _, tc := range testCases {
-		t.Run(string(tc.msgType), func(t *testing.T) {
-			result := router.getWSRoutingKey(tc.msgType)
+		t.Run(tc.vendor+"_"+string(tc.msgType), func(t *testing.T) {
+			result := router.getWSRoutingKey(tc.msgType, tc.vendor)
 			assert.Equal(t, tc.expected, result)
 		})
 	}
@@ -110,17 +113,20 @@ func TestRouter_GetAPIRoutingKey(t *testing.T) {
 	router := NewRouter(nil, nil, nil)
 
 	testCases := []struct {
+		vendor   string
 		msgType  adapter.MessageType
 		expected string
 	}{
-		{adapter.MessageTypeProperty, RoutingKeyAPIProperty},
-		{adapter.MessageTypeEvent, RoutingKeyAPIEvent},
-		{adapter.MessageType("unknown"), RoutingKeyAPIProperty},
+		{"dji", adapter.MessageTypeProperty, "iot.dji.api.property.report"},
+		{"dji", adapter.MessageTypeEvent, "iot.dji.api.event.notify"},
+		{"generic", adapter.MessageTypeProperty, "iot.generic.api.property.report"},
+		{"tuya", adapter.MessageTypeEvent, "iot.tuya.api.event.notify"},
+		{"dji", adapter.MessageType("unknown"), "iot.dji.api.property.report"}, // default
 	}
 
 	for _, tc := range testCases {
-		t.Run(string(tc.msgType), func(t *testing.T) {
-			result := router.getAPIRoutingKey(tc.msgType)
+		t.Run(tc.vendor+"_"+string(tc.msgType), func(t *testing.T) {
+			result := router.getAPIRoutingKey(tc.msgType, tc.vendor)
 			assert.Equal(t, tc.expected, result)
 		})
 	}
@@ -133,11 +139,11 @@ func TestRouter_GetAction(t *testing.T) {
 		msgType  adapter.MessageType
 		expected string
 	}{
-		{adapter.MessageTypeProperty, "property.processed"},
-		{adapter.MessageTypeEvent, "event.processed"},
-		{adapter.MessageTypeService, "service.processed"},
-		{adapter.MessageTypeStatus, "status.processed"},
-		{adapter.MessageType("unknown"), "message.processed"},
+		{adapter.MessageTypeProperty, "property.report"},
+		{adapter.MessageTypeEvent, "event.notify"},
+		{adapter.MessageTypeService, "service.reply"},
+		{adapter.MessageTypeStatus, "status.report"},
+		{adapter.MessageType("unknown"), "message.report"},
 	}
 
 	for _, tc := range testCases {
@@ -168,7 +174,7 @@ func TestRouter_CreateStandardMessage(t *testing.T) {
 
 	assert.Equal(t, "DEVICE001", stdMsg.DeviceSN)
 	assert.Equal(t, "iot-uplink", stdMsg.Service)
-	assert.Equal(t, "property.processed", stdMsg.Action)
+	assert.Equal(t, "property.report", stdMsg.Action)
 	assert.NotNil(t, stdMsg.ProtocolMeta)
 	assert.Equal(t, "dji", stdMsg.ProtocolMeta.Vendor)
 }
@@ -243,10 +249,7 @@ func TestMultiRouter_Route_WithErrors(t *testing.T) {
 	assert.Contains(t, err.Error(), "router 3 error")
 }
 
-func TestRoutingKeyConstants(t *testing.T) {
-	assert.Equal(t, "iot.ws.property", RoutingKeyWSProperty)
-	assert.Equal(t, "iot.ws.event", RoutingKeyWSEvent)
-	assert.Equal(t, "iot.ws.status", RoutingKeyWSStatus)
-	assert.Equal(t, "iot.api.property", RoutingKeyAPIProperty)
-	assert.Equal(t, "iot.api.event", RoutingKeyAPIEvent)
+func TestServiceConstants(t *testing.T) {
+	assert.Equal(t, "ws", ServiceWS)
+	assert.Equal(t, "api", ServiceAPI)
 }

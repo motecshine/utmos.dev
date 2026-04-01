@@ -13,10 +13,10 @@ import (
 	"github.com/utmos/utmos/pkg/rabbitmq"
 )
 
+// Routing key pattern follows canonical iot.{vendor}.{service}.{action} format.
 const (
-	// DJI routing key pattern: iot.{vendor}.{action}
-	// These are generated from the vendor constant to ensure consistency
-	routingKeyPattern = "iot.%s.%s"
+	// Service field for downlink messages
+	serviceDownlink = "downlink"
 )
 
 // Routing key actions
@@ -26,12 +26,13 @@ const (
 	actionConfigUpdate = "config.update"
 )
 
-// GetRoutingKey generates a routing key for the given action
+// GetRoutingKey generates a routing key for the given action using canonical format.
+// Returns routing key in format: iot.{vendor}.downlink.{action}
 func GetRoutingKey(action string) string {
-	return fmt.Sprintf(routingKeyPattern, dji.VendorDJI, action)
+	return rabbitmq.NewRoutingKey(dji.VendorDJI, serviceDownlink, action).String()
 }
 
-// Routing keys (generated from pattern for backward compatibility)
+// Routing keys following canonical iot.{vendor}.{service}.{action} format
 var (
 	RoutingKeyServiceCall  = GetRoutingKey(actionServiceCall)
 	RoutingKeyPropertySet  = GetRoutingKey(actionPropertySet)

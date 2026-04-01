@@ -17,14 +17,8 @@ import (
 )
 
 const (
-	// RoutingKeyGatewayDownlink is the routing key for downlink messages to gateway
-	RoutingKeyGatewayDownlink = "iot.gateway.downlink"
-
-	// RoutingKeyGatewayCommand is the routing key for command messages
-	RoutingKeyGatewayCommand = "iot.gateway.command"
-
-	// RoutingKeyGatewayProperty is the routing key for property set messages
-	RoutingKeyGatewayProperty = "iot.gateway.property"
+	// ServiceGateway is the gateway service identifier in routing keys
+	ServiceGateway = "gateway"
 )
 
 // Config holds router configuration
@@ -38,7 +32,7 @@ type Config struct {
 // DefaultConfig returns default router configuration
 func DefaultConfig() *Config {
 	return &Config{
-		DefaultRoutingKey: RoutingKeyGatewayDownlink,
+		DefaultRoutingKey: "iot.generic.gateway.service.call",
 		EnableMetrics:     true,
 	}
 }
@@ -136,16 +130,11 @@ func (r *Router) Route(ctx context.Context, call *dispatcher.ServiceCall, result
 	}, nil
 }
 
-// getRoutingKey determines the routing key for a service call
+// getRoutingKey determines the canonical routing key for a service call
+// Format: iot.{vendor}.gateway.{action}
 func (r *Router) getRoutingKey(call *dispatcher.ServiceCall) string {
-	switch call.CallType {
-	case dispatcher.ServiceCallTypeCommand:
-		return RoutingKeyGatewayCommand
-	case dispatcher.ServiceCallTypeProperty:
-		return RoutingKeyGatewayProperty
-	default:
-		return r.config.DefaultRoutingKey
-	}
+	action := r.getAction(call.CallType)
+	return rabbitmq.NewRoutingKey(call.Vendor, ServiceGateway, action).String()
 }
 
 // gatewayPayload is the typed payload sent in gateway messages.
@@ -205,7 +194,7 @@ func (r *Router) createGatewayMessage(call *dispatcher.ServiceCall, result *disp
 	return msg, nil
 }
 
-// getAction returns the action string for a call type
+// getAction returns the canonical action string for a call type
 func (r *Router) getAction(callType dispatcher.ServiceCallType) string {
 	switch callType {
 	case dispatcher.ServiceCallTypeCommand:
@@ -215,7 +204,7 @@ func (r *Router) getAction(callType dispatcher.ServiceCallType) string {
 	case dispatcher.ServiceCallTypeConfig:
 		return "config.update"
 	default:
-		return "downlink.send"
+		return "service.call"
 	}
 }
 

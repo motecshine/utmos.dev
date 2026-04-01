@@ -31,19 +31,24 @@ type Message struct {
 
 // TopicInfo contains parsed topic information
 type TopicInfo struct {
-	Vendor    string
-	ProductID string
-	DeviceSN  string
-	Service   string
-	Method    string
-	Raw       string
+	Vendor      string
+	ProductID   string
+	DeviceSN    string
+	Service     string
+	Method      string
+	Raw         string
+	VendorKnown bool // true if vendor was explicitly specified in topic, false if hardcoded
 }
+
+// VendorResolver resolves vendor from device serial number
+type VendorResolver func(ctx context.Context, deviceSN string) (string, error)
 
 // Handler processes MQTT messages
 type Handler struct {
-	logger     *logrus.Entry
-	processors map[string]MessageProcessor
-	mu         sync.RWMutex
+	logger         *logrus.Entry
+	processors     map[string]MessageProcessor
+	vendorResolver VendorResolver
+	mu             sync.RWMutex
 }
 
 // MessageProcessor processes messages for a specific topic pattern
@@ -61,9 +66,17 @@ func NewHandler(logger *logrus.Entry) *Handler {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	return &Handler{
-		logger:     logger.WithField("component", "mqtt-handler"),
-		processors: make(map[string]MessageProcessor),
+		logger:         logger.WithField("component", "mqtt-handler"),
+		processors:     make(map[string]MessageProcessor),
+		vendorResolver: nil,
 	}
+}
+
+// SetVendorResolver sets the vendor resolver function
+func (h *Handler) SetVendorResolver(resolver VendorResolver) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.vendorResolver = resolver
 }
 
 // RegisterProcessor registers a message processor for a topic pattern
@@ -93,6 +106,26 @@ func (h *Handler) Handle(client pahomqtt.Client, mqttMsg pahomqtt.Message) {
 	}
 
 	topicInfo := ParseTopic(msg.Topic)
+
+	// Resolve vendor from database if not explicitly specified in topic
+	if !topicInfo.VendorKnown && topicInfo.DeviceSN != "" {
+		h.mu.RLock()
+		resolver := h.vendorResolver
+		h.mu.RUnlock()
+
+		if resolver != nil {
+			vendor, err := resolver(context.Background(), topicInfo.DeviceSN)
+			if err != nil {
+				h.logger.WithError(err).WithField("device_sn", topicInfo.DeviceSN).Warn("Failed to resolve vendor, using fallback")
+			} else {
+				topicInfo.Vendor = vendor
+				h.logger.WithFields(logrus.Fields{
+					"device_sn": topicInfo.DeviceSN,
+					"vendor":    vendor,
+				}).Debug("Resolved vendor from device registry")
+			}
+		}
+	}
 
 	// Create a root span for the MQTT message
 	tr := otel.Tracer("iot-gateway")
@@ -161,11 +194,15 @@ func ParseTopic(topic string) *TopicInfo {
 	switch parts[0] {
 	case "thing", "sys":
 		// DJI format: thing/product/{device_sn}/{service}
+		// Vendor is hardcoded but should be resolved from device registry
 		info.Vendor = "dji"
+		info.VendorKnown = false
 		extractTopicParts(parts, 1, info)
 	default:
 		// Generic format: {vendor}/thing/product/{device_sn}/{service}
+		// Vendor is explicitly specified in topic
 		info.Vendor = parts[0]
+		info.VendorKnown = true
 		extractTopicParts(parts, 2, info)
 	}
 

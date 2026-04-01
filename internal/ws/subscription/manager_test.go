@@ -278,3 +278,28 @@ func TestManager_CleanupEmptyTopics(t *testing.T) {
 	manager.Unsubscribe("client1", "topic1")
 	assert.Equal(t, 0, manager.GetTopicCount())
 }
+
+func TestNormalizeTopic(t *testing.T) {
+	assert.Equal(t, "device.device-001.property.report", NormalizeTopic("device/device-001/property.report"))
+	assert.Equal(t, "device.device-001.property.report", NormalizeTopic(" device.device-001.property.report "))
+}
+
+func TestManager_AuthorizeSubscribe(t *testing.T) {
+	manager := NewManager(nil)
+
+	t.Run("authorizes matching device in dotted format", func(t *testing.T) {
+		result := manager.AuthorizeSubscribe("client1", "device.device-001.property.report", "device-001", "")
+		assert.True(t, result.Authorized)
+	})
+
+	t.Run("authorizes matching device in slash format", func(t *testing.T) {
+		result := manager.AuthorizeSubscribe("client1", "device/device-001/property.report", "device-001", "")
+		assert.True(t, result.Authorized)
+	})
+
+	t.Run("rejects mismatched device", func(t *testing.T) {
+		result := manager.AuthorizeSubscribe("client1", "device.device-002.property.report", "device-001", "")
+		assert.False(t, result.Authorized)
+		assert.Equal(t, "not authorized for this device", result.Error)
+	})
+}

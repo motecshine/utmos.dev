@@ -16,7 +16,7 @@ type TopicInfo struct {
 // IsUplink returns true if this is an uplink (device to cloud) topic.
 func (ti *TopicInfo) IsUplink() bool {
 	switch ti.Type {
-	case TopicTypeOSD, TopicTypeState, TopicTypeEvents, TopicTypeStatus, TopicTypeServicesReply:
+	case TopicTypeOSD, TopicTypeState, TopicTypeEvents, TopicTypeEventsReply, TopicTypeStatus, TopicTypeServicesReply, TopicTypeRequestsReply, TopicTypeDRCUp:
 		return true
 	default:
 		return false
@@ -26,7 +26,7 @@ func (ti *TopicInfo) IsUplink() bool {
 // IsDownlink returns true if this is a downlink (cloud to device) topic.
 func (ti *TopicInfo) IsDownlink() bool {
 	switch ti.Type {
-	case TopicTypeServices, TopicTypeStatusReply:
+	case TopicTypeServices, TopicTypeStatusReply, TopicTypeRequests, TopicTypeDRCDown:
 		return true
 	default:
 		return false
@@ -40,6 +40,11 @@ func (ti *TopicInfo) IsDownlink() bool {
 //   - thing/product/{gateway_sn}/services
 //   - thing/product/{gateway_sn}/services_reply
 //   - thing/product/{gateway_sn}/events
+//   - thing/product/{gateway_sn}/events_reply
+//   - thing/product/{gateway_sn}/requests
+//   - thing/product/{gateway_sn}/requests_reply
+//   - thing/product/{gateway_sn}/drc/up
+//   - thing/product/{gateway_sn}/drc/down
 //   - sys/product/{gateway_sn}/status
 //   - sys/product/{gateway_sn}/status_reply
 func ParseTopic(topic string) (*TopicInfo, error) {
@@ -62,7 +67,14 @@ func ParseTopic(topic string) (*TopicInfo, error) {
 	}
 
 	deviceSN := parts[2]
-	topicTypeStr := parts[3]
+
+	// Handle compound topic types like drc/up and drc/down (5 segments)
+	var topicTypeStr string
+	if len(parts) >= 5 && parts[3] == "drc" {
+		topicTypeStr = parts[3] + "/" + parts[4]
+	} else {
+		topicTypeStr = parts[3]
+	}
 
 	topicType, err := parseTopicType(topicTypeStr)
 	if err != nil {
@@ -90,10 +102,20 @@ func parseTopicType(s string) (TopicType, error) {
 		return TopicTypeServicesReply, nil
 	case "events":
 		return TopicTypeEvents, nil
+	case "events_reply":
+		return TopicTypeEventsReply, nil
 	case "status":
 		return TopicTypeStatus, nil
 	case "status_reply":
 		return TopicTypeStatusReply, nil
+	case "requests":
+		return TopicTypeRequests, nil
+	case "requests_reply":
+		return TopicTypeRequestsReply, nil
+	case "drc/up":
+		return TopicTypeDRCUp, nil
+	case "drc/down":
+		return TopicTypeDRCDown, nil
 	default:
 		return "", fmt.Errorf("%w: %q", ErrUnknownTopicType, s)
 	}
@@ -104,6 +126,10 @@ func BuildTopic(topicType TopicType, deviceSN string) string {
 	prefix := "thing"
 	if topicType == TopicTypeStatus || topicType == TopicTypeStatusReply {
 		prefix = "sys"
+	}
+	// DRC topics have compound type drc/up or drc/down
+	if topicType == TopicTypeDRCUp || topicType == TopicTypeDRCDown {
+		return fmt.Sprintf("%s/product/%s/%s", prefix, deviceSN, topicType)
 	}
 	return fmt.Sprintf("%s/product/%s/%s", prefix, deviceSN, topicType)
 }

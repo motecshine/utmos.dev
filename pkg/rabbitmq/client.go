@@ -9,16 +9,18 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/utmos/utmos/pkg/config"
+	"github.com/utmos/utmos/pkg/metrics"
 )
 
 // Client represents a RabbitMQ client.
 type Client struct {
-	cfg       *config.RabbitMQConfig
-	conn      *amqp.Connection
-	channel   *amqp.Channel
-	closeChan chan struct{}
-	mu        sync.RWMutex
-	connected bool
+	cfg        *config.RabbitMQConfig
+	conn       *amqp.Connection
+	channel    *amqp.Channel
+	closeChan  chan struct{}
+	mu         sync.RWMutex
+	connected  bool
+	rmqMetrics *metrics.RabbitMQMetrics
 }
 
 // NewClient creates a new RabbitMQ client.
@@ -26,6 +28,15 @@ func NewClient(cfg *config.RabbitMQConfig) *Client {
 	return &Client{
 		cfg:       cfg,
 		closeChan: make(chan struct{}),
+	}
+}
+
+// NewClientWithMetrics creates a new RabbitMQ client with metrics.
+func NewClientWithMetrics(cfg *config.RabbitMQConfig, rmqMetrics *metrics.RabbitMQMetrics) *Client {
+	return &Client{
+		cfg:        cfg,
+		closeChan:  make(chan struct{}),
+		rmqMetrics: rmqMetrics,
 	}
 }
 
@@ -62,6 +73,7 @@ func (c *Client) Connect(ctx context.Context) error {
 					}
 				}
 				c.connected = true
+				c.recordConnectionMetric(1)
 				return nil
 			}
 			_ = c.conn.Close()
@@ -105,6 +117,7 @@ func (c *Client) Close() error {
 	}
 
 	c.connected = false
+	c.recordConnectionMetric(0)
 
 	if len(errs) > 0 {
 		return errs[0]
@@ -208,3 +221,13 @@ func (c *Client) Channel() *amqp.Channel {
 
 // ErrNotConnected is returned when an operation is attempted on a disconnected client.
 var ErrNotConnected = fmt.Errorf("rabbitmq client is not connected")
+
+// recordConnectionMetric records the connection gauge metric
+func (c *Client) recordConnectionMetric(connected int) {
+	if c.rmqMetrics == nil {
+		return
+	}
+	// Note: ConnectionTotal is a gauge, so we set it to the current value
+	// The label here is just for compatibility, actual connection count is the value
+	c.rmqMetrics.ConnectionTotal.WithLabelValues("rabbitmq").Set(float64(connected))
+}

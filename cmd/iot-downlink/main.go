@@ -13,10 +13,12 @@ import (
 	"github.com/utmos/utmos/internal/downlink/retry"
 	"github.com/utmos/utmos/internal/downlink/router"
 	"github.com/utmos/utmos/internal/shared/config"
+	"github.com/utmos/utmos/internal/shared/database"
 	"github.com/utmos/utmos/internal/shared/server"
-	"github.com/utmos/utmos/pkg/logger"
 	djidownlink "github.com/utmos/utmos/pkg/adapter/dji/downlink"
+	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/metrics"
+	"github.com/utmos/utmos/pkg/models"
 	"github.com/utmos/utmos/pkg/rabbitmq"
 	"github.com/utmos/utmos/pkg/tracer"
 )
@@ -44,22 +46,37 @@ func main() {
 	// Initialize metrics collector
 	metricsCollector := metrics.NewCollector(cfg.Metrics.Namespace)
 
-	// Initialize RabbitMQ client
-	rmqClient := rabbitmq.NewClient(&cfg.RabbitMQ)
-	if err := rmqClient.Connect(context.Background()); err != nil {
-		log.WithService(serviceName).Warnf("failed to connect to RabbitMQ: %v", err)
+	// Initialize middleware metrics for RabbitMQ
+	middlewareMetrics := metrics.NewMiddlewareMetrics(metricsCollector)
+
+	// Initialize RabbitMQ client with metrics
+	rmqClient := rabbitmq.NewClientWithMetrics(&cfg.RabbitMQ, middlewareMetrics.RabbitMQ)
+	if connectErr := rmqClient.Connect(context.Background()); connectErr != nil {
+		log.WithService(serviceName).Warnf("failed to connect to RabbitMQ: %v", connectErr)
 	}
 
 	// Setup Exchange and Queue
 	if rmqClient.IsConnected() {
-		if err := rmqClient.SetupExchange(); err != nil {
-			log.WithService(serviceName).Warnf("failed to setup exchange: %v", err)
+		if setupErr := rmqClient.SetupExchange(); setupErr != nil {
+			log.WithService(serviceName).Warnf("failed to setup exchange: %v", setupErr)
 		}
 	}
 
-	// Initialize RabbitMQ subscriber and publisher
-	subscriber := rabbitmq.NewSubscriber(rmqClient)
-	publisher := rabbitmq.NewPublisher(rmqClient)
+	// Initialize RabbitMQ subscriber and publisher with metrics
+	subscriber := rabbitmq.NewSubscriberWithMetrics(rmqClient, middlewareMetrics.RabbitMQ, serviceName)
+	publisher := rabbitmq.NewPublisherWithMetrics(rmqClient, middlewareMetrics.RabbitMQ, serviceName)
+
+	// Initialize PostgreSQL database for service call persistence
+	db, err := database.NewPostgresDB(&cfg.Database.Postgres)
+	if err != nil {
+		log.WithService(serviceName).Warnf("failed to connect to database: %v (service call tracking disabled)", err)
+		db = nil
+	} else {
+		// Run database migrations
+		if err := models.AutoMigrate(db); err != nil {
+			log.WithService(serviceName).Warnf("failed to run migrations: %v", err)
+		}
+	}
 
 	// Initialize downlink service
 	downlinkConfig := &downlink.Config{
@@ -70,16 +87,18 @@ func main() {
 			Multiplier:       2.0,
 			EnableDeadLetter: true,
 		},
-		RouterConfig: &router.Config{
-			DefaultRoutingKey: router.RoutingKeyGatewayDownlink,
-			EnableMetrics:     true,
-		},
+		RouterConfig:        router.DefaultConfig(),
 		EnableRetry:         true,
 		EnableRouting:       true,
 		RetryWorkerInterval: 5 * time.Second,
 	}
 
-	downlinkService := downlink.NewService(downlinkConfig, publisher, metricsCollector, log.WithService(serviceName))
+	downlinkService := downlink.NewService(downlinkConfig, publisher, metricsCollector, log.WithService(serviceName), db)
+
+	// Set RabbitMQ subscriber for service reply consumption
+	if subscriber != nil {
+		downlinkService.SetSubscriber(subscriber)
+	}
 
 	// Register DJI dispatcher
 	djiDispatcher := djidownlink.NewDispatcherAdapter(publisher, log.WithService(serviceName))
@@ -102,7 +121,14 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
 	})
 	router.GET("/ready", func(c *gin.Context) {
-		if rmqClient.IsConnected() && downlinkService.IsRunning() {
+		dbReady := false
+		if db != nil {
+			if sqlDB, err := db.DB(); err == nil && sqlDB.Ping() == nil {
+				dbReady = true
+			}
+		}
+
+		if rmqClient.IsConnected() && downlinkService.IsRunning() && dbReady {
 			c.JSON(http.StatusOK, gin.H{"status": "ready"})
 			return
 		}
@@ -139,6 +165,12 @@ func main() {
 		log.WithService(serviceName).Info("Closing RabbitMQ connection")
 		return rmqClient.Close()
 	})
+	if db != nil {
+		shutdown.Register(func(_ context.Context) error {
+			log.WithService(serviceName).Info("Closing database connection")
+			return database.Close(db)
+		})
+	}
 	shutdown.Register(func(ctx context.Context) error {
 		log.WithService(serviceName).Info("Shutting down tracer")
 		return tracerProvider.Shutdown(ctx)

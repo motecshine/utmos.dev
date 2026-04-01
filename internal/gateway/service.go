@@ -9,12 +9,14 @@ import (
 
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"github.com/utmos/utmos/internal/gateway/bridge"
 	"github.com/utmos/utmos/internal/gateway/connection"
 	"github.com/utmos/utmos/internal/gateway/mqtt"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/rabbitmq"
+	"github.com/utmos/utmos/pkg/repository"
 )
 
 // Gateway service configuration defaults
@@ -75,6 +77,12 @@ type Service struct {
 	publisher  *rabbitmq.Publisher
 	subscriber *rabbitmq.Subscriber
 
+	// Database
+	db              *gorm.DB
+	deviceRepo      *repository.DeviceRepository
+	authenticator   *mqtt.Authenticator
+	msgLogRepo      *repository.MessageLogRepository
+
 	// Metrics
 	msgMetrics    *metrics.MessageMetrics
 	deviceMetrics *metrics.DeviceMetrics
@@ -92,6 +100,7 @@ func NewService(
 	subscriber *rabbitmq.Subscriber,
 	metricsCollector *metrics.Collector,
 	logger *logrus.Entry,
+	db *gorm.DB,
 ) *Service {
 	if config == nil {
 		config = DefaultServiceConfig()
@@ -123,7 +132,7 @@ func NewService(
 		deviceMetrics = metrics.NewDeviceMetrics(metricsCollector)
 	}
 
-	return &Service{
+	svc := &Service{
 		config:         config,
 		logger:         svcLogger,
 		mqttClient:     mqttClient,
@@ -135,7 +144,33 @@ func NewService(
 		subscriber:     subscriber,
 		msgMetrics:     msgMetrics,
 		deviceMetrics:  deviceMetrics,
+		db:             db,
 	}
+
+	// Set up vendor resolver and authenticator if database is available
+	if db != nil {
+		svc.deviceRepo = repository.NewDeviceRepository(db)
+		svc.authenticator = mqtt.NewAuthenticator(db, svcLogger)
+		svc.msgLogRepo = repository.NewMessageLogRepository(db)
+		mqttHandler.SetVendorResolver(svc.resolveVendor)
+		svcLogger.Info("Vendor resolution enabled via device registry")
+		svcLogger.Info("MQTT authentication enabled via device credentials")
+		svcLogger.Info("Message logging enabled for audit trail")
+	}
+
+	return svc
+}
+
+// resolveVendor looks up vendor from device registry by device serial number
+func (s *Service) resolveVendor(ctx context.Context, deviceSN string) (string, error) {
+	if s.deviceRepo == nil {
+		return "", fmt.Errorf("device repository not available")
+	}
+	vendor, err := s.deviceRepo.GetVendorByDeviceSN(ctx, deviceSN)
+	if err != nil {
+		return "", err
+	}
+	return vendor, nil
 }
 
 // Start starts the gateway service
@@ -306,4 +341,19 @@ func (s *Service) UnregisterDevice(deviceSN string) *connection.DeviceState {
 // IsDeviceOnline checks if a device is online
 func (s *Service) IsDeviceOnline(deviceSN string) bool {
 	return s.connManager.IsOnline(deviceSN)
+}
+
+// GetAuthenticator returns the MQTT authenticator
+func (s *Service) GetAuthenticator() *mqtt.Authenticator {
+	return s.authenticator
+}
+
+// IsAuthenticatorEnabled returns true if the authenticator is available
+func (s *Service) IsAuthenticatorEnabled() bool {
+	return s.authenticator != nil
+}
+
+// GetMessageLogRepository returns the message log repository
+func (s *Service) GetMessageLogRepository() *repository.MessageLogRepository {
+	return s.msgLogRepo
 }

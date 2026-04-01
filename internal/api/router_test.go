@@ -87,6 +87,22 @@ func TestRouter_HealthEndpoints(t *testing.T) {
 	})
 }
 
+func TestRouter_SwaggerEndpoint(t *testing.T) {
+	db := setupRouterTestDB(t)
+	config := &Config{
+		EnableAuth:  false,
+		EnableTrace: false,
+	}
+	router := NewRouter(config, db, nil, nil, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/swagger/doc.json", nil)
+	router.ServeHTTP(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "\"openapi\"")
+}
+
 func TestRouter_DeviceEndpoints(t *testing.T) {
 	db := setupRouterTestDB(t)
 	config := &Config{

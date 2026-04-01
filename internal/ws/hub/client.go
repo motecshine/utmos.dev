@@ -144,6 +144,11 @@ func (c *Client) Send(msg *Message) bool {
 		return false
 	}
 
+	// Handle nil send channel (e.g., test mocks)
+	if c.send == nil {
+		return false
+	}
+
 	select {
 	case c.send <- msg:
 		return true
@@ -171,20 +176,47 @@ func (c *Client) SendError(err string, traceID string) bool {
 	})
 }
 
+// SendAck sends an acknowledgment message for a successful subscription
+func (c *Client) SendAck(topic string) bool {
+	return c.Send(&Message{
+		Type:  MessageTypeAck,
+		Event: topic,
+	})
+}
+
+// SendNack sends a negative acknowledgment for a failed subscription or action
+func (c *Client) SendNack(topic string, reason string) bool {
+	return c.Send(&Message{
+		Type:  MessageTypeError,
+		Event: topic,
+		Error: reason,
+	})
+}
+
 // Subscribe subscribes the client to a topic
 func (c *Client) Subscribe(topic string) {
 	c.subMu.Lock()
 	defer c.subMu.Unlock()
+	if c.subscriptions == nil {
+		c.subscriptions = make(map[string]bool)
+	}
 	c.subscriptions[topic] = true
-	c.logger.WithField("topic", topic).Debug("Subscribed to topic")
+	if c.logger != nil {
+		c.logger.WithField("topic", topic).Debug("Subscribed to topic")
+	}
 }
 
 // Unsubscribe unsubscribes the client from a topic
 func (c *Client) Unsubscribe(topic string) {
 	c.subMu.Lock()
 	defer c.subMu.Unlock()
+	if c.subscriptions == nil {
+		return
+	}
 	delete(c.subscriptions, topic)
-	c.logger.WithField("topic", topic).Debug("Unsubscribed from topic")
+	if c.logger != nil {
+		c.logger.WithField("topic", topic).Debug("Unsubscribed from topic")
+	}
 }
 
 // IsSubscribed checks if the client is subscribed to a topic
@@ -303,14 +335,16 @@ func (c *Client) writePump() {
 // handleSubUnsubMessage handles subscribe/unsubscribe messages by executing the action and sending an ack.
 func (c *Client) handleSubUnsubMessage(msg *Message, action func(string)) {
 	if msg.Event != "" {
+		if c.hub != nil && c.hub.onMessage != nil {
+			c.hub.onMessage(c, msg)
+			return
+		}
+
 		action(msg.Event)
 		c.Send(&Message{
 			Type:  MessageTypeAck,
 			Event: msg.Event,
 		})
-		if c.hub != nil && c.hub.onMessage != nil {
-			c.hub.onMessage(c, msg)
-		}
 	}
 }
 

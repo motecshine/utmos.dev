@@ -59,8 +59,8 @@ type ServiceCall struct {
 	UpdatedAt   time.Time         `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
-// TableName returns the table name for ServiceCall
-func (ServiceCall) TableName() string {
+// TableName returns the table name for ServiceCall.
+func (*ServiceCall) TableName() string {
 	return "service_calls"
 }
 

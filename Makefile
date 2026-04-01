@@ -70,7 +70,7 @@ benchmark: ## Run benchmarks
 
 lint: ## Run linters
 	@echo "Running linters..."
-	$(GOLANGCI_LINT) run
+	$(GOLANGCI_LINT) run ./...
 
 fmt: ## Format code
 	@echo "Formatting code..."
@@ -117,4 +117,3 @@ docker-compose-up: ## Start services with docker-compose
 
 docker-compose-down: ## Stop services with docker-compose
 	docker-compose down
-

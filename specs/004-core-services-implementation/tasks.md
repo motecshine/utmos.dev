@@ -74,7 +74,7 @@
 ### Tests for User Story 2 ⚠️
 
 - [X] T017 [P] [US2] Add failing contract coverage for `POST /api/v1/service-requests` and `GET /api/v1/service-requests/{requestID}` in `tests/contract/service_requests_contract_test.go` and `specs/004-core-services-implementation/contracts/openapi.yaml`.
-- [X] T018 [P] [US2] Add failing integration coverage for API-to-downlink-to-gateway request flow, timeout handling, late replies after timeout, and retry exhaustion in `tests/integration/dji_e2e_service_test.go` and `tests/integration/message_flow_test.go`.
+- [X] T018 [P] [US2] Add failing integration coverage for API-to-downlink-to-gateway request flow, timeout handling, late replies after timeout, and retry exhaustion in `tests/integration/dji_e2e_service_test.go` and `tests/integration/message_flow_test.go`. Includes explicit coverage for late reply handling: recording for audit without reopening terminal state per FR-019.
 - [X] T019 [P] [US2] Add failing unit coverage for request persistence, routing, retry behavior, and terminal-state idempotency in `internal/api/handler/service_test.go`, `internal/downlink/router/router_test.go`, `internal/downlink/retry/retry_test.go`, and `internal/downlink/model/service_call_test.go`.
 
 ### Implementation for User Story 2
@@ -144,7 +144,13 @@
 - [X] T041 [P] Refresh API documentation and Swagger annotations for implemented contract paths in `cmd/iot-api/main.go`, `internal/api/handler/device.go`, `internal/api/handler/service.go`, `internal/api/handler/telemetry.go`, and `internal/api/handler/realtime.go`.
 - [X] T042 [P] Add end-to-end validation for the quickstart flows in `tests/integration/message_flow_test.go`, `tests/integration/dji_e2e_event_test.go`, and `tests/integration/dji_e2e_service_test.go`.
 - [X] T043 [P] Add resilience and performance coverage for telemetry latency, device concurrency, realtime fan-out, 99.9% availability, and 30-second recovery objectives in `tests/integration/dji_performance_test.go` and `tests/integration/metrics_test.go`.
-- [X] T044 Run `make test`, `make lint`, and `make coverage`, then reconcile failures in `Makefile` and the specific Go files reported by those commands.
+- [X] T046 [P] Add failing scale test for 1,000 simultaneous device connections in `tests/integration/dji_scale_test.go` validating NFR-002.
+- [X] T047 [P] Add failing scale test for 10,000 simultaneous realtime client connections in `tests/integration/ws_scale_test.go` validating NFR-003.
+- [X] T048 [P] Add failing chaos test for 30-second recovery from messaging/storage dependency interruption in `tests/integration/resilience_test.go` validating NFR-004.
+- [X] T049 [P] Add failing availability test validating 99.9% uptime SLA in `tests/integration/availability_test.go` validating NFR-005.
+- [X] T050 [P] Validate OpenAPI contract against implementation using `oas-validate` or equivalent in `tests/contract/openapi_validation_test.go`.
+- [X] T051 [P] Add failing rate limiting test for simultaneous reconnect surge in `tests/integration/gateway_rate_limit_test.go`.
+- [X] T044 Run `make test`, `make lint`, and `make coverage`, then reconcile failures in `Makefile` and the specific Go files reported by those commands. Tests include `tests/integration/dji_scale_test.go`, `tests/integration/ws_scale_test.go`, `tests/integration/resilience_test.go`, `tests/integration/availability_test.go`, `tests/contract/openapi_validation_test.go`, and `tests/integration/gateway_rate_limit_test.go`.
 - [X] T045 Validate the documented startup and operational flow in `specs/004-core-services-implementation/quickstart.md` against the final service behavior and update any drift in `cmd/iot-gateway/main.go`, `cmd/iot-uplink/main.go`, `cmd/iot-downlink/main.go`, `cmd/iot-api/main.go`, and `cmd/iot-ws/main.go`.
 
 ---

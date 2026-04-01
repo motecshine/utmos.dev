@@ -28,6 +28,11 @@ type Manager struct {
 	logger  *logrus.Entry
 }
 
+// NormalizeTopic converts supported subscription formats to the canonical dotted topic form.
+func NormalizeTopic(topic string) string {
+	return strings.ReplaceAll(strings.TrimSpace(topic), "/", ".")
+}
+
 // NewManager creates a new subscription manager
 func NewManager(logger *logrus.Entry) *Manager {
 	if logger == nil {
@@ -43,6 +48,8 @@ func NewManager(logger *logrus.Entry) *Manager {
 
 // Subscribe subscribes a client to a topic
 func (m *Manager) Subscribe(clientID, topic string) {
+	topic = NormalizeTopic(topic)
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -66,6 +73,8 @@ func (m *Manager) Subscribe(clientID, topic string) {
 
 // Unsubscribe unsubscribes a client from a topic
 func (m *Manager) Unsubscribe(clientID, topic string) {
+	topic = NormalizeTopic(topic)
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -121,7 +130,7 @@ func (m *Manager) getKeysFromMap(lookup map[string]map[string]bool, key string) 
 
 // GetSubscribers returns all client IDs subscribed to a topic
 func (m *Manager) GetSubscribers(topic string) []string {
-	return m.getKeysFromMap(m.topics, topic)
+	return m.getKeysFromMap(m.topics, NormalizeTopic(topic))
 }
 
 // GetSubscribersMatching returns all client IDs subscribed to topics matching a pattern
@@ -131,6 +140,8 @@ func (m *Manager) GetSubscribers(topic string) []string {
 // - "*" matches any single segment
 // - "**" matches any number of segments (greedy)
 func (m *Manager) GetSubscribersMatching(pattern string) []string {
+	pattern = NormalizeTopic(pattern)
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -158,6 +169,8 @@ func (m *Manager) GetTopics(clientID string) []string {
 
 // IsSubscribed checks if a client is subscribed to a topic
 func (m *Manager) IsSubscribed(clientID, topic string) bool {
+	topic = NormalizeTopic(topic)
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -166,6 +179,67 @@ func (m *Manager) IsSubscribed(clientID, topic string) bool {
 		return false
 	}
 	return topics[topic]
+}
+
+// AuthorizeSubscribeResult contains the result of authorization check
+type AuthorizeSubscribeResult struct {
+	Authorized bool
+	Error      string
+}
+
+// AuthorizeSubscribe checks if a client is authorized to subscribe to a topic.
+// Returns authorized=true if the subscription is allowed, or authorized=false with
+// an error message if the subscription should be rejected.
+// This implements FR-020: realtime subscriptions validate authorization per-topic.
+func (m *Manager) AuthorizeSubscribe(clientID, topic string, clientDeviceSN, clientUserID string) AuthorizeSubscribeResult {
+	topic = NormalizeTopic(topic)
+
+	// Extract device_sn from topic
+	// Expected topic formats:
+	// - device.{device_sn}.telemetry
+	// - device.{device_sn}.property
+	// - device.{device_sn}.event
+	// - device.{device_sn}.status
+	// - device.{device_sn}.command
+	parts := strings.Split(topic, ".")
+	if len(parts) >= 3 && parts[0] == "device" {
+		topicDeviceSN := parts[1]
+
+		// If client has a DeviceSN set, they can only subscribe to topics for that device
+		if clientDeviceSN != "" && topicDeviceSN != clientDeviceSN {
+			m.logger.WithFields(logrus.Fields{
+				"client_id":     clientID,
+				"topic":         topic,
+				"client_device": clientDeviceSN,
+				"topic_device":  topicDeviceSN,
+			}).Warn("Subscription rejected: device SN mismatch")
+
+			return AuthorizeSubscribeResult{
+				Authorized: false,
+				Error:      "not authorized for this device",
+			}
+		}
+
+		// If client has a UserID, we could check against an authorization store
+		// For now, allow if UserID is present (authenticated client)
+		if clientUserID == "" && clientDeviceSN == "" {
+			m.logger.WithFields(logrus.Fields{
+				"client_id": clientID,
+				"topic":     topic,
+			}).Warn("Subscription rejected: no client credentials")
+
+			return AuthorizeSubscribeResult{
+				Authorized: false,
+				Error:      "no client credentials",
+			}
+		}
+	}
+
+	// Topic format not recognized - allow by default for now
+	// In production, this should return an error for invalid topic formats
+	return AuthorizeSubscribeResult{
+		Authorized: true,
+	}
 }
 
 // GetTopicCount returns the number of active topics
@@ -184,6 +258,8 @@ func (m *Manager) GetClientCount() int {
 
 // GetSubscriberCount returns the number of subscribers for a topic
 func (m *Manager) GetSubscriberCount(topic string) int {
+	topic = NormalizeTopic(topic)
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 

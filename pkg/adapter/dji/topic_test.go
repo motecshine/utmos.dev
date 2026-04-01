@@ -51,6 +51,41 @@ func TestParseTopic(t *testing.T) {
 			wantErr:  false,
 		},
 		{
+			name:     "events reply topic",
+			topic:    "thing/product/GW789/events_reply",
+			wantType: TopicTypeEventsReply,
+			wantSN:   "GW789",
+			wantErr:  false,
+		},
+		{
+			name:     "requests topic",
+			topic:    "thing/product/GW789/requests",
+			wantType: TopicTypeRequests,
+			wantSN:   "GW789",
+			wantErr:  false,
+		},
+		{
+			name:     "requests reply topic",
+			topic:    "thing/product/GW789/requests_reply",
+			wantType: TopicTypeRequestsReply,
+			wantSN:   "GW789",
+			wantErr:  false,
+		},
+		{
+			name:     "drc up topic",
+			topic:    "thing/product/GW789/drc/up",
+			wantType: TopicTypeDRCUp,
+			wantSN:   "GW789",
+			wantErr:  false,
+		},
+		{
+			name:     "drc down topic",
+			topic:    "thing/product/GW789/drc/down",
+			wantType: TopicTypeDRCDown,
+			wantSN:   "GW789",
+			wantErr:  false,
+		},
+		{
 			name:     "status topic",
 			topic:    "sys/product/GW789/status",
 			wantType: TopicTypeStatus,
@@ -108,10 +143,15 @@ func TestTopicInfo_IsUplink(t *testing.T) {
 		{TopicTypeOSD, true},
 		{TopicTypeState, true},
 		{TopicTypeEvents, true},
+		{TopicTypeEventsReply, true},
 		{TopicTypeStatus, true},
 		{TopicTypeServicesReply, true},
+		{TopicTypeRequestsReply, true},
+		{TopicTypeDRCUp, true},
 		{TopicTypeServices, false},
 		{TopicTypeStatusReply, false},
+		{TopicTypeRequests, false},
+		{TopicTypeDRCDown, false},
 	}
 
 	for _, tt := range tests {
@@ -129,9 +169,16 @@ func TestTopicInfo_IsDownlink(t *testing.T) {
 	}{
 		{TopicTypeServices, true},
 		{TopicTypeStatusReply, true},
+		{TopicTypeRequests, true},
+		{TopicTypeDRCDown, true},
 		{TopicTypeOSD, false},
 		{TopicTypeState, false},
 		{TopicTypeEvents, false},
+		{TopicTypeEventsReply, false},
+		{TopicTypeStatus, false},
+		{TopicTypeServicesReply, false},
+		{TopicTypeRequestsReply, false},
+		{TopicTypeDRCUp, false},
 	}
 
 	for _, tt := range tests {
@@ -166,6 +213,24 @@ func TestBuildTopic(t *testing.T) {
 			topicType: TopicTypeStatus,
 			deviceSN:  "GW789",
 			expected:  "sys/product/GW789/status",
+		},
+		{
+			name:      "build drc up topic",
+			topicType: TopicTypeDRCUp,
+			deviceSN:  "GW789",
+			expected:  "thing/product/GW789/drc/up",
+		},
+		{
+			name:      "build drc down topic",
+			topicType: TopicTypeDRCDown,
+			deviceSN:  "GW789",
+			expected:  "thing/product/GW789/drc/down",
+		},
+		{
+			name:      "build requests topic",
+			topicType: TopicTypeRequests,
+			deviceSN:  "GW789",
+			expected:  "thing/product/GW789/requests",
 		},
 	}
 

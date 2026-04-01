@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
@@ -83,39 +84,19 @@ func (b *UplinkBridge) Bridge(ctx context.Context, msg *mqtt.Message, topicInfo 
 	// Determine routing key: iot.raw.{vendor}.uplink
 	routingKey := rabbitmq.NewRawRoutingKey(topicInfo.Vendor, rabbitmq.DirectionUplink).String()
 
-	// Create data payload
-	dataPayload := map[string]any{
-		"vendor":  topicInfo.Vendor,
-		"topic":   msg.Topic,
-		"payload": msg.Payload,
-		"qos":     msg.QoS,
+	// Build AMQP headers with protocol metadata for the adapter
+	headers := amqp.Table{
+		"original_topic": msg.Topic,
+		"device_sn":      topicInfo.DeviceSN,
+		"vendor":         topicInfo.Vendor,
+		"qos":            int(msg.QoS),
 	}
 
-	// Create StandardMessage for RabbitMQ
-	qos := int(msg.QoS)
-	stdMsg, err := rabbitmq.NewStandardMessageWithIDs(
-		msg.TraceID,
-		msg.SpanID,
-		"raw",
-		"uplink",
-		topicInfo.DeviceSN,
-		dataPayload,
-	)
+	// Publish raw payload bytes directly to RabbitMQ
+	// The adapter expects raw vendor payload in body, metadata in headers
+	err := b.publisher.PublishRaw(ctx, routingKey, msg.Payload, headers)
 	if err != nil {
-		return fmt.Errorf("failed to create standard message: %w", err)
-	}
-
-	// Set protocol metadata
-	stdMsg.ProtocolMeta = &rabbitmq.ProtocolMeta{
-		Vendor:        topicInfo.Vendor,
-		OriginalTopic: msg.Topic,
-		QoS:           &qos,
-	}
-
-	// Publish to RabbitMQ
-	err = b.publisher.Publish(ctx, routingKey, stdMsg)
-	if err != nil {
-		return fmt.Errorf("failed to publish message: %w", err)
+		return fmt.Errorf("failed to publish raw uplink message: %w", err)
 	}
 
 	b.logger.WithFields(logrus.Fields{

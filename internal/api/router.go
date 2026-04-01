@@ -10,13 +10,14 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
+	_ "github.com/utmos/utmos/docs/swagger"
 	"github.com/utmos/utmos/internal/api/handler"
 	"github.com/utmos/utmos/internal/api/middleware"
 	"github.com/utmos/utmos/internal/downlink/dispatcher"
 	"github.com/utmos/utmos/pkg/metrics"
-	// Import swagger docs
-	// _ "github.com/utmos/utmos/docs/swagger"
 )
+
+const readinessNotConfigured = "not configured"
 
 // Config holds router configuration
 type Config struct {
@@ -30,6 +31,10 @@ type Config struct {
 	ServiceName string
 	// TelemetryConfig for telemetry handler
 	TelemetryConfig *handler.TelemetryConfig
+	// RabbitMQReady reports current RabbitMQ readiness for /ready.
+	RabbitMQReady func() bool
+	// RealtimeRegistrar activates subscriptions for active WS sessions.
+	RealtimeRegistrar handler.RealtimeRegistrar
 }
 
 // DefaultConfig returns default router configuration
@@ -50,6 +55,7 @@ type Router struct {
 	deviceHandler    *handler.Device
 	serviceHandler   *handler.Service
 	telemetryHandler *handler.Telemetry
+	realtimeHandler  *handler.RealtimeHandler
 }
 
 // NewRouter creates a new API router
@@ -91,6 +97,7 @@ func NewRouter(
 	// Create handlers
 	deviceHandler := handler.NewDevice(db, logger)
 	serviceHandler := handler.NewService(db, dispatchHandler, logger)
+	realtimeHandler := handler.NewRealtimeHandler(logger, config.RealtimeRegistrar)
 
 	var telemetryHandler *handler.Telemetry
 	if config.TelemetryConfig != nil {
@@ -105,6 +112,7 @@ func NewRouter(
 		deviceHandler:    deviceHandler,
 		serviceHandler:   serviceHandler,
 		telemetryHandler: telemetryHandler,
+		realtimeHandler:  realtimeHandler,
 	}
 
 	// Setup routes
@@ -138,14 +146,30 @@ func (r *Router) setupHealthRoutes() {
 				checks["database"] = "ok"
 			}
 		} else {
-			checks["database"] = "not configured"
+			checks["database"] = readinessNotConfigured
 		}
 
 		// Check telemetry handler (InfluxDB)
 		if r.telemetryHandler != nil {
-			checks["telemetry"] = "ok"
+			if err := r.telemetryHandler.Health(c.Request.Context()); err != nil {
+				checks["telemetry"] = "error: " + err.Error()
+				allReady = false
+			} else {
+				checks["telemetry"] = "ok"
+			}
 		} else {
-			checks["telemetry"] = "not configured"
+			checks["telemetry"] = readinessNotConfigured
+		}
+
+		if r.config.RabbitMQReady != nil {
+			if r.config.RabbitMQReady() {
+				checks["rabbitmq"] = "ok"
+			} else {
+				checks["rabbitmq"] = "error: disconnected"
+				allReady = false
+			}
+		} else {
+			checks["rabbitmq"] = readinessNotConfigured
 		}
 
 		if allReady {
@@ -216,6 +240,12 @@ func (r *Router) setupAPIRoutes() {
 			telemetry.GET("/:device_sn/latest", r.telemetryHandler.Latest)
 			telemetry.GET("/:device_sn/aggregate", r.telemetryHandler.Aggregate)
 		}
+	}
+
+	// Realtime subscription routes
+	realtime := api.Group("/realtime")
+	{
+		realtime.POST("/subscriptions", r.realtimeHandler.Subscribe)
 	}
 }
 

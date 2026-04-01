@@ -15,8 +15,8 @@ import (
 	"github.com/utmos/utmos/internal/shared/config"
 	"github.com/utmos/utmos/internal/shared/database"
 	"github.com/utmos/utmos/internal/shared/server"
-	"github.com/utmos/utmos/pkg/logger"
 	djidownlink "github.com/utmos/utmos/pkg/adapter/dji/downlink"
+	"github.com/utmos/utmos/pkg/logger"
 	"github.com/utmos/utmos/pkg/metrics"
 	"github.com/utmos/utmos/pkg/models"
 	"github.com/utmos/utmos/pkg/rabbitmq"
@@ -102,11 +102,16 @@ func main() {
 	apiKeys := getAPIKeys()
 
 	// Create router configuration
+	realtimeRegistrar := handler.NewHTTPRealtimeRegistrar(os.Getenv("IOT_WS_CONTROL_URL"))
 	routerConfig := &api.Config{
 		APIKeys:     apiKeys,
 		EnableAuth:  len(apiKeys) > 0,
 		EnableTrace: true,
 		ServiceName: serviceName,
+		RabbitMQReady: func() bool {
+			return rmqClient.IsConnected()
+		},
+		RealtimeRegistrar: realtimeRegistrar,
 		TelemetryConfig: &handler.TelemetryConfig{
 			URL:    cfg.Database.InfluxDB.URL,
 			Token:  cfg.Database.InfluxDB.Token,

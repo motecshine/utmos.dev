@@ -15,8 +15,15 @@ components:
       in: header
       name: X-API-Key
   parameters:
+    DeviceID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Managed device numeric identifier
     DeviceSN:
-      name: deviceSN
+      name: sn
       in: path
       required: true
       schema:
@@ -201,17 +208,27 @@ components:
       type: object
       required: [topics]
       properties:
+        sessionID:
+          type: string
         topics:
           type: array
           items:
             type: string
     RealtimeSubscribeAck:
       type: object
-      required: [sessionID, topics]
+      required: [sessionID, topics, accepted]
       properties:
         sessionID:
           type: string
         topics:
+          type: array
+          items:
+            type: string
+        accepted:
+          type: array
+          items:
+            type: string
+        rejected:
           type: array
           items:
             type: string
@@ -253,7 +270,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Device'
-  /api/v1/devices/{deviceSN}:
+  /api/v1/devices/{id}:
+    get:
+      summary: Get device details by numeric ID
+      operationId: getDeviceByID
+      parameters:
+        - $ref: '#/components/parameters/DeviceID'
+      responses:
+        '200':
+          description: Device returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update a managed device by numeric ID
+      operationId: updateDeviceByID
+      parameters:
+        - $ref: '#/components/parameters/DeviceID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceRequest'
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    delete:
+      summary: Remove a managed device by numeric ID
+      operationId: deleteDeviceByID
+      parameters:
+        - $ref: '#/components/parameters/DeviceID'
+      responses:
+        '204':
+          description: Device removed
+  /api/v1/devices/sn/{sn}:
     get:
       summary: Get device details by serial number
       operationId: getDeviceBySerialNumber
@@ -272,38 +334,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-    put:
-      summary: Update a managed device by serial number
-      operationId: updateDeviceBySerialNumber
-      parameters:
-        - $ref: '#/components/parameters/DeviceSN'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateDeviceRequest'
-      responses:
-        '200':
-          description: Device updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Device'
-    delete:
-      summary: Remove a managed device by serial number
-      operationId: deleteDeviceBySerialNumber
-      parameters:
-        - $ref: '#/components/parameters/DeviceSN'
-      responses:
-        '204':
-          description: Device removed
-  /api/v1/devices/{deviceSN}/telemetry:
+  /api/v1/telemetry/{device_sn}:
     get:
       summary: Query historical telemetry for a device
       operationId: queryDeviceTelemetry
       parameters:
-        - $ref: '#/components/parameters/DeviceSN'
+        - name: device_sn
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Managed device serial number
         - name: start
           in: query
           schema:

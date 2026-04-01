@@ -74,9 +74,9 @@ As a monitoring client, I want to subscribe to realtime device updates so I can 
 ### Edge Cases
 
 - Duplicate upstream messages or duplicate command responses reusing the same `tid` and `bid` are handled idempotently per FR-011 — no duplicate records or duplicate state transitions are created.
-- Late command responses arriving after a terminal timeout outcome are recorded for audit purposes without reopening or overwriting the terminal state (per US2-Scenario-4).
-- When many devices reconnect simultaneously after a broker or network interruption, the gateway applies a token-bucket rate limit on incoming connections; excess MQTT connects receive a CONNACK error and rely on standard MQTT client reconnect backoff.
-- When a realtime client subscribes to device topics it is not authorized to observe, the platform validates each topic individually, returns accepted topics in the subscription ack, and returns rejected topics with an authorization error. Valid topics in the same request still activate.
+- Late command responses arriving after a terminal timeout outcome are recorded for audit per FR-019 — without reopening or overwriting the terminal state.
+- When many devices reconnect simultaneously after a broker or network interruption, the gateway applies per FR-018 a token-bucket rate limit on incoming connections; excess MQTT connects receive a CONNACK error and rely on standard MQTT client reconnect backoff.
+- When a realtime client subscribes to device topics it is not authorized to observe, per FR-020 the platform validates each topic individually, returns accepted topics in the subscription ack, and returns rejected topics with an authorization error. Valid topics in the same request still activate.
 - When a storage or messaging dependency is temporarily unavailable while commands or telemetry are in flight, services nack and requeue messages up to a configurable retry ceiling, then route exhausted messages to a dead-letter queue for operator review.
 
 ## Requirements *(mandatory)*
@@ -91,23 +91,29 @@ As a monitoring client, I want to subscribe to realtime device updates so I can 
 - **FR-006**: The platform MUST route validated upstream updates to the appropriate downstream consumers, including realtime delivery channels and business-facing interfaces.
 - **FR-007**: The platform MUST allow authorized clients to create, view, update, and remove managed device records.
 - **FR-008**: The platform MUST allow authorized clients to submit service requests for supported devices and immediately receive a tracking identifier for each accepted request.
-- **FR-009**: The platform MUST track each device service request through the authoritative lifecycle states `pending`, `sent`, `retrying`, `success`, `failed`, and `timeout`.
+- **FR-009**: The platform MUST track each device service request through the defined lifecycle states `pending`, `sent`, `retrying`, `success`, `failed`, and `timeout`. The implementation MUST transition through exactly these states in order: pending → sent → (success | failed | timeout), with retrying as a transient state before sent or before terminal states. Late replies after timeout MUST be recorded but MUST NOT transition from any terminal state.
 - **FR-010**: The platform MUST retry unacknowledged or failed service deliveries according to a defined retry policy and preserve the final failure outcome for operator review.
 - **FR-011**: The platform MUST process duplicate upstream messages and duplicate service responses idempotently when they repeat the same `tid` and `bid`, so duplicate deliveries do not create duplicate telemetry/history records or duplicate terminal service-request transitions.
 - **FR-012**: The platform MUST deliver downlink device requests only through the designated gateway path rather than direct service-to-device calls.
 - **FR-013**: The platform MUST allow authorized clients to establish realtime sessions, manage subscriptions to supported device topics, and receive matching updates.
 - **FR-014**: The platform MUST detect stale realtime sessions and close them after missed heartbeat expectations.
 - **FR-015**: The platform MUST provide integration-ready interface documentation for device management, telemetry retrieval, service requests, and realtime subscriptions.
-- **FR-016**: The platform MUST expose service health and operational readiness information for each core service so operators can determine whether the end-to-end flow is available.
+- **FR-016**: The platform MUST expose service health and operational readiness information for each core service. A service is considered "ready" when all of its direct dependencies are connected and functional: iot-gateway requires VerneMQ and RabbitMQ; iot-uplink requires RabbitMQ and database access; iot-downlink requires RabbitMQ and database access; iot-api requires RabbitMQ, PostgreSQL, and InfluxDB; iot-ws requires RabbitMQ.
 - **FR-017**: The platform MUST record auditable operational events for authentication attempts, message processing failures, retries, and final command outcomes.
+
+- **FR-018**: The platform MUST apply token-bucket rate limiting on incoming MQTT connections at the gateway, rejecting excess connections with CONNACK error and relying on standard MQTT client reconnect backoff.
+
+- **FR-019**: Late command responses arriving after terminal timeout MUST be recorded for audit without reopening or overwriting the terminal state.
+
+- **FR-020**: Realtime subscriptions validate authorization per-topic, activating valid topics and rejecting unauthorized ones with explicit error.
 
 ### Non-Functional Requirements
 
-- **NFR-001**: At least 95% of valid device telemetry updates MUST become available for subscribed clients or downstream consumers within 1 second during representative acceptance testing.
+- **NFR-001**: At least 95% of valid device telemetry updates MUST become available for subscribed clients or downstream consumers within 1 second during a sustained load test of ≥100 devices publishing at 1Hz with ≤50ms network latency between components.
 - **NFR-002**: The platform MUST support at least 1,000 simultaneously connected devices during controlled load testing without dropping authenticated sessions.
 - **NFR-003**: The platform MUST support at least 10,000 simultaneous realtime client connections per node during controlled load testing.
 - **NFR-004**: Core platform services MUST recover from transient messaging or storage dependency interruptions within 30 seconds without manual intervention.
-- **NFR-005**: The end-to-end operational flow MUST demonstrate at least 99.9% availability during controlled resilience testing windows.
+- **NFR-005**: The end-to-end operational flow MUST demonstrate at least 99.9% availability during a controlled resilience testing window, measured as (total_uptime / (total_uptime + downtime)), excluding planned maintenance windows exceeding 4 hours.
 - **NFR-006**: Release readiness MUST require passing unit, integration, end-to-end, and contract tests, with unit test coverage of at least 80%.
 
 ### Key Entities *(include if feature involves data)*
@@ -138,7 +144,7 @@ As a monitoring client, I want to subscribe to realtime device updates so I can 
 
 ### Measurable Outcomes
 
-- **SC-001**: Operators can connect a supported device and observe its online status in the platform within 60 seconds of successful authentication.
+- **SC-001**: Platform processing (excluding network transit) of a successfully authenticated device connection and initial status report completes within 500ms; total elapsed time from device network connect to visibility is infrastructure-dependent.
 - **SC-002**: During acceptance testing, at least 95% of valid telemetry reports become queryable and eligible for realtime delivery within 1 second of ingestion.
 - **SC-003**: For 100% of accepted service requests, the platform returns a tracking identifier immediately and records a final outcome within the configured execution window.
 - **SC-004**: All four primary user stories can be demonstrated end to end without manual data correction or out-of-band service intervention.

@@ -112,12 +112,23 @@ func main() {
 		rmqReady := rmqClient.IsConnected()
 		svcRunning := uplinkSvc.IsRunning()
 
-		if rmqReady && svcRunning {
+		// Check InfluxDB storage health if enabled (required by spec FR-016 for iot-uplink)
+		storageReady := true
+		if stats := uplinkSvc.GetStats(); stats.StorageEnabled {
+			if storage := uplinkSvc.GetStorage(); storage != nil {
+				if err := storage.Health(c.Request.Context()); err != nil {
+					storageReady = false
+				}
+			}
+		}
+
+		if rmqReady && svcRunning && storageReady {
 			stats := uplinkSvc.GetStats()
 			c.JSON(http.StatusOK, gin.H{
 				"status":            "ready",
 				"rabbitmq":          "connected",
 				"service":           "running",
+				"influxdb":          "healthy",
 				"registered_vendors": stats.RegisteredVendors,
 				"storage_enabled":   stats.StorageEnabled,
 				"routing_enabled":   stats.RoutingEnabled,
@@ -129,12 +140,18 @@ func main() {
 			"status":   "not ready",
 			"rabbitmq": "disconnected",
 			"service":  "stopped",
+			"influxdb": "unhealthy",
 		}
 		if rmqReady {
 			status["rabbitmq"] = "connected"
 		}
 		if svcRunning {
 			status["service"] = "running"
+		}
+		if !storageReady {
+			status["influxdb"] = "unhealthy"
+		} else {
+			status["influxdb"] = "healthy"
 		}
 		c.JSON(http.StatusServiceUnavailable, status)
 	})
